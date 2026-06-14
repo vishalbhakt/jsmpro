@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0a1628;
+  --navy-light: #1a3a6b;
+  --gold: #c9a227;
+  --gold-light: #f0c740;
+}
+
+body {
+  font-family: var(--font-sans), sans-serif;
+  color: var(--navy);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif), serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-navy text-white px-6 py-2.5 rounded-xl font-bold transition-all hover:bg-navy-light active:scale-95;
+  }
+  .btn-gold {
+    @apply bg-gold text-navy px-6 py-2.5 rounded-xl font-bold transition-all hover:bg-gold-light active:scale-95;
+  }
+}
