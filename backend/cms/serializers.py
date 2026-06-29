@@ -26,9 +26,11 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "code",
             "slug",
             "description",
             "grade_range",
+            "duration",
             "image",
             "is_featured",
             "is_published",

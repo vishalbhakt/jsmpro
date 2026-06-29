@@ -42,7 +42,6 @@ class PageViewSet(PublicCMSViewSet):
 class CourseViewSet(PublicCMSViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    lookup_field = "slug"
 
 
 class FacilityViewSet(PublicCMSViewSet):

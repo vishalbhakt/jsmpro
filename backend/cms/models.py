@@ -20,9 +20,11 @@ class Page(models.Model):
 
 class Course(models.Model):
     title = models.CharField(max_length=160)
+    code = models.CharField(max_length=30, blank=True)
     slug = models.SlugField(unique=True)
     description = models.TextField()
     grade_range = models.CharField(max_length=80)
+    duration = models.CharField(max_length=80, blank=True)
     image = models.ImageField(upload_to="courses/", blank=True, null=True)
     is_featured = models.BooleanField(default=False)
     is_published = models.BooleanField(default=True)

@@ -26,9 +26,11 @@ export default function AdminCourses() {
   
   const [form, setForm] = useState({ 
     title: "", 
+    code: "",
     slug: "", 
     description: "", 
     grade_range: "", 
+    duration: "",
     is_featured: false,
     is_published: true 
   });
@@ -83,7 +85,7 @@ export default function AdminCourses() {
       }
       setIsAdding(false);
       setEditingCourse(null);
-      setForm({ title: "", slug: "", description: "", grade_range: "", is_featured: false, is_published: true });
+      setForm({ title: "", code: "", slug: "", description: "", grade_range: "", duration: "", is_featured: false, is_published: true });
       fetchData();
     } catch (err: any) {
       console.error("Operation failed", err);
@@ -121,7 +123,7 @@ export default function AdminCourses() {
             <p className="text-slate-500 font-medium mt-1">Configure curriculum offerings and grades catalogs displayed on public domains.</p>
           </div>
           <button 
-            onClick={() => { setEditingCourse(null); setForm({ title: "", slug: "", description: "", grade_range: "", is_featured: false, is_published: true }); setIsAdding(true); }}
+            onClick={() => { setEditingCourse(null); setForm({ title: "", code: "", slug: "", description: "", grade_range: "", duration: "", is_featured: false, is_published: true }); setIsAdding(true); }}
             className="bg-[#001f3f] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-[#001f3f]/20 hover:scale-105 transition-all active:scale-95"
           >
              <Plus className="w-4 h-4" /> Add Course
@@ -152,7 +154,9 @@ export default function AdminCourses() {
                  <div className="text-[10px] text-slate-400 font-mono">/{r.slug}</div>
               </div>
             )},
+            { key: "code", header: "Course Code", render: v => <span className="font-mono text-xs font-bold text-slate-500">{v || "-"}</span> },
             { key: "grade_range", header: "Grade Range", render: v => <span className="font-bold text-slate-500">{v || "-"}</span> },
+            { key: "duration", header: "Duration", render: v => <span className="font-bold text-slate-500">{v || "-"}</span> },
             { key: "is_featured", header: "Featured", render: v => (
               <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${v ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-400"}`}>
                  {v ? "Yes" : "No"}
@@ -170,9 +174,11 @@ export default function AdminCourses() {
                     setEditingCourse(row);
                     setForm({
                       title: row.title || "",
+                      code: row.code || "",
                       slug: row.slug || "",
                       description: row.description || "",
                       grade_range: row.grade_range || "",
+                      duration: row.duration || "",
                       is_featured: row.is_featured ?? false,
                       is_published: row.is_published ?? true
                     });
@@ -208,6 +214,11 @@ export default function AdminCourses() {
                              value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
                         </div>
                         <div className="space-y-1">
+                           <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Course Code</label>
+                           <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 font-bold outline-none focus:border-[#d4af37]"
+                             value={form.code} onChange={e => setForm({...form, code: e.target.value})} />
+                        </div>
+                        <div className="space-y-1">
                            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">URL Slug</label>
                            <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 font-bold outline-none focus:border-[#d4af37]"
                              value={form.slug} onChange={e => setForm({...form, slug: e.target.value})} />
@@ -217,6 +228,12 @@ export default function AdminCourses() {
                            <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 font-bold outline-none focus:border-[#d4af37]"
                              placeholder="e.g. Grades 9 - 12"
                              value={form.grade_range} onChange={e => setForm({...form, grade_range: e.target.value})} />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Duration</label>
+                           <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 font-bold outline-none focus:border-[#d4af37]"
+                             placeholder="e.g. 1 Year"
+                             value={form.duration} onChange={e => setForm({...form, duration: e.target.value})} />
                         </div>
                         <div className="space-y-1">
                            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Featured Flag</label>
