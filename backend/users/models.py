@@ -12,6 +12,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.STUDENT)
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
+    bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     is_verified = models.BooleanField(default=True)
     date_of_birth = models.DateField(blank=True, null=True)

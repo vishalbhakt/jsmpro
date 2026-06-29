@@ -11,6 +11,7 @@ export interface User {
   avatar: string | null;
   phone?: string;
   address?: string;
+  bio?: string;
   created_at?: string;
   profile?: any;
   date_of_birth?: string;

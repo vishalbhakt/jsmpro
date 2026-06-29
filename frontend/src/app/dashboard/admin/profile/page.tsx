@@ -44,6 +44,7 @@ export default function AdminProfile() {
     date_of_birth: "",
     gender: "",
     address: "",
+    bio: "",
     city: "",
     state: "",
     country: "",
@@ -73,6 +74,7 @@ export default function AdminProfile() {
         date_of_birth: user.date_of_birth || "",
         gender: user.gender || "",
         address: user.address || "",
+        bio: user.bio || "",
         city: user.city || "",
         state: user.state || "",
         country: user.country || "",
@@ -323,6 +325,12 @@ export default function AdminProfile() {
                         <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Street Address</label>
                         <textarea className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold outline-none focus:border-[#d4af37] min-h-[100px] text-[#001f3f]"
                           value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
+                      </div>
+                      <div className="md:col-span-2 space-y-1">
+                        <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Professional Bio</label>
+                        <textarea className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold outline-none focus:border-[#d4af37] min-h-[100px] text-[#001f3f]"
+                          placeholder="Tell us about yourself..."
+                          value={form.bio} onChange={e => setForm({...form, bio: e.target.value})} />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase text-slate-400 ml-1">City</label>

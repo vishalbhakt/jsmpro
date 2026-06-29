@@ -151,6 +151,7 @@ class UserSerializer(serializers.ModelSerializer):
             "date_of_birth",
             "gender",
             "address",
+            "bio",
             "city",
             "state",
             "country",
