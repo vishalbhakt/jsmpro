@@ -16,8 +16,30 @@ import {
   Trophy
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { cmsAPI } from "@/lib/api";
+import { safeArray } from "@/lib/apiUtils";
+import * as Icons from "lucide-react";
 
 export default function Home() {
+  const [facilities, setFacilities] = useState<any[]>([]);
+
+  useEffect(() => {
+    cmsAPI.facilities.list()
+      .then((res) => {
+        const data = safeArray(res, "Facilities");
+        setFacilities(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching facilities:", err);
+      });
+  }, []);
+
+  const getIconComponent = (iconName?: string) => {
+    if (!iconName) return Icons.Building2;
+    const IconComponent = (Icons as any)[iconName];
+    return IconComponent || Icons.Building2;
+  };
   return (
     <div className="bg-pearl selection:bg-gold/30">
       <Navbar />
@@ -177,24 +199,41 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { icon: BookOpen, title: "Smart Library", desc: "Rich collection of books and digital learning resources." },
-              { icon: Computer, title: "Computer Lab", desc: "Modern systems with high-speed internet for tech-savviness." },
-              { icon: Trophy, title: "Sports Ground", desc: "Large playground for outdoor physical activities and sports." },
-              { icon: Music, title: "Art & Craft", desc: "Creative environment for artistic expression and imagination." },
-              { icon: HeartPulse, title: "Medical Room", desc: "First aid and health monitoring support for every student." },
-              { icon: ShieldCheck, title: "Transport", desc: "Safe and reliable transportation services across the city." }
-            ].map((f, i) => (
-              <div key={i} className="flex gap-6 p-8 bg-white rounded-3xl border border-navy/5 hover:border-gold/30 transition-all group">
-                <div className="w-14 h-14 bg-navy/5 text-navy rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-navy group-hover:text-gold transition-all">
-                  <f.icon className="w-6 h-6" />
+            {facilities.length > 0 ? (
+              facilities.map((f) => {
+                const IconComponent = getIconComponent(f.icon);
+                return (
+                  <div key={f.id} className="flex gap-6 p-8 bg-white rounded-3xl border border-navy/5 hover:border-gold/30 transition-all group">
+                    <div className="w-14 h-14 bg-navy/5 text-navy rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-navy group-hover:text-gold transition-all">
+                      <IconComponent className="w-6 h-6" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xl font-bold text-navy">{f.title}</h4>
+                      <p className="text-sm text-slate-500 leading-relaxed font-medium">{f.description}</p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              [
+                { icon: BookOpen, title: "Smart Library", desc: "Rich collection of books and digital learning resources." },
+                { icon: Computer, title: "Computer Lab", desc: "Modern systems with high-speed internet for tech-savviness." },
+                { icon: Trophy, title: "Sports Ground", desc: "Large playground for outdoor physical activities and sports." },
+                { icon: Music, title: "Art & Craft", desc: "Creative environment for artistic expression and imagination." },
+                { icon: HeartPulse, title: "Medical Room", desc: "First aid and health monitoring support for every student." },
+                { icon: ShieldCheck, title: "Transport", desc: "Safe and reliable transportation services across the city." }
+              ].map((f, i) => (
+                <div key={i} className="flex gap-6 p-8 bg-white rounded-3xl border border-navy/5 hover:border-gold/30 transition-all group">
+                  <div className="w-14 h-14 bg-navy/5 text-navy rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-navy group-hover:text-gold transition-all">
+                    <f.icon className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-xl font-bold text-navy">{f.title}</h4>
+                    <p className="text-sm text-slate-500 leading-relaxed font-medium">{f.desc}</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="text-xl font-bold text-navy">{f.title}</h4>
-                  <p className="text-sm text-slate-500 leading-relaxed font-medium">{f.desc}</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>

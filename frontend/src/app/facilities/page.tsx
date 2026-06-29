@@ -1,41 +1,64 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import PublicLayout from "@/components/PublicLayout";
-import { BookOpen, Computer, Trophy, Palette, Bus, HeartPulse } from "lucide-react";
+import { cmsAPI } from "@/lib/api";
+import { safeArray } from "@/lib/apiUtils";
+import * as Icons from "lucide-react";
+
+interface Facility {
+  id: number;
+  title: string;
+  description: string;
+  icon?: string;
+  image?: string;
+}
 
 export default function FacilitiesPage() {
-  const facilities = [
-    { 
-      icon: BookOpen, 
-      title: "Smart Library", 
-      desc: "Our library is a haven for young readers, featuring a rich collection of books, encyclopedias, and digital learning resources to foster a habit of lifelong reading." 
-    },
-    { 
-      icon: Computer, 
-      title: "Computer Lab", 
-      desc: "Equipped with modern systems and high-speed internet, our lab ensures students become tech-savvy and proficient in essential digital skills from an early age." 
-    },
-    { 
-      icon: Trophy, 
-      title: "Sports Ground", 
-      desc: "A large and safe playground for outdoor sports, physical training, and team-building activities, essential for a student's physical well-being." 
-    },
-    { 
-      icon: Palette, 
-      title: "Art & Craft Room", 
-      desc: "A creative learning environment where students explore their imagination through painting, clay modeling, and various craft projects." 
-    },
-    { 
-      icon: Bus, 
-      title: "Transport Facility", 
-      desc: "Safe and reliable school transportation services with GPS tracking and trained staff to ensure the security of every student." 
-    },
-    { 
-      icon: HeartPulse, 
-      title: "Medical Room", 
-      desc: "A dedicated first aid and health monitoring support center with qualified staff to handle minor injuries and regular health check-ups." 
-    }
-  ];
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    cmsAPI.facilities.list()
+      .then((res) => {
+        const data = safeArray<Facility>(res, "Facilities", (msg) => console.warn(msg));
+        setFacilities(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching facilities:", err);
+        setError("Unable to load facilities at this time. Please try again later.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const getIconComponent = (iconName?: string) => {
+    if (!iconName) return Icons.Building2;
+    const IconComponent = (Icons as any)[iconName];
+    return IconComponent || Icons.Building2;
+  };
+
+  if (loading) {
+    return (
+      <PublicLayout>
+        <div className="text-center py-20 space-y-4">
+          <Icons.Building2 className="w-16 h-16 mx-auto text-navy/20 animate-pulse" />
+          <p className="text-slate-500 font-medium">Loading facilities…</p>
+        </div>
+      </PublicLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PublicLayout>
+        <div className="text-center py-20 space-y-4">
+          <Icons.Frown className="w-16 h-16 mx-auto text-navy/20" />
+          <p className="text-slate-500 font-medium">{error}</p>
+        </div>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout>
@@ -49,29 +72,28 @@ export default function FacilitiesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {facilities.map((f, i) => (
-              <div key={i} className="bg-white p-10 rounded-[2.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all group flex flex-col items-center text-center space-y-6">
-                <div className="w-20 h-20 bg-navy rounded-3xl flex items-center justify-center text-gold group-hover:scale-110 transition-transform shadow-lg shadow-navy/10">
-                  <f.icon className="w-10 h-10" />
-                </div>
-                <h3 className="text-2xl font-black text-navy">{f.title}</h3>
-                <p className="text-slate-500 font-medium leading-relaxed text-sm">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-gold p-12 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-gold/20">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-black text-navy">Safety First Environment</h2>
-              <p className="text-navy/60 font-bold uppercase tracking-wider text-xs italic">CCTV Monitoring • 24/7 Security • Fire Safety Certified</p>
+          {facilities.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-slate-500 font-medium">No facilities registered at the moment.</p>
             </div>
-            <div className="w-16 h-16 bg-navy/10 rounded-full flex items-center justify-center text-navy animate-pulse">
-               <Trophy className="w-8 h-8" />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              {facilities.map((f) => {
+                const IconComponent = getIconComponent(f.icon);
+                return (
+                  <div key={f.id} className="bg-white p-10 rounded-[2.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all group flex flex-col items-center text-center space-y-6">
+                    <div className="w-20 h-20 bg-navy rounded-3xl flex items-center justify-center text-gold group-hover:scale-110 transition-transform shadow-lg shadow-navy/10">
+                      <IconComponent className="w-10 h-10" />
+                    </div>
+                    <h3 className="text-2xl font-black text-navy">{f.title}</h3>
+                    <p className="text-slate-500 font-medium leading-relaxed text-sm">
+                      {f.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </PublicLayout>

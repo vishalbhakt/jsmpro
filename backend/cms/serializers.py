@@ -47,7 +47,7 @@ class FacilitySerializer(serializers.ModelSerializer):
 class GalleryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryItem
-        fields = ["id", "title", "image", "caption", "is_featured", "is_published", "created_at"]
+        fields = ["id", "title", "category", "image", "caption", "is_featured", "is_published", "created_at"]
         read_only_fields = ["created_at"]
 
 

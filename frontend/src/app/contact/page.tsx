@@ -8,7 +8,7 @@ import { useToastStore } from "@/store/useToastStore";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ 
-    full_name: "", 
+    name: "", 
     email: "", 
     phone: "", 
     subject: "General Inquiry", 
@@ -21,11 +21,11 @@ export default function ContactPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await cmsAPI.inquiries.create(form);
+      await cmsAPI.contactMessages.create(form);
       addToast("Message sent! We will get back to you shortly.");
-      setForm({ full_name: "", email: "", phone: "", subject: "General Inquiry", message: "" });
+      setForm({ name: "", email: "", phone: "", subject: "General Inquiry", message: "" });
     } catch (err) {
-      console.error("Failed to send inquiry", err);
+      console.error("Failed to send contact message", err);
       addToast("Failed to send message.", "error");
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function ContactPage() {
                   <div className="space-y-2 col-span-2 md:col-span-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Your Full Name</label>
                     <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-bold focus:border-[#d4af37] outline-none transition-all text-[#001f3f]"
-                      value={form.full_name} onChange={e => setForm({...form, full_name: e.target.value})} />
+                      value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
                   </div>
                   <div className="space-y-2 col-span-2 md:col-span-1">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>

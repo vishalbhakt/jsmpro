@@ -8,7 +8,7 @@ import { Frown, BookOpen, GraduationCap, CheckCircle, ArrowRight } from 'lucide-
 // Define the shape of a Course object
 interface Course {
   id: number;
-  name: string;
+  title: string;
   description?: string;
 }
 
@@ -79,7 +79,7 @@ export default function CoursesPage() {
             <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center text-gold mb-8 group-hover:scale-110 transition-transform">
               <GraduationCap className="w-7 h-7" />
             </div>
-            <h3 className="text-2xl font-black text-navy mb-4">{c.name}</h3>
+            <h3 className="text-2xl font-black text-navy mb-4">{c.title}</h3>
             <p className="text-slate-500 font-medium leading-relaxed mb-10 italic">
               {c.description || 'A dedicated program designed for the holistic development of students.'}
             </p>

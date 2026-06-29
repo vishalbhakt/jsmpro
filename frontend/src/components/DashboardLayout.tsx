@@ -85,6 +85,13 @@ const sidebarItems: SidebarItem[] = [
   { icon: Megaphone, label: "Announcements", href: "/dashboard/admin/announcements", roles: ["admin"], category: "Comm." },
   { icon: Bell, label: "Notifications", href: "/dashboard/admin/notifications", roles: ["admin"], category: "Comm." },
 
+  // CMS Modules
+  { icon: Library, label: "Courses", href: "/dashboard/admin/courses", roles: ["admin"], category: "CMS" },
+  { icon: Building2, label: "Facilities", href: "/dashboard/admin/facilities", roles: ["admin"], category: "CMS" },
+  { icon: ImageIcon, label: "Gallery", href: "/dashboard/admin/gallery", roles: ["admin"], category: "CMS" },
+  { icon: Mail, label: "Contact Messages", href: "/dashboard/admin/contact-messages", roles: ["admin"], category: "CMS" },
+  { icon: MessageCircle, label: "Inquiries", href: "/dashboard/admin/enquiries", roles: ["admin"], category: "CMS" },
+
 
   // Teacher Modules
   { icon: Users, label: "Students", href: "/dashboard/teacher/students", roles: ["teacher"], category: "Classroom" },

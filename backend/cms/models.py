@@ -53,6 +53,7 @@ class Facility(models.Model):
 
 class GalleryItem(models.Model):
     title = models.CharField(max_length=160)
+    category = models.CharField(max_length=60, default="events")
     image = models.ImageField(upload_to="gallery/")
     caption = models.CharField(max_length=255, blank=True)
     is_featured = models.BooleanField(default=False)
