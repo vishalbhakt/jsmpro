@@ -7,7 +7,7 @@ from .models import StudentProfile, TeacherProfile, User
 
 class ListUserSerializer(serializers.ModelSerializer):
     """Serializer for the admin users list – includes all displayed fields."""
-    full_name = serializers.CharField(source='full_name', read_only=True)
+    full_name = serializers.CharField(read_only=True)
     role = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
@@ -56,6 +56,7 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
             "email",
             "avatar",
             "phone",
+            "role",
             "employee_id",
             "qualification",
             "designation",
@@ -75,7 +76,7 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
         return list(obj.subjects.values_list('name', flat=True))
 
     def get_assigned_classes(self, obj):
-        return list(obj.class_teacher.all().values_list('name', flat=True))
+        return list(obj.classrooms.all().values_list('name', flat=True))
 
     def get_experience(self, obj):
         if obj.joined_on:
@@ -87,10 +88,13 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
 
     def get_account_info(self, obj):
         return {
-            "email": obj.email,
-            "phone": obj.phone,
+            "email": obj.user.email,
+            "phone": obj.user.phone,
             "avatar": obj.user.avatar.url if obj.user.avatar else None,
         }
+
+    def get_role(self, obj):
+        return obj.user.get_role_display()
 
 class StudentProfileSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.full_name", read_only=True)

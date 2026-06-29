@@ -137,7 +137,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
 class UserViewSet(viewsets.ModelViewSet):
-
+    queryset = User.objects.all().order_by("-created_at")
     pagination_class = StandardResultsSetPagination
 
     def get_serializer_class(self):

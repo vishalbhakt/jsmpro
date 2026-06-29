@@ -75,3 +75,21 @@ class StudentProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.full_name} ({self.admission_number})"
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.role == User.Roles.STUDENT:
+            StudentProfile.objects.get_or_create(
+                user=instance,
+                defaults={"admission_number": f"ADM{instance.id:05d}"}
+            )
+        elif instance.role == User.Roles.TEACHER:
+            TeacherProfile.objects.get_or_create(
+                user=instance,
+                defaults={"employee_id": f"TEA{instance.id:05d}"}
+            )
