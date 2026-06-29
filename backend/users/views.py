@@ -155,6 +155,23 @@ class ChangePasswordView(APIView):
         return Response({"status": "Password changed successfully."})
 
 
+class PublicStatsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        from users.models import User
+        from cms.models import Course
+        student_count = User.objects.filter(role=User.Roles.STUDENT).count()
+        teacher_count = User.objects.filter(role=User.Roles.TEACHER).count()
+        course_count = Course.objects.filter(status='published').count()
+        return Response({
+            "students": student_count,
+            "teachers": teacher_count,
+            "courses": course_count,
+            "excellence_years": 12
+        })
+
+
 from rest_framework.decorators import action
 
 from rest_framework.pagination import PageNumberPagination

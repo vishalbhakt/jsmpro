@@ -9,7 +9,11 @@ import { Frown, BookOpen, GraduationCap, CheckCircle, ArrowRight } from 'lucide-
 interface Course {
   id: number;
   title: string;
+  code?: string;
   description?: string;
+  grade_range?: string;
+  duration?: string;
+  image?: string;
 }
 
 export default function CoursesPage() {
@@ -74,21 +78,42 @@ export default function CoursesPage() {
         {courses.map((c) => (
           <div
             key={c.id}
-            className="bg-white p-10 rounded-[3rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all flex flex-col group"
+            className="bg-white p-8 rounded-[3.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all flex flex-col group overflow-hidden"
           >
-            <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center text-gold mb-8 group-hover:scale-110 transition-transform">
-              <GraduationCap className="w-7 h-7" />
+            {c.image ? (
+              <img src={c.image} alt={c.title} className="w-full h-48 object-cover rounded-3xl mb-8 group-hover:scale-105 transition-transform duration-500" />
+            ) : (
+              <div className="w-full h-48 bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center text-gold mb-8 group-hover:scale-105 transition-transform duration-500 shadow-inner">
+                <GraduationCap className="w-16 h-16 text-navy/30" />
+              </div>
+            )}
+            
+            <div className="space-y-4 flex-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] bg-gold/10 text-gold border border-gold/20 px-3 py-1 rounded-full uppercase tracking-widest font-black">
+                  {c.code || "Course"}
+                </span>
+                <span className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-none">
+                  {c.grade_range || "All Grades"}
+                </span>
+              </div>
+              
+              <h3 className="text-2xl font-black text-navy leading-tight">{c.title}</h3>
+              <p className="text-slate-500 font-medium leading-relaxed italic text-sm">
+                {c.description || 'A dedicated program designed for the holistic development of students.'}
+              </p>
             </div>
-            <h3 className="text-2xl font-black text-navy mb-4">{c.title}</h3>
-            <p className="text-slate-500 font-medium leading-relaxed mb-10 italic">
-              {c.description || 'A dedicated program designed for the holistic development of students.'}
-            </p>
-            <div className="mt-auto space-y-4">
-              <div className="flex items-center gap-3 text-sm font-bold text-navy">
-                <CheckCircle className="w-4 h-4 text-emerald-500" /> Comprehensive Subjects
+
+            <div className="mt-8 pt-6 border-t border-slate-100 space-y-4">
+              <div className="flex items-center justify-between text-xs font-bold text-navy">
+                <span className="text-slate-400 uppercase tracking-widest">Duration</span>
+                <span>{c.duration || "Full Term"}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-bold text-navy pt-2">
+                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Comprehensive Syllabus
               </div>
               <div className="flex items-center gap-3 text-sm font-bold text-navy">
-                <CheckCircle className="w-4 h-4 text-emerald-500" /> Personalized Attention
+                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Expert Faculty Support
               </div>
             </div>
           </div>

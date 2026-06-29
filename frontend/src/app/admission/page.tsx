@@ -2,7 +2,7 @@
 
 import PublicLayout from "@/components/PublicLayout";
 import { useState } from "react";
-import api from "@/lib/api";
+import { cmsAPI } from "@/lib/api";
 import { useToastStore } from "@/store/useToastStore";
 import { FileText, CheckCircle, Send, AlertCircle, Info } from "lucide-react";
 
@@ -22,10 +22,19 @@ export default function AdmissionPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post("/enquiries/", form);
+      const payload = {
+        student_name: form.student_name,
+        guardian_name: form.parent_name,
+        phone: form.phone,
+        email: form.email,
+        preferred_class: form.target_class,
+        message: form.message
+      };
+      await cmsAPI.inquiries.create(payload);
       addToast("Inquiry submitted successfully! We will call you soon.");
       setForm({ student_name: "", parent_name: "", phone: "", email: "", target_class: "", message: "" });
-    } catch {
+    } catch (err) {
+      console.error(err);
       addToast("Failed to submit inquiry. Please try again.", "error");
     } finally {
       setLoading(false);

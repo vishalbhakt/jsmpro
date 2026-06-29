@@ -16,6 +16,7 @@ from users.views import (
     ChangePasswordView,
     CurrentUserView,
     DashboardStatsView,
+    PublicStatsView,
     RegisterView,
     StudentProfileViewSet,
     TeacherProfileViewSet,
@@ -61,6 +62,7 @@ urlpatterns = [
     path("api/auth/me/", CurrentUserView.as_view(), name="current_user"),
     path("api/auth/change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("api/dashboard/", DashboardStatsView.as_view(), name="dashboard_stats"),
+    path("api/public-stats/", PublicStatsView.as_view(), name="public_stats"),
     path("api/", include(router.urls)),
 ]
 

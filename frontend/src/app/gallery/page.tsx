@@ -86,10 +86,11 @@ export default function GalleryPage() {
                   className="group relative aspect-square bg-white rounded-[2.5rem] overflow-hidden border border-[#001f3f]/5 cursor-pointer shadow-lg hover:shadow-2xl transition-all"
                 >
                   <img src={img.image} alt={img.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-[#001f3f]/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-8 text-center">
+                  <div className="absolute inset-0 bg-[#001f3f]/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
                     <Maximize2 className="w-8 h-8 text-[#d4af37] mb-4 transform translate-y-4 group-hover:translate-y-0 transition-transform" />
                     <h4 className="text-white font-black text-lg">{img.title}</h4>
-                    <p className="text-[#d4af37] text-xs font-bold uppercase tracking-widest mt-1">{img.category}</p>
+                    {img.caption && <p className="text-white/70 text-xs mt-2 line-clamp-2 px-4 font-medium italic">{img.caption}</p>}
+                    <p className="text-[#d4af37] text-xs font-bold uppercase tracking-widest mt-2">{img.category}</p>
                   </div>
                 </motion.div>
               ))}
@@ -116,9 +117,20 @@ export default function GalleryPage() {
           >
             <div className="max-w-5xl w-full space-y-6">
               <img src={selectedImage.image} alt={selectedImage.title} className="w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl" />
-              <div className="text-center space-y-2">
+              <div className="text-center space-y-4">
                 <h3 className="text-3xl font-black text-white">{selectedImage.title}</h3>
-                <p className="text-[#d4af37] font-black uppercase tracking-widest text-sm">{selectedImage.category}</p>
+                {selectedImage.caption && (
+                  <p className="text-white/70 max-w-xl mx-auto text-sm font-medium italic">
+                    {selectedImage.caption}
+                  </p>
+                )}
+                <div className="flex justify-center items-center gap-4 text-xs font-black uppercase tracking-widest">
+                  <span className="text-[#d4af37]">{selectedImage.category}</span>
+                  <span className="text-white/40">•</span>
+                  <span className="text-white/60">
+                    {selectedImage.created_at ? new Date(selectedImage.created_at).toLocaleDateString() : "Just now"}
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>

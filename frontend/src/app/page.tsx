@@ -13,26 +13,57 @@ import {
   Music,
   HeartPulse,
   Computer,
-  Trophy
+  Trophy,
+  CheckCircle,
+  Building2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { cmsAPI } from "@/lib/api";
+import { cmsAPI, communicationAPI, publicAPI } from "@/lib/api";
 import { safeArray } from "@/lib/apiUtils";
 import * as Icons from "lucide-react";
 
 export default function Home() {
   const [facilities, setFacilities] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [gallery, setGallery] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    students: 500,
+    teachers: 45,
+    courses: 12,
+    excellence_years: 12
+  });
 
   useEffect(() => {
+    // 1. Fetch facilities
     cmsAPI.facilities.list()
+      .then((res) => setFacilities(safeArray(res, "Facilities").slice(0, 6)))
+      .catch((err) => console.error("Facilities error", err));
+
+    // 2. Fetch courses
+    cmsAPI.courses.list()
+      .then((res) => setCourses(safeArray(res, "Courses").slice(0, 3)))
+      .catch((err) => console.error("Courses error", err));
+
+    // 3. Fetch gallery
+    cmsAPI.gallery.list()
+      .then((res) => setGallery(safeArray(res, "Gallery").slice(0, 6)))
+      .catch((err) => console.error("Gallery error", err));
+
+    // 4. Fetch announcements
+    communicationAPI.announcements.list()
+      .then((res) => setAnnouncements(safeArray(res, "Announcements").slice(0, 3)))
+      .catch((err) => console.error("Announcements error", err));
+
+    // 5. Fetch public stats
+    publicAPI.stats()
       .then((res) => {
-        const data = safeArray(res, "Facilities");
-        setFacilities(data);
+        if (res.data) {
+          setStats(res.data);
+        }
       })
-      .catch((err) => {
-        console.error("Error fetching facilities:", err);
-      });
+      .catch((err) => console.error("Stats error", err));
   }, []);
 
   const getIconComponent = (iconName?: string) => {
@@ -40,6 +71,7 @@ export default function Home() {
     const IconComponent = (Icons as any)[iconName];
     return IconComponent || Icons.Building2;
   };
+
   return (
     <div className="bg-pearl selection:bg-gold/30">
       <Navbar />
@@ -87,7 +119,7 @@ export default function Home() {
                   <Users className="w-6 h-6" />
                </div>
                <div>
-                  <div className="text-2xl font-black text-navy leading-none">500+</div>
+                  <div className="text-2xl font-black text-navy leading-none">{stats.students}+</div>
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Students</div>
                </div>
             </div>
@@ -96,7 +128,7 @@ export default function Home() {
                   <Trophy className="w-6 h-6" />
                </div>
                <div>
-                  <div className="text-2xl font-black text-navy leading-none">10+ Years</div>
+                  <div className="text-2xl font-black text-navy leading-none">{stats.excellence_years}+ Years</div>
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Excellence</div>
                </div>
             </div>
@@ -160,6 +192,44 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Courses */}
+      <section className="py-32 bg-pearl">
+        <div className="max-w-7xl mx-auto px-6 space-y-16">
+          <div className="text-center space-y-4">
+            <div className="text-gold font-black uppercase tracking-[0.2em] text-xs">Our Curriculum</div>
+            <h2 className="text-5xl font-black text-navy leading-tight">Featured Courses</h2>
+            <p className="text-lg text-slate-500 max-w-xl mx-auto font-medium">Explore some of our key academic programs designed for holistic growth.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {courses.length > 0 ? (
+              courses.map((c) => (
+                <div key={c.id} className="bg-white p-8 rounded-[2.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all flex flex-col group overflow-hidden">
+                  {c.image ? (
+                    <img src={c.image} alt={c.title} className="w-full h-44 object-cover rounded-3xl mb-6 group-hover:scale-105 transition-all duration-500" />
+                  ) : (
+                    <div className="w-full h-44 bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-center text-gold mb-6">
+                      <GraduationCap className="w-12 h-12 text-navy/30" />
+                    </div>
+                  )}
+                  <div className="space-y-2 flex-1">
+                    <span className="text-[10px] bg-gold/10 text-gold border border-gold/20 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block">{c.code || "Course"}</span>
+                    <h3 className="text-xl font-black text-navy">{c.title}</h3>
+                    <p className="text-slate-500 text-xs font-medium line-clamp-2 italic">{c.description}</p>
+                  </div>
+                  <div className="border-t border-slate-100 mt-6 pt-4 flex justify-between text-xs font-bold text-navy">
+                    <span className="text-slate-400">Duration</span>
+                    <span>{c.duration || "1 Year"}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-slate-400 font-medium italic py-10">No featured courses available at this time.</div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Academic Levels */}
       <section className="py-32 bg-navy relative">
         <div className="max-w-7xl mx-auto px-6 text-center space-y-12 relative z-10">
@@ -185,6 +255,7 @@ export default function Home() {
             ))}
           </div>
         </div>
+        <div className="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[150px] -translate-x-1/2 -translate-y-1/2"></div>
       </section>
 
       {/* Facilities */}
@@ -203,13 +274,24 @@ export default function Home() {
               facilities.map((f) => {
                 const IconComponent = getIconComponent(f.icon);
                 return (
-                  <div key={f.id} className="flex gap-6 p-8 bg-white rounded-3xl border border-navy/5 hover:border-gold/30 transition-all group">
-                    <div className="w-14 h-14 bg-navy/5 text-navy rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-navy group-hover:text-gold transition-all">
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-xl font-bold text-navy">{f.title}</h4>
-                      <p className="text-sm text-slate-500 leading-relaxed font-medium">{f.description}</p>
+                  <div key={f.id} className="bg-white rounded-[2.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all group flex flex-col overflow-hidden">
+                    {f.image ? (
+                      <div className="relative h-48 w-full shrink-0 overflow-hidden rounded-[2rem]">
+                        <img src={f.image} alt={f.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-4 left-4 w-10 h-10 bg-navy text-gold rounded-xl flex items-center justify-center shadow-lg border border-white/10">
+                          <IconComponent className="w-5 h-5" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-48 w-full bg-slate-50 border-b border-slate-100 flex items-center justify-center text-gold shrink-0 group-hover:scale-105 transition-transform duration-500 shadow-inner rounded-[2rem]">
+                        <IconComponent className="w-12 h-12 text-navy/30" />
+                      </div>
+                    )}
+                    <div className="p-6 flex-1 flex flex-col space-y-2">
+                      <h4 className="text-xl font-bold text-navy leading-tight">{f.title}</h4>
+                      <p className="text-sm text-slate-500 leading-relaxed font-medium flex-1 line-clamp-2">
+                        {f.description}
+                      </p>
                     </div>
                   </div>
                 );
@@ -218,10 +300,7 @@ export default function Home() {
               [
                 { icon: BookOpen, title: "Smart Library", desc: "Rich collection of books and digital learning resources." },
                 { icon: Computer, title: "Computer Lab", desc: "Modern systems with high-speed internet for tech-savviness." },
-                { icon: Trophy, title: "Sports Ground", desc: "Large playground for outdoor physical activities and sports." },
-                { icon: Music, title: "Art & Craft", desc: "Creative environment for artistic expression and imagination." },
-                { icon: HeartPulse, title: "Medical Room", desc: "First aid and health monitoring support for every student." },
-                { icon: ShieldCheck, title: "Transport", desc: "Safe and reliable transportation services across the city." }
+                { icon: Trophy, title: "Sports Ground", desc: "Large playground for outdoor physical activities and sports." }
               ].map((f, i) => (
                 <div key={i} className="flex gap-6 p-8 bg-white rounded-3xl border border-navy/5 hover:border-gold/30 transition-all group">
                   <div className="w-14 h-14 bg-navy/5 text-navy rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-navy group-hover:text-gold transition-all">
@@ -236,6 +315,66 @@ export default function Home() {
             )}
           </div>
         </div>
+      </section>
+
+      {/* Latest Announcements */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6 space-y-16">
+          <div className="text-center space-y-4">
+            <div className="text-gold font-black uppercase tracking-[0.2em] text-xs">Stay Informed</div>
+            <h2 className="text-5xl font-black text-navy leading-tight">Latest Announcements</h2>
+            <p className="text-lg text-slate-500 max-w-xl mx-auto font-medium">Keep track of school activities, news, and circulars.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {announcements.length > 0 ? (
+              announcements.map((a) => (
+                <div key={a.id} className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 hover:border-gold/30 transition-all flex flex-col group relative">
+                  <div className="space-y-4 flex-1">
+                    <span className="text-[9px] bg-navy text-gold border border-navy/10 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block">
+                      {a.category || "Notice"}
+                    </span>
+                    <h3 className="text-lg font-black text-navy line-clamp-2">{a.title}</h3>
+                    <p className="text-slate-500 text-xs font-medium line-clamp-3 leading-relaxed">{a.content}</p>
+                  </div>
+                  <div className="border-t border-slate-200/50 mt-6 pt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                    {a.created_at ? new Date(a.created_at).toLocaleDateString() : "Recent"}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-slate-400 font-medium italic py-10">No recent announcements available.</div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Campus Gallery */}
+      <section className="py-32 bg-navy relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 space-y-16 relative z-10">
+          <div className="text-center space-y-4">
+            <div className="text-gold font-black uppercase tracking-[0.2em] text-xs">Life at JSM</div>
+            <h2 className="text-5xl font-black text-white leading-tight">Campus Gallery</h2>
+            <p className="text-white/40 max-w-xl mx-auto font-medium">Glimpses of activities, celebrations, and achievements.</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {gallery.length > 0 ? (
+              gallery.map((img) => (
+                <Link href="/gallery" key={img.id} className="group relative aspect-square bg-white/5 rounded-3xl overflow-hidden border border-white/10 cursor-pointer shadow-lg">
+                  <img src={img.image} alt={img.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
+                    <h4 className="text-white font-black text-base">{img.title}</h4>
+                    <span className="text-gold text-[10px] font-black uppercase tracking-widest mt-1">{img.category}</span>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-white/30 font-medium italic py-10">No gallery images uploaded yet.</div>
+            )}
+          </div>
+        </div>
+        <div className="absolute top-1/2 left-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[150px] -translate-x-1/2 -translate-y-1/2"></div>
       </section>
 
       {/* Call to Action */}

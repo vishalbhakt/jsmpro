@@ -81,14 +81,25 @@ export default function FacilitiesPage() {
               {facilities.map((f) => {
                 const IconComponent = getIconComponent(f.icon);
                 return (
-                  <div key={f.id} className="bg-white p-10 rounded-[2.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all group flex flex-col items-center text-center space-y-6">
-                    <div className="w-20 h-20 bg-navy rounded-3xl flex items-center justify-center text-gold group-hover:scale-110 transition-transform shadow-lg shadow-navy/10">
-                      <IconComponent className="w-10 h-10" />
+                  <div key={f.id} className="bg-white rounded-[3.5rem] border border-navy/5 shadow-xl hover:border-gold/30 transition-all group flex flex-col overflow-hidden">
+                    {f.image ? (
+                      <div className="relative h-56 w-full shrink-0 overflow-hidden rounded-[2.5rem]">
+                        <img src={f.image} alt={f.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-6 left-6 w-12 h-12 bg-navy text-gold rounded-2xl flex items-center justify-center shadow-lg border border-white/10">
+                          <IconComponent className="w-6 h-6" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-56 w-full bg-slate-50 border-b border-slate-100 flex items-center justify-center text-gold shrink-0 group-hover:scale-105 transition-transform duration-500 shadow-inner rounded-[2.5rem]">
+                        <IconComponent className="w-16 h-16 text-navy/30" />
+                      </div>
+                    )}
+                    <div className="p-8 flex-1 flex flex-col space-y-4">
+                      <h3 className="text-2xl font-black text-navy leading-tight">{f.title}</h3>
+                      <p className="text-slate-500 font-medium leading-relaxed text-sm flex-1">
+                        {f.description}
+                      </p>
                     </div>
-                    <h3 className="text-2xl font-black text-navy">{f.title}</h3>
-                    <p className="text-slate-500 font-medium leading-relaxed text-sm">
-                      {f.description}
-                    </p>
                   </div>
                 );
               })}

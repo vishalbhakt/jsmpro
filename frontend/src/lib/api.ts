@@ -112,6 +112,10 @@ export const communicationAPI = {
   activityLogs: crud('/activity-logs'),
 };
 
+export const publicAPI = {
+  stats: () => api.get('/public-stats/'),
+};
+
 export const cmsAPI = {
   pages: crud('/pages'),
   courses: crud('/courses'),
