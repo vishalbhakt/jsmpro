@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from academics.models import ClassRoom
 from .models import Assignment, AssignmentSubmission, Note, Quiz, VideoLecture
 
 
@@ -7,12 +7,20 @@ class ResourceSerializerMixin(serializers.ModelSerializer):
     classroom_name = serializers.SerializerMethodField()
     subject_name = serializers.CharField(source="subject.name", read_only=True)
     teacher_name = serializers.SerializerMethodField()
+    classroom = serializers.PrimaryKeyRelatedField(
+        queryset=ClassRoom.objects.all(), required=False, allow_null=True
+    )
 
     def get_classroom_name(self, obj):
-        return str(obj.classroom)
+        return str(obj.classroom) if obj.classroom else None
 
     def get_teacher_name(self, obj):
         return obj.teacher.user.full_name if obj.teacher else None
+
+    def validate(self, attrs):
+        if not attrs.get("classroom") and attrs.get("subject"):
+            attrs["classroom"] = attrs["subject"].classroom
+        return attrs
 
 
 class NoteSerializer(ResourceSerializerMixin):

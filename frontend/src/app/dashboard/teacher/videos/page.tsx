@@ -7,6 +7,7 @@ import { learningAPI, subjectsAPI } from "@/lib/api";
 import { 
   Plus, 
   Trash2, 
+  Edit,
   Video, 
   Send,
   Play,
@@ -22,6 +23,7 @@ export default function TeacherVideos() {
   const [subjects, setSubjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", subject: "", video_url: "" });
   const [file, setFile] = useState<File | null>(null);
@@ -34,8 +36,8 @@ export default function TeacherVideos() {
         learningAPI.videos.list(),
         subjectsAPI.list()
       ]);
-      setItems(itemRes.data);
-      setSubjects(subRes.data);
+      setItems(itemRes.data || []);
+      setSubjects(subRes.data || []);
     } catch (err) {
       console.error("Failed to fetch videos", err);
       addToast("Failed to sync video library", "error");
@@ -59,15 +61,21 @@ export default function TeacherVideos() {
     if (file) fd.append("video_file", file);
 
     try {
-      await learningAPI.videos.create(fd);
+      if (editingVideo) {
+        await learningAPI.videos.update(editingVideo.id, fd);
+        addToast("Video lesson updated successfully!");
+      } else {
+        await learningAPI.videos.create(fd);
+        addToast("Video lesson published successfully!");
+      }
       setIsAdding(false);
+      setEditingVideo(null);
       setForm({ title: "", description: "", subject: "", video_url: "" });
       setFile(null);
-      addToast("Video lesson published successfully!");
       fetchData();
     } catch (err: any) {
-      console.error("Failed to publish video", err);
-      const msg = err.response?.data?.detail || err.response?.data?.error || "Failed to publish video";
+      console.error("Failed to save video", err);
+      const msg = err.response?.data?.detail || err.response?.data?.error || "Failed to save video";
       addToast(msg, "error");
     } finally {
       setSaving(false);
@@ -100,17 +108,25 @@ export default function TeacherVideos() {
             </p>
           </div>
           <button 
-            onClick={() => setIsAdding(!isAdding)}
+            onClick={() => {
+              if (isAdding || editingVideo) {
+                setIsAdding(false);
+                setEditingVideo(null);
+                setForm({ title: "", description: "", subject: "", video_url: "" });
+              } else {
+                setIsAdding(true);
+              }
+            }}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
-              isAdding ? "bg-slate-100 text-slate-500" : "bg-[#d4af37] text-white shadow-xl shadow-[#d4af37]/20"
+              (isAdding || editingVideo) ? "bg-slate-100 text-slate-500" : "bg-[#d4af37] text-white shadow-xl shadow-[#d4af37]/20"
             }`}
           >
-            {isAdding ? "Cancel" : <><Plus className="w-4 h-4" /> Add Lesson</>}
+            {(isAdding || editingVideo) ? "Cancel" : <><Plus className="w-4 h-4" /> Add Lesson</>}
           </button>
         </div>
 
         <AnimatePresence>
-          {isAdding && (
+          {(isAdding || editingVideo) && (
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -146,7 +162,7 @@ export default function TeacherVideos() {
                 </div>
                 <div className="col-span-2 space-y-2 text-center py-4 border-2 border-dashed border-[#001f3f]/5 rounded-3xl bg-slate-50">
                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">— OR —</p>
-                   <label className="text-[10px] font-black uppercase tracking-widest text-[#001f3f] bg-[#d4af37] px-6 py-2 rounded-lg cursor-pointer hover:bg-opacity-90 transition-all">Upload MP4 File</label>
+                   <label className="text-[10px] font-black uppercase tracking-widest text-[#001f3f] bg-[#d4af37] px-6 py-2 rounded-lg cursor-pointer hover:bg-opacity-90 transition-all">Upload MP4 File {editingVideo && "(Leave blank to keep current)"}</label>
                    <input type="file" className="hidden" accept="video/*"
                     onChange={e => setFile(e.target.files?.[0] || null)} />
                    {file && <div className="mt-4 text-xs font-bold text-emerald-500">Selected: {file.name}</div>}
@@ -157,9 +173,9 @@ export default function TeacherVideos() {
                   className="col-span-2 bg-[#001f3f] text-white py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-[#001f3f]/20 uppercase tracking-[0.2em] font-black text-xs disabled:opacity-70"
                 >
                   {saving ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> Publishing Video...</>
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
                   ) : (
-                    <><Video className="w-5 h-5" /> Publish Video Lesson</>
+                    <><Video className="w-5 h-5" /> {editingVideo ? "Save Changes" : "Publish Video Lesson"}</>
                   )}
                 </button>
               </form>
@@ -196,7 +212,24 @@ export default function TeacherVideos() {
                       <a href={item.video_url || item.video_file} target="_blank" className="flex items-center gap-2 text-[10px] font-black text-[#001f3f] uppercase tracking-widest hover:text-[#d4af37] transition-all">
                          <ExternalLink className="w-4 h-4" /> Watch Now
                       </a>
-                      <button onClick={() => handleDelete(item.id)} className="text-rose-300 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                      <div className="flex items-center gap-2">
+                         <button 
+                          onClick={() => {
+                            setEditingVideo(item);
+                            setForm({
+                              title: item.title || "",
+                              description: item.description || "",
+                              subject: item.subject || "",
+                              video_url: item.video_url || ""
+                            });
+                          }}
+                          className="p-2 text-slate-400 hover:text-[#d4af37] transition-colors"
+                          title="Edit Lesson"
+                         >
+                            <Edit className="w-4 h-4" />
+                         </button>
+                         <button onClick={() => handleDelete(item.id)} className="p-2 text-rose-300 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                    </div>
                 </div>
               </div>

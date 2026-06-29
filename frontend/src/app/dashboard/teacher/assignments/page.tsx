@@ -58,8 +58,8 @@ export default function TeacherAssignments() {
     fd.append("title", form.title);
     fd.append("description", form.description);
     fd.append("subject", form.subject);
-    fd.append("due_date", form.due_date);
-    if (file) fd.append("file", file);
+    fd.append("due_at", form.due_date);
+    if (file) fd.append("attachment", file);
 
     try {
       await learningAPI.assignments.create(fd);
@@ -70,7 +70,14 @@ export default function TeacherAssignments() {
       fetchData();
     } catch (err: any) {
       console.error("Failed to publish assignment", err);
-      const msg = err.response?.data?.detail || err.response?.data?.error || "Failed to publish assignment";
+      let msg = "Failed to publish assignment";
+      if (err.response?.data) {
+        const data = err.response.data;
+        if (typeof data === "string") msg = data;
+        else if (typeof data === "object") {
+          msg = Object.entries(data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join(" | ");
+        }
+      }
       addToast(msg, "error");
     } finally {
       setSaving(false);

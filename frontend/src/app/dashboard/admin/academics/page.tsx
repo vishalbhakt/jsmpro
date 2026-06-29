@@ -3,7 +3,10 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useEffect, useState } from "react";
-import { classesAPI, subjectsAPI } from "@/lib/api";
+import { fetchList } from "@/lib/apiUtils";
+
+// ... (rest of imports unchanged)
+
 import { 
   GraduationCap, 
   BookOpen, 
@@ -33,15 +36,15 @@ export default function AdminAcademics() {
 
   const fetchData = async () => {
     try {
-      const [cRes, sRes] = await Promise.all([
-        classesAPI.list(),
-        subjectsAPI.list()
+      const [cList, sList] = await Promise.all([
+        fetchList(classesAPI.list(), 'Classes', addToast),
+        fetchList(subjectsAPI.list(), 'Subjects', addToast)
       ]);
-      setClasses(cRes.data);
-      setSubjects(sRes.data);
+      setClasses(cList);
+      setSubjects(sList);
     } catch (err) {
-      console.error("Failed to fetch academic data", err);
-      addToast("Failed to fetch academic data", "error");
+      console.error('Failed to fetch academic data', err);
+      addToast(err.response?.data?.detail || 'Failed to fetch academic data', 'error');
     } finally {
       setLoading(false);
     }
@@ -91,7 +94,7 @@ export default function AdminAcademics() {
     }
   };
 
-  if (!user) return null;
+// Auth guard removed; DashboardLayout handles authentication
 
   return (
     <DashboardLayout>

@@ -1,65 +1,97 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { create } from 'zustand';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertCircle, X } from 'lucide-react';
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface Toast {
+interface ToastMessage {
   id: string;
-  message: string;
-  type: 'success' | 'error';
+  title: string;
+  description?: string;
+  type?: "success" | "error" | "info" | "warning";
+  duration?: number; // ms
 }
 
-interface ToastState {
-  toasts: Toast[];
-  addToast: (message: string, type?: 'success' | 'error') => void;
-  removeToast: (id: string) => void;
+interface ToastContextProps {
+  showToast: (msg: Omit<ToastMessage, "id">) => void;
 }
 
-export const useToastStore = create<ToastState>((set) => ({
-  toasts: [],
-  addToast: (message, type = 'success') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
-    setTimeout(() => {
-      set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
-    }, 5000);
-  },
-  removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
-}));
+const ToastContext = createContext<ToastContextProps | undefined>(undefined);
 
-export function ToastContainer() {
-  const { toasts, removeToast } = useToastStore();
-  const [mounted, setMounted] = useState(false);
+/** Utility to generate short unique IDs */
+const genId = () => Math.random().toString(36).substring(2, 9);
 
-  useEffect(() => setMounted(true), []);
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  if (!mounted) return null;
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const showToast = useCallback((msg: Omit<ToastMessage, "id">) => {
+    const id = genId();
+    const toast: ToastMessage = { id, ...msg };
+    setToasts((prev) => [...prev, toast]);
+    const timeout = msg.duration ?? 4000;
+    setTimeout(() => removeToast(id), timeout);
+  }, [removeToast]);
 
   return (
-    <div className="fixed bottom-8 right-8 z-[100] space-y-4 flex flex-col items-end pointer-events-none">
-      <AnimatePresence>
-        {toasts.map((toast) => (
-          <motion.div
-            key={toast.id}
-            initial={{ opacity: 0, x: 20, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.9 }}
-            className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border pointer-events-auto ${
-              toast.type === 'success' 
-                ? 'bg-white border-emerald-100 text-emerald-600' 
-                : 'bg-white border-red-100 text-red-600'
-            }`}
-          >
-            {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-            <span className="font-bold text-sm">{toast.message}</span>
-            <button onClick={() => removeToast(toast.id)} className="ml-2 text-slate-300 hover:text-slate-500 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+      {/* Toast Container */}
+      <div className="fixed inset-0 flex items-end justify-end p-6 pointer-events-none z-50">
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, translateY: 20 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              exit={{ opacity: 0, translateY: 20 }}
+              transition={{ duration: 0.2 }}
+              className="max-w-xs w-full mb-4 pointer-events-auto"
+            >
+              <div
+                className={`rounded-xl shadow-lg p-4 ${
+                  toast.type === "success"
+                    ? "bg-green-600 text-white"
+                    : toast.type === "error"
+                    ? "bg-red-600 text-white"
+                    : toast.type === "warning"
+                    ? "bg-amber-600 text-white"
+                    : "bg-slate-800 text-white"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-lg">{toast.title}</h4>
+                  <button
+                    onClick={() => removeToast(toast.id)}
+                    className="ml-2 text-sm opacity-70 hover:opacity-100"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {toast.description && (
+                  <p className="mt-1 text-sm opacity-90">{toast.description}</p>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </ToastContext.Provider>
   );
+}
+
+/** Hook to trigger toasts anywhere in the app */
+export function useToast() {
+  const ctx = useContext(ToastContext);
+  if (!ctx) {
+    throw new Error("useToast must be used within a ToastProvider");
+  }
+  return ctx.showToast;
+}
+
+/** Simple wrapper component for convenience */
+export function Toast({ children }: { children: ReactNode }) {
+  return <ToastProvider>{children}</ToastProvider>;
 }

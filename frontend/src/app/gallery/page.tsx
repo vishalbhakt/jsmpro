@@ -3,12 +3,14 @@
 import PublicLayout from "@/components/PublicLayout";
 import { useEffect, useState } from "react";
 import { cmsAPI } from "@/lib/api";
-import { Camera, Maximize2 } from "lucide-react";
+import { fetchList } from "@/lib/apiUtils";
+import { Camera, Maximize2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function GalleryPage() {
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("All");
   const [selectedImage, setSelectedImage] = useState<any>(null);
 
@@ -17,10 +19,13 @@ export default function GalleryPage() {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const res = await cmsAPI.gallery.list();
-        setImages(res.data);
+        setLoading(true);
+        setError(null);
+        const list = await fetchList(cmsAPI.gallery.list(), "Gallery");
+        setImages(list);
       } catch (err) {
         console.error("Gallery fetch failed", err);
+        setError("Failed to load gallery images. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -28,9 +33,7 @@ export default function GalleryPage() {
     fetchGallery();
   }, []);
 
-  const filteredImages = filter === "All" 
-    ? images 
-    : images.filter(img => img.category?.toLowerCase() === filter.toLowerCase());
+  const filteredImages = filter === "All" ? images : images.filter(img => img.category?.toLowerCase() === filter.toLowerCase());
 
   return (
     <PublicLayout>
@@ -47,7 +50,7 @@ export default function GalleryPage() {
           {/* Filters */}
           <div className="flex flex-wrap justify-center gap-3">
             {categories.map(cat => (
-              <button 
+              <button
                 key={cat}
                 onClick={() => setFilter(cat)}
                 className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all capitalize ${
@@ -62,16 +65,23 @@ export default function GalleryPage() {
           {/* Grid */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-               {[1,2,3,4,5,6].map(i => <div key={i} className="aspect-square bg-white rounded-3xl animate-pulse border border-[#001f3f]/5"></div>)}
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="aspect-square bg-white rounded-3xl animate-pulse border border-[#001f3f]/5" />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-20 bg-white rounded-3xl border border-red-100 shadow-sm">
+              <AlertCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
+              <p className="text-red-500 font-bold text-lg">{error}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredImages.map((img, i) => (
-                <motion.div 
+                <motion.div
                   layout
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  key={img.id} 
+                  key={img.id}
                   onClick={() => setSelectedImage(img)}
                   className="group relative aspect-square bg-white rounded-[2.5rem] overflow-hidden border border-[#001f3f]/5 cursor-pointer shadow-lg hover:shadow-2xl transition-all"
                 >
@@ -85,8 +95,8 @@ export default function GalleryPage() {
               ))}
               {!filteredImages.length && (
                 <div className="col-span-full py-32 text-center text-slate-400 font-medium italic">
-                   <Camera className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                   No images found in this category yet.
+                  <Camera className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                  No images found in this category yet.
                 </div>
               )}
             </div>
@@ -97,7 +107,7 @@ export default function GalleryPage() {
       {/* Lightbox */}
       <AnimatePresence>
         {selectedImage && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

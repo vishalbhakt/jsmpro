@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { ToastContainer } from "@/components/Toast";
+import { Toast } from "@/components/Toast";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const setHydrated = useAuthStore(s => s.setHydrated);
@@ -12,9 +12,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }, [setHydrated]);
 
   return (
-    <>
-      {children}
-      <ToastContainer />
-    </>
+    <Toast>
+        {children}
+      </Toast>
   );
 }

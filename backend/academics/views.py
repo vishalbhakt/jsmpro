@@ -64,7 +64,12 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         teacher = getattr(self.request.user, "teacher_profile", None)
-        serializer.save(created_by=teacher or serializer.validated_data.get("created_by"))
+        subject = serializer.validated_data.get("subject")
+        classroom = subject.classroom if subject else None
+        serializer.save(
+            created_by=teacher or serializer.validated_data.get("created_by"),
+            classroom=classroom
+        )
 
 
 class ResultViewSet(viewsets.ModelViewSet):

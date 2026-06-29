@@ -9,6 +9,9 @@ export interface User {
   last_name: string;
   full_name: string;
   avatar: string | null;
+  phone?: string;
+  address?: string;
+  created_at?: string;
   profile?: any;
 }
 

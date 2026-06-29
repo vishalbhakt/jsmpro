@@ -5,7 +5,7 @@ import { attendanceAPI, studentsAPI } from "@/lib/api";
 import { Check, X, Save, Calendar, User, Loader2 } from "lucide-react";
 import { useToastStore } from "@/store/useToastStore";
 
-export default function AttendanceManager({ subjects }: { subjects: any[] }) {
+export default function AttendanceManager({ subjects = [] }: { subjects?: any[] }) {
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents] = useState<any[]>([]);
@@ -80,7 +80,7 @@ export default function AttendanceManager({ subjects }: { subjects: any[] }) {
             onChange={e => setSelectedSubjectId(e.target.value)}
           >
             <option value="">-- Choose Subject --</option>
-            {subjects.map(s => <option key={s.id} value={s.id}>{s.name} (Class {s.classroom})</option>)}
+            {subjects && subjects.map(s => <option key={s.id} value={s.id}>{s.name} (Class {s.classroom})</option>)}
           </select>
         </div>
         <div className="space-y-2">

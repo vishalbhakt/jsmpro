@@ -77,7 +77,7 @@ export default function AdminPayments() {
   const handleDelete = async (id: number) => {
     if (!confirm("Remove this payment record?")) return;
     try {
-      await financeAPI.delete(id);
+      await financeAPI.payments.delete(id);
       setData(data.filter(p => p.id !== id));
       addToast("Record deleted.");
     } catch {

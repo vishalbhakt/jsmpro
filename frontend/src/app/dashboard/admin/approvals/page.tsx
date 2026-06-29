@@ -15,8 +15,9 @@ export default function AdminApprovals() {
   const fetchPending = async () => {
     setLoading(true);
     try {
-      const res = await usersAPI.pending();
-      setData(res.data.data);
+      const res = await usersAPI.list();
+      const unverified = (res.data || []).filter((u: any) => !u.is_verified || !u.is_active);
+      setData(unverified);
     } catch {
       addToast("Failed to fetch pending requests", "error");
     } finally {
@@ -55,7 +56,7 @@ export default function AdminApprovals() {
                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 text-[10px] font-black"><Clock className="w-3.5 h-3.5" /></div>
                  <div>
                     <div className="font-bold text-navy">{v}</div>
-                    <div className="text-[10px] text-slate-400 font-medium">{new Date(row.date_joined).toLocaleDateString()}</div>
+                    <div className="text-[10px] text-slate-400 font-medium">{row.created_at ? new Date(row.created_at).toLocaleDateString() : "-"}</div>
                  </div>
               </div>
             )},

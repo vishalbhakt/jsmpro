@@ -9,6 +9,7 @@ from academics.views import AssessmentViewSet, ClassRoomViewSet, ResultViewSet, 
 from attendance.views import AttendanceRecordViewSet, AttendanceSessionViewSet
 from cms.views import ContactMessageViewSet, CourseViewSet, FacilityViewSet, GalleryItemViewSet, InquiryViewSet, PageViewSet
 from communication.views import AnnouncementViewSet, ActivityLogViewSet, NotificationViewSet
+from verification.views import VerificationReportViewSet, VerificationSettingViewSet
 from finance.views import FeePlanViewSet, PaymentViewSet
 from learning.views import AssignmentSubmissionViewSet, AssignmentViewSet, NoteViewSet, QuizViewSet, VideoLectureViewSet
 from users.views import (
@@ -40,6 +41,8 @@ router.register("fee-plans", FeePlanViewSet, basename="fee-plans")
 router.register("payments", PaymentViewSet, basename="payments")
 router.register("announcements", AnnouncementViewSet, basename="announcements")
 router.register("notifications", NotificationViewSet, basename="notifications")
+router.register('verification', VerificationReportViewSet, basename='verification')
+router.register('verification-settings', VerificationSettingViewSet, basename='verification-settings')
 router.register("activity-logs", ActivityLogViewSet, basename="activity-logs")
 router.register("pages", PageViewSet, basename="pages")
 router.register("courses", CourseViewSet, basename="courses")

@@ -5,9 +5,47 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import StudentProfile, TeacherProfile, User
 
 
+class ListUserSerializer(serializers.ModelSerializer):
+    """Serializer for the admin users list – includes all displayed fields."""
+    full_name = serializers.CharField(source='full_name', read_only=True)
+    role = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "full_name",
+            "phone",
+            "role",
+            "is_active",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_role(self, obj):
+        return obj.get_role_display()
+
+    def get_status(self, obj):
+        return "Active" if obj.is_active else "Inactive"
+
+
 class TeacherProfileSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.full_name", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
+    avatar = serializers.ImageField(source="user.avatar", read_only=True)
+    role = serializers.SerializerMethodField()
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    assigned_subjects = serializers.SerializerMethodField()
+    assigned_classes = serializers.SerializerMethodField()
+    experience = serializers.SerializerMethodField()
+    status = serializers.CharField(read_only=True)
+    joined_on = serializers.DateField(read_only=True)
+    account_info = serializers.SerializerMethodField()
+
 
     class Meta:
         model = TeacherProfile
@@ -16,17 +54,43 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
             "user",
             "user_name",
             "email",
+            "avatar",
+            "phone",
             "employee_id",
             "qualification",
             "designation",
             "bio",
+            "assigned_subjects",
+            "assigned_classes",
+            "experience",
             "joined_on",
             "status",
+            "account_info",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
 
+    def get_assigned_subjects(self, obj):
+        return list(obj.subjects.values_list('name', flat=True))
+
+    def get_assigned_classes(self, obj):
+        return list(obj.class_teacher.all().values_list('name', flat=True))
+
+    def get_experience(self, obj):
+        if obj.joined_on:
+            from datetime import date
+            delta = date.today() - obj.joined_on
+            years = delta.days // 365
+            return f"{years} year(s)"
+        return None
+
+    def get_account_info(self, obj):
+        return {
+            "email": obj.email,
+            "phone": obj.phone,
+            "avatar": obj.user.avatar.url if obj.user.avatar else None,
+        }
 
 class StudentProfileSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.full_name", read_only=True)
@@ -59,8 +123,10 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(read_only=True)
+    full_name = serializers.CharField(source='last_name', read_only=True)
     profile = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -68,20 +134,22 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
-            "first_name",
-            "last_name",
             "full_name",
-            "role",
             "phone",
-            "address",
-            "avatar",
+            "role",
             "is_active",
-            "is_verified",
-            "profile",
+            "avatar",
             "created_at",
-            "updated_at",
+            "profile",
+            "status",
         ]
-        read_only_fields = ["created_at", "updated_at"]
+        read_only_fields = ["id", "full_name", "created_at", "profile", "status"]
+
+    def get_role(self, obj):
+        return obj.get_role_display()
+
+    def get_status(self, obj):
+        return "Active" if obj.is_active else "Inactive"
 
     def get_profile(self, obj):
         if obj.role == User.Roles.STUDENT and hasattr(obj, "student_profile"):

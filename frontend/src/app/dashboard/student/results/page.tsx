@@ -3,9 +3,7 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useEffect, useState } from "react";
-import { learningAPI } from "@/lib/api"; // Assuming results are in learning or academics? Actually let's check api.ts.
-// In api.ts, resultsAPI = crud('/results');
-import { resultsAPI } from "@/lib/api";
+import { academicsAPI } from "@/lib/api";
 import { 
   Trophy, 
   Download, 
@@ -25,7 +23,7 @@ export default function StudentResults() {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const res = await resultsAPI.list();
+        const res = await academicsAPI.results.list();
         setData(res.data);
       } catch (err) {
         console.error("Failed to fetch results", err);

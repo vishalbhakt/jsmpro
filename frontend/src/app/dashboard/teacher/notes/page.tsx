@@ -7,6 +7,7 @@ import { learningAPI, subjectsAPI } from "@/lib/api";
 import { 
   Plus, 
   Trash2, 
+  Edit,
   FileText, 
   Send,
   Loader2,
@@ -22,6 +23,7 @@ export default function TeacherNotes() {
   const [subjects, setSubjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingNote, setEditingNote] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", subject: "" });
   const [file, setFile] = useState<File | null>(null);
@@ -34,8 +36,8 @@ export default function TeacherNotes() {
         learningAPI.notes.list(),
         subjectsAPI.list()
       ]);
-      setItems(itemRes.data);
-      setSubjects(subRes.data);
+      setItems(itemRes.data || []);
+      setSubjects(subRes.data || []);
     } catch (err) {
       console.error("Failed to fetch notes", err);
       addToast("Failed to sync notes repository", "error");
@@ -58,15 +60,21 @@ export default function TeacherNotes() {
     if (file) fd.append("file", file);
 
     try {
-      await learningAPI.notes.create(fd);
+      if (editingNote) {
+        await learningAPI.notes.update(editingNote.id, fd);
+        addToast("Notes updated successfully!");
+      } else {
+        await learningAPI.notes.create(fd);
+        addToast("Notes published successfully!");
+      }
       setIsAdding(false);
+      setEditingNote(null);
       setForm({ title: "", description: "", subject: "" });
       setFile(null);
-      addToast("Notes published successfully!");
       fetchData();
     } catch (err: any) {
-      console.error("Failed to publish notes", err);
-      const msg = err.response?.data?.detail || err.response?.data?.error || "Failed to publish notes";
+      console.error("Failed to save notes", err);
+      const msg = err.response?.data?.detail || err.response?.data?.error || "Failed to save notes";
       addToast(msg, "error");
     } finally {
       setSaving(false);
@@ -99,17 +107,25 @@ export default function TeacherNotes() {
             </p>
           </div>
           <button 
-            onClick={() => setIsAdding(!isAdding)}
+            onClick={() => {
+              if (isAdding || editingNote) {
+                setIsAdding(false);
+                setEditingNote(null);
+                setForm({ title: "", description: "", subject: "" });
+              } else {
+                setIsAdding(true);
+              }
+            }}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
-              isAdding ? "bg-slate-100 text-slate-500" : "bg-[#d4af37] text-white shadow-xl shadow-[#d4af37]/20"
+              (isAdding || editingNote) ? "bg-slate-100 text-slate-500" : "bg-[#d4af37] text-white shadow-xl shadow-[#d4af37]/20"
             }`}
           >
-            {isAdding ? "Cancel" : <><Plus className="w-4 h-4" /> Upload Notes</>}
+            {(isAdding || editingNote) ? "Cancel" : <><Plus className="w-4 h-4" /> Upload Notes</>}
           </button>
         </div>
 
         <AnimatePresence>
-          {isAdding && (
+          {(isAdding || editingNote) && (
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -138,7 +154,7 @@ export default function TeacherNotes() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Upload PDF/Document</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Upload PDF/Document {editingNote && "(Leave blank to keep current)"}</label>
                   <input type="file" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 font-bold focus:border-[#d4af37] outline-none text-[#001f3f]"
                     onChange={e => setFile(e.target.files?.[0] || null)} />
                 </div>
@@ -148,9 +164,9 @@ export default function TeacherNotes() {
                   className="col-span-2 bg-[#001f3f] text-white py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-[#001f3f]/20 uppercase tracking-[0.2em] font-black text-xs disabled:opacity-70"
                 >
                   {saving ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> Publishing...</>
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
                   ) : (
-                    <><Send className="w-5 h-5" /> Publish to Repository</>
+                    <><Send className="w-5 h-5" /> {editingNote ? "Save Changes" : "Publish to Repository"}</>
                   )}
                 </button>
               </form>
@@ -168,7 +184,23 @@ export default function TeacherNotes() {
               <div key={item.id} className="bg-white p-8 rounded-[2.5rem] border border-[#001f3f]/5 shadow-sm hover:border-[#d4af37]/30 transition-all flex flex-col group relative">
                 <div className="flex items-center justify-between mb-6">
                    <div className="px-3 py-1 bg-[#d4af37]/10 text-[#d4af37] text-[10px] font-black uppercase tracking-widest rounded-lg">{item.subject_name || `Subject #${item.subject}`}</div>
-                   <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-200 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                   <div className="flex items-center gap-2">
+                      <button 
+                       onClick={() => {
+                         setEditingNote(item);
+                         setForm({
+                           title: item.title || "",
+                           description: item.description || "",
+                           subject: item.subject || ""
+                         });
+                       }}
+                       className="p-2 text-slate-200 hover:text-[#d4af37] transition-colors"
+                       title="Edit Note"
+                      >
+                         <Edit className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-200 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                   </div>
                 </div>
 
                 <h3 className="text-xl font-black text-[#001f3f] mb-3 line-clamp-1">{item.title}</h3>
@@ -184,7 +216,7 @@ export default function TeacherNotes() {
                 </div>
               </div>
             ))}
-            {!items.length && !isAdding && (
+            {!items.length && !isAdding && !editingNote && (
               <div className="col-span-full py-40 text-center bg-white rounded-[3rem] border-2 border-dashed border-[#001f3f]/5 flex flex-col items-center">
                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <FileText className="w-10 h-10 text-slate-200" />

@@ -2,138 +2,163 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import DashboardLayout from "@/components/DashboardLayout";
-import { useEffect, useState } from "react";
-import api, { authAPI } from "@/lib/api";
-import { User, Mail, Phone, MapPin, Save, Shield, Loader2, Camera, Settings } from "lucide-react";
+import { useState } from "react";
+import { authAPI } from "@/lib/api";
+import { 
+  UserCircle, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  ShieldCheck, 
+  Camera,
+  Save,
+  Loader2,
+  Lock,
+  ChevronRight
+} from "lucide-react";
+import { motion } from "framer-motion";
 import { useToastStore } from "@/store/useToastStore";
 
 export default function AdminProfile() {
-  const { user } = useAuthStore();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { user, setAuth, token, refreshToken } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || ""
+  });
   const addToast = useToastStore(s => s.addToast);
 
-  const fetchProfile = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      const res = await authAPI.profile();
-      setProfile(res.data.data);
+      await authAPI.updateProfile(form);
+      addToast("Administrative profile updated.");
     } catch {
-      addToast("Failed to fetch admin profile", "error");
+      addToast("Update failed.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await authAPI.updateProfile(profile);
-      addToast("Admin settings updated successfully!");
-    } catch {
-      addToast("Update failed", "error");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) return null;
+  if (!user) return null;
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl space-y-10 pb-20">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-black text-navy tracking-tight text-justify">System Administrator</h1>
-            <p className="text-slate-500 font-medium mt-1">Manage global account settings and security credentials.</p>
-          </div>
-          <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center text-gold shadow-xl shadow-navy/10">
-             <Settings className="w-7 h-7" />
+      <div className="space-y-12 pb-20 max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex items-center gap-6">
+             <div className="w-24 h-24 bg-[#001f3f] rounded-[2.5rem] flex items-center justify-center text-[#d4af37] font-black text-4xl shadow-2xl shadow-[#001f3f]/20 border-4 border-white relative group cursor-pointer">
+                {user.username?.[0].toUpperCase()}
+                <div className="absolute inset-0 bg-[#001f3f]/60 rounded-[2.5rem] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <Camera className="w-8 h-8 text-white" />
+                </div>
+             </div>
+             <div>
+                <h1 className="text-4xl font-black text-[#001f3f] tracking-tight">{user.full_name}</h1>
+                <div className="flex items-center gap-2 mt-1">
+                   <span className="bg-[#d4af37] text-[#001f3f] text-[10px] px-3 py-1 rounded-full uppercase tracking-widest font-black border border-[#d4af37]/20 shadow-sm">Master Admin</span>
+                   <span className="text-slate-400 font-bold text-xs uppercase tracking-widest ml-2 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" /> Authorized Identity
+                   </span>
+                </div>
+             </div>
           </div>
         </div>
 
-        <form onSubmit={handleUpdate} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Avatar Section */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-[3rem] border border-navy/5 p-10 text-center shadow-sm relative overflow-hidden group">
-              <div className="w-32 h-32 bg-navy rounded-full mx-auto mb-6 flex items-center justify-center text-gold text-4xl font-black ring-8 ring-gold/5 transition-all group-hover:ring-gold/10 relative">
-                {(profile.username?.[0] || "?").toUpperCase()}
-                <div className="absolute inset-0 bg-navy/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                   <Camera className="text-white w-8 h-8" />
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-navy">{profile.first_name} {profile.last_name}</h3>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gold mt-1">Institutional {profile.role}</p>
-            </div>
-            
-            <div className="bg-navy rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden">
-              <div className="flex items-center gap-3 mb-6 relative z-10">
-                <Shield className="w-5 h-5 text-gold" />
-                <span className="text-[10px] font-black uppercase tracking-widest">System Authority</span>
-              </div>
-              <div className="flex items-center gap-2 relative z-10">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-emerald-400">Master Access Active</span>
-              </div>
-              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+           <div className="lg:col-span-2">
+              <div className="bg-white rounded-[3rem] border border-[#001f3f]/5 shadow-xl shadow-slate-200/50 p-10 space-y-10">
+                 <div className="flex items-center justify-between border-b border-slate-50 pb-8">
+                    <h3 className="text-2xl font-black text-[#001f3f]">Personal Registry</h3>
+                    <UserCircle className="text-slate-200 w-8 h-8" />
+                 </div>
 
-          {/* Details Section */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[3rem] border border-navy/5 p-10 shadow-sm space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <InputGroup icon={User} label="First Name" value={profile.first_name} 
-                  onChange={(v: string) => setProfile({...profile, first_name: v})} />
-                <InputGroup icon={User} label="Last Name" value={profile.last_name} 
-                  onChange={(v: string) => setProfile({...profile, last_name: v})} />
-                <InputGroup icon={Mail} label="Email Address" value={profile.email} 
-                  onChange={(v: string) => setProfile({...profile, email: v})} />
-                <InputGroup icon={Phone} label="Contact Number" value={profile.phone} 
-                  onChange={(v: string) => setProfile({...profile, phone: v})} />
+                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-1">First Name</label>
+                       <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold outline-none focus:border-[#d4af37] text-[#001f3f]"
+                         value={form.first_name} onChange={e => setForm({...form, first_name: e.target.value})} />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Last Name</label>
+                       <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold outline-none focus:border-[#d4af37] text-[#001f3f]"
+                         value={form.last_name} onChange={e => setForm({...form, last_name: e.target.value})} />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Email Address</label>
+                       <div className="relative">
+                          <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                          <input required disabled type="email" className="w-full bg-slate-100 border-2 border-slate-100 rounded-2xl pl-12 pr-5 py-4 font-bold outline-none text-slate-400 cursor-not-allowed"
+                            value={form.email} />
+                       </div>
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Phone Number</label>
+                       <div className="relative">
+                          <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                          <input className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-5 py-4 font-bold outline-none focus:border-[#d4af37] text-[#001f3f]"
+                            value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                       </div>
+                    </div>
+                    <div className="md:col-span-2 space-y-1">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Official Address</label>
+                       <div className="relative">
+                          <MapPin className="absolute left-5 top-4 w-4 h-4 text-slate-300" />
+                          <textarea className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-12 pr-5 py-4 font-bold outline-none focus:border-[#d4af37] min-h-[120px] text-[#001f3f]"
+                            value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
+                       </div>
+                    </div>
+                    
+                    <div className="md:col-span-2 pt-6">
+                       <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full bg-[#001f3f] text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-[#001f3f]/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all hover:bg-opacity-90"
+                       >
+                          {loading ? <Loader2 className="animate-spin" /> : <><Save className="w-4 h-4" /> Save Preferences</>}
+                       </button>
+                    </div>
+                 </form>
               </div>
-              
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 text-justify">Office Address</label>
-                <div className="relative group">
-                   <MapPin className="absolute left-5 top-5 w-4 h-4 text-slate-300 group-focus-within:text-gold transition-all" />
-                   <textarea 
-                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl pl-14 pr-6 py-4 font-bold focus:border-gold outline-none min-h-[120px] transition-all text-navy"
-                    value={profile.address || ''}
-                    onChange={e => setProfile({...profile, address: e.target.value})}
-                    placeholder="Enter school office location..."
-                  />
-                </div>
+           </div>
+
+           <div className="space-y-8">
+              <div className="bg-[#001f3f] rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between h-72">
+                 <div className="relative z-10 space-y-4">
+                    <Lock className="w-10 h-10 text-[#d4af37]" />
+                    <h3 className="text-2xl font-black italic">Security Control</h3>
+                    <p className="text-white/40 text-xs font-medium leading-relaxed">Protect your administrative access by updating your credentials periodically.</p>
+                 </div>
+                 <button className="relative z-10 w-full bg-[#d4af37] text-[#001f3f] py-4 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
+                    Change Password <ChevronRight className="w-3 h-3" />
+                 </button>
+                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#d4af37]/5 rounded-full blur-3xl"></div>
               </div>
 
-              <button type="submit" disabled={saving} className="btn-primary w-full py-5 flex items-center justify-center gap-3 shadow-xl shadow-navy/10 rounded-2xl">
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Commit Admin Changes</>}
-              </button>
-            </div>
-          </div>
-        </form>
+              <div className="bg-white rounded-[2.5rem] border border-[#001f3f]/5 p-10 shadow-xl space-y-6">
+                 <h4 className="text-xl font-black text-[#001f3f]">System Metadata</h4>
+                 <div className="space-y-4">
+                    <div className="flex justify-between items-center text-xs">
+                       <span className="font-bold text-slate-400 uppercase tracking-widest">Account Created</span>
+                       <span className="font-black text-[#001f3f]">{user.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                       <span className="font-bold text-slate-400 uppercase tracking-widest">Last Login</span>
+                       <span className="font-black text-[#001f3f]">Just now</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                       <span className="font-bold text-slate-400 uppercase tracking-widest">Access Node</span>
+                       <span className="font-black text-[#001f3f]">Delhi, IN</span>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
       </div>
     </DashboardLayout>
-  );
-}
-
-function InputGroup({ icon: Icon, label, value, onChange }: any) {
-  return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
-      <div className="relative group">
-        <Icon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-gold transition-all" />
-        <input 
-          className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-14 pr-6 py-4 font-bold focus:border-gold outline-none transition-all text-navy"
-          value={value || ''}
-          onChange={e => onChange(e.target.value)}
-        />
-      </div>
-    </div>
   );
 }
