@@ -32,7 +32,8 @@ export default function AdminCourses() {
     grade_range: "", 
     duration: "",
     is_featured: false,
-    is_published: true 
+    is_published: true,
+    image: null as File | null
   });
   
   const [submitting, setSubmitting] = useState(false);
@@ -75,17 +76,31 @@ export default function AdminCourses() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+
+    const fd = new FormData();
+    fd.append("title", form.title);
+    fd.append("code", form.code);
+    fd.append("slug", form.slug);
+    fd.append("description", form.description);
+    fd.append("grade_range", form.grade_range);
+    fd.append("duration", form.duration);
+    fd.append("is_featured", String(form.is_featured));
+    fd.append("is_published", String(form.is_published));
+    if (form.image) {
+      fd.append("image", form.image);
+    }
+
     try {
       if (editingCourse) {
-        await cmsAPI.courses.update(editingCourse.id, form);
+        await cmsAPI.courses.update(editingCourse.id, fd);
         addToast("Course catalog entry updated.");
       } else {
-        await cmsAPI.courses.create(form);
+        await cmsAPI.courses.create(fd);
         addToast("Course catalog entry established.");
       }
       setIsAdding(false);
       setEditingCourse(null);
-      setForm({ title: "", code: "", slug: "", description: "", grade_range: "", duration: "", is_featured: false, is_published: true });
+      setForm({ title: "", code: "", slug: "", description: "", grade_range: "", duration: "", is_featured: false, is_published: true, image: null });
       fetchData();
     } catch (err: any) {
       console.error("Operation failed", err);
@@ -123,7 +138,7 @@ export default function AdminCourses() {
             <p className="text-slate-500 font-medium mt-1">Configure curriculum offerings and grades catalogs displayed on public domains.</p>
           </div>
           <button 
-            onClick={() => { setEditingCourse(null); setForm({ title: "", code: "", slug: "", description: "", grade_range: "", duration: "", is_featured: false, is_published: true }); setIsAdding(true); }}
+            onClick={() => { setEditingCourse(null); setForm({ title: "", code: "", slug: "", description: "", grade_range: "", duration: "", is_featured: false, is_published: true, image: null }); setIsAdding(true); }}
             className="bg-[#001f3f] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-[#001f3f]/20 hover:scale-105 transition-all active:scale-95"
           >
              <Plus className="w-4 h-4" /> Add Course
@@ -148,6 +163,15 @@ export default function AdminCourses() {
           isLoading={loading}
           data={filteredData}
           columns={[
+            { key: "image", header: "Image", render: v => (
+               v ? (
+                 <img src={v} alt="Course" className="w-12 h-12 object-cover rounded-xl border border-slate-100 shadow-sm" />
+               ) : (
+                 <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-300">
+                   <Library className="w-5 h-5" />
+                 </div>
+               )
+             )},
             { key: "title", header: "Course Title", render: (v, r) => (
               <div>
                  <div className="font-bold text-[#001f3f]">{v}</div>
@@ -180,7 +204,8 @@ export default function AdminCourses() {
                       grade_range: row.grade_range || "",
                       duration: row.duration || "",
                       is_featured: row.is_featured ?? false,
-                      is_published: row.is_published ?? true
+                      is_published: row.is_published ?? true,
+                      image: null
                     });
                   }}
                   className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-[#d4af37] hover:border-[#d4af37] rounded-xl transition-all"
@@ -211,7 +236,16 @@ export default function AdminCourses() {
                         <div className="space-y-1">
                            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Course Title</label>
                            <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 font-bold outline-none focus:border-[#d4af37]"
-                             value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
+                             value={form.title} 
+                             onChange={e => {
+                               const titleVal = e.target.value;
+                               const slugified = titleVal
+                                 .toLowerCase()
+                                 .replace(/[^a-z0-9]+/g, "-")
+                                 .replace(/(^-|-$)+/g, "");
+                               setForm({...form, title: titleVal, slug: slugified});
+                             }} 
+                           />
                         </div>
                         <div className="space-y-1">
                            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Course Code</label>
@@ -250,6 +284,18 @@ export default function AdminCourses() {
                               <option value="true">Published</option>
                               <option value="false">Draft</option>
                            </select>
+                        </div>
+                        <div className="space-y-1 col-span-2">
+                           <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Course Image</label>
+                           <input type="file" accept="image/*" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3.5 font-bold outline-none focus:border-[#d4af37]"
+                             onChange={e => {
+                               const file = e.target.files?.[0] || null;
+                               setForm({...form, image: file});
+                             }} 
+                           />
+                           {editingCourse?.image && !form.image && (
+                             <p className="text-xs text-slate-400 mt-1">Current: {editingCourse.image}</p>
+                           )}
                         </div>
                         <div className="space-y-1 col-span-2">
                            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Course Description</label>
