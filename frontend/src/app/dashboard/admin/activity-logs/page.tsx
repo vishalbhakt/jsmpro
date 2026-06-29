@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import DataTable from "@/components/DataTable";
 import { communicationAPI } from "@/lib/api";
+import { safeArray } from "@/lib/apiUtils";
 import { 
   Activity, 
   Search, 

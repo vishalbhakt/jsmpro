@@ -117,7 +117,7 @@ export default function AdminSubjects() {
       await subjectsAPI.delete(id);
       setData(data.filter(s => s.id !== id));
       addToast("Subject removed.");
-      } catch (err) {
+      } catch (err: any) {
         const errMsg = err.response?.data ? (typeof err.response.data === 'string' ? err.response.data : Object.entries(err.response.data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')) : 'Action failed';
         addToast(errMsg, "error");
       }

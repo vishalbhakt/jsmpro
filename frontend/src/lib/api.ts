@@ -46,11 +46,11 @@ api.interceptors.response.use(
 
 // CRUD Helper Generator
 const crud = (endpoint: string) => ({
-  list: (params?: any) => api.get(`${endpoint}/`, { params }).then(res => safeArray(res, `${endpoint} list`)),
-  get: (id: number | string) => api.get(`${endpoint}/${id}/`).then(res => safeObject(res, `${endpoint} get`)),
-  create: (data: any) => api.post(`${endpoint}/`, data).then(res => safeObject(res, `${endpoint} create`)),
-  update: (id: number | string, data: any) => api.patch(`${endpoint}/${id}/`, data).then(res => safeObject(res, `${endpoint} update`)),
-  delete: (id: number | string) => api.delete(`${endpoint}/${id}/`)
+  list: (params?: any): Promise<any> => api.get(`${endpoint}/`, { params }).then(res => ({ ...res, data: safeArray(res, `${endpoint} list`) })),
+  get: (id: number | string): Promise<any> => api.get(`${endpoint}/${id}/`).then(res => ({ ...res, data: safeObject(res, `${endpoint} get`) })),
+  create: (data: any): Promise<any> => api.post(`${endpoint}/`, data).then(res => ({ ...res, data: safeObject(res, `${endpoint} create`) })),
+  update: (id: number | string, data: any): Promise<any> => api.patch(`${endpoint}/${id}/`, data).then(res => ({ ...res, data: safeObject(res, `${endpoint} update`) })),
+  delete: (id: number | string): Promise<any> => api.delete(`${endpoint}/${id}/`)
 });
 
 // Named API Exports

@@ -15,13 +15,19 @@ export default function AuthGuard({ children, roles }: { children: React.ReactNo
       return;
     }
 
-    if (roles && !roles.includes(user.role)) {
+    const userRole = user.role?.toLowerCase() || "";
+    const normalizedRoles = roles?.map(r => r.toLowerCase());
+
+    if (normalizedRoles && !normalizedRoles.includes(userRole)) {
       router.push("/dashboard");
     }
   }, [user, token, roles, router]);
 
+  const userRole = user?.role?.toLowerCase() || "";
+  const normalizedRoles = roles?.map(r => r.toLowerCase());
+
   if (!token || !user) return null;
-  if (roles && !roles.includes(user.role)) return null;
+  if (normalizedRoles && !normalizedRoles.includes(userRole)) return null;
 
   return <>{children}</>;
 }

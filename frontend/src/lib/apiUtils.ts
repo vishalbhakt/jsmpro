@@ -1,4 +1,4 @@
-export const safeArray = <T>(response: any, context: string, addToast?: (msg: string, type?: string) => void): T[] => {
+export const safeArray = <T>(response: any, context: string, addToast?: (msg: string, type?: 'success' | 'error') => void): T[] => {
   // Axios responses have data under `response.data`
   const payload = response?.data ?? response;
   if (Array.isArray(payload)) {
@@ -13,7 +13,7 @@ export const safeArray = <T>(response: any, context: string, addToast?: (msg: st
   return [];
 };
 
-export const safeObject = <T>(response: any, context: string, addToast?: (msg: string, type?: string) => void): T => {
+export const safeObject = <T>(response: any, context: string, addToast?: (msg: string, type?: 'success' | 'error') => void): T => {
   const payload = response?.data ?? response;
   if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
     return payload as T;
@@ -24,11 +24,11 @@ export const safeObject = <T>(response: any, context: string, addToast?: (msg: s
 };
 
 // Utility to safely fetch list endpoints with error handling
-export const fetchList = async <T>(apiCall: Promise<any>, context: string, addToast?: (msg: string, type?: string) => void): Promise<T[]> => {
+export const fetchList = async <T>(apiCall: Promise<any>, context: string, addToast?: (msg: string, type?: 'success' | 'error') => void): Promise<T[]> => {
   try {
     const { results } = await fetchPaginated<T>(apiCall, context, addToast);
     return results ?? [];
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error fetching ${context}`, err);
     if (!err?.response) {
       if (addToast) addToast('Network error – please check your connection', 'error');
@@ -43,7 +43,7 @@ export const fetchList = async <T>(apiCall: Promise<any>, context: string, addTo
   }
 };
 
-export const fetchPaginated = async <T>(apiCall: Promise<any>, context: string, addToast?: (msg: string, type?: string) => void): Promise<{ results: T[]; count?: number; next?: string; previous?: string }> => {
+export const fetchPaginated = async <T>(apiCall: Promise<any>, context: string, addToast?: (msg: string, type?: 'success' | 'error') => void): Promise<{ results: T[]; count?: number; next?: string; previous?: string }> => {
   try {
     const res = await apiCall;
     const raw = res?.data ?? res ?? {};
@@ -62,7 +62,7 @@ export const fetchPaginated = async <T>(apiCall: Promise<any>, context: string, 
       next: typeof raw?.next === 'string' ? raw.next : undefined,
       previous: typeof raw?.previous === 'string' ? raw.previous : undefined,
     };
-    } catch (err) {
+    } catch (err: any) {
       console.error(`Error fetching ${context}`, err);
       if (!err?.response) {
         if (addToast) addToast('Network error – please check your connection', 'error');

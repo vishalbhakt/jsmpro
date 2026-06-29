@@ -3,9 +3,8 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useEffect, useState } from "react";
+import { classesAPI, subjectsAPI } from "@/lib/api";
 import { fetchList } from "@/lib/apiUtils";
-
-// ... (rest of imports unchanged)
 
 import { 
   GraduationCap, 
@@ -42,7 +41,7 @@ export default function AdminAcademics() {
       ]);
       setClasses(cList);
       setSubjects(sList);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch academic data', err);
       addToast(err.response?.data?.detail || 'Failed to fetch academic data', 'error');
     } finally {

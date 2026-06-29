@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { cmsAPI } from "@/lib/api";
+import { fetchList } from "@/lib/apiUtils";
 import { 
   ImageIcon, 
   Search, 

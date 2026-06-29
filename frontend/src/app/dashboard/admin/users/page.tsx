@@ -82,7 +82,7 @@ export default function AdminUsers() {
   const openCreateModal = () => setShowCreateModal(true);
   const closeCreateModal = () => { setShowCreateModal(false); setNewUser({ username: '', email: '', password: '', phone: '' }); };
 
-  const handleCreateSubmit = async (e) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const { username, email, password, phone } = newUser;
     if (!username || !email || !password) {
@@ -314,7 +314,7 @@ return (
         },
       ]}
       data={paginatedData}
-      loading={loading}
+      isLoading={loading}
     />
 
     {/* Pagination Controls */}
