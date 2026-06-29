@@ -237,7 +237,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 isCollapsed && "px-0 justify-center"
               )}
             >
-               <UserCircle className="w-5 h-5 shrink-0" />
+               {user?.avatar ? (
+                 <img src={user.avatar} className="w-5 h-5 shrink-0 rounded-full object-cover border border-white/10" />
+               ) : (
+                 <UserCircle className="w-5 h-5 shrink-0" />
+               )}
                {!isCollapsed && <span>My Profile</span>}
             </Link>
             <button
@@ -292,8 +296,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="text-sm font-black text-[#001f3f] tracking-tight truncate">{user?.first_name} {user?.last_name}</div>
                 <div className="text-[10px] text-[#d4af37] font-black uppercase tracking-widest leading-none mt-1">{user?.role?.toLowerCase()}</div>
               </div>
-              <div className="w-12 h-12 bg-[#001f3f] rounded-2xl flex items-center justify-center text-[#d4af37] font-black shadow-lg shadow-[#001f3f]/10 border-2 border-white ring-4 ring-[#001f3f]/5">
-                {user?.username?.[0].toUpperCase()}
+              <div className="w-12 h-12 bg-[#001f3f] rounded-2xl flex items-center justify-center text-[#d4af37] font-black shadow-lg shadow-[#001f3f]/10 border-2 border-white ring-4 ring-[#001f3f]/5 overflow-hidden">
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  user?.username?.[0].toUpperCase()
+                )}
               </div>
             </div>
           </div>

@@ -59,6 +59,7 @@ export const authAPI = {
   register: (data: any) => api.post('/auth/register/', data),
   profile: () => api.get('/auth/me/'),
   updateProfile: (data: any) => api.patch('/auth/me/', data),
+  changePassword: (data: any) => api.post('/auth/change-password/', data),
 };
 
 export const dashboardAPI = {

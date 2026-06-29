@@ -127,7 +127,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source='last_name', read_only=True)
+    full_name = serializers.ReadOnlyField()
     profile = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
@@ -138,6 +138,8 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
             "full_name",
             "phone",
             "role",
@@ -146,8 +148,23 @@ class UserSerializer(serializers.ModelSerializer):
             "created_at",
             "profile",
             "status",
+            "date_of_birth",
+            "gender",
+            "address",
+            "city",
+            "state",
+            "country",
+            "pincode",
+            "employee_id",
+            "joining_date",
+            "profile_visibility",
+            "email_notifications",
+            "system_notifications",
+            "theme",
+            "language",
+            "last_login",
         ]
-        read_only_fields = ["id", "full_name", "created_at", "profile", "status"]
+        read_only_fields = ["id", "full_name", "created_at", "profile", "status", "last_login"]
 
     def get_role(self, obj):
         return obj.get_role_display()

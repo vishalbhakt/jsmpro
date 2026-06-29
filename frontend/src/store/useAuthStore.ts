@@ -13,6 +13,21 @@ export interface User {
   address?: string;
   created_at?: string;
   profile?: any;
+  date_of_birth?: string;
+  gender?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  employee_id?: string;
+  joining_date?: string;
+  profile_visibility?: boolean;
+  email_notifications?: boolean;
+  system_notifications?: boolean;
+  theme?: string;
+  language?: string;
+  last_login?: string;
+  is_active?: boolean;
 }
 
 interface AuthState {
@@ -21,6 +36,7 @@ interface AuthState {
   refreshToken: string | null;
   isHydrated: boolean;
   setAuth: (user: User, token: string, refreshToken: string) => void;
+  setUser: (user: User) => void;
   setHydrated: () => void;
   logout: () => void;
 }
@@ -37,6 +53,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('refresh_token', refreshToken);
     }
     set({ user, token, refreshToken });
+  },
+  setUser: (user) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+    set({ user });
   },
   setHydrated: () => {
     if (typeof window !== 'undefined') {
