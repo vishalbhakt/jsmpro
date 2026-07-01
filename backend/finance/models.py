@@ -85,9 +85,17 @@ class StudentFee(models.Model):
         unique_together = ("student", "fee_plan", "academic_year")
 
     @property
+    def gross_fee(self):
+        from decimal import Decimal
+        if not self.fee_plan:
+            return Decimal("0.00")
+        fp = self.fee_plan
+        return fp.admission_fee + fp.tuition_fee + fp.exam_fee + fp.computer_fee + fp.library_fee + fp.sports_fee + fp.transport_fee + fp.misc_fee
+
+    @property
     def total_fee(self):
         from decimal import Decimal
-        base = self.fee_plan.amount - self.discount - self.scholarship - self.waived_amount
+        base = self.gross_fee - self.discount - self.scholarship - self.waived_amount
         return max(base, Decimal("0.00"))
 
     @property

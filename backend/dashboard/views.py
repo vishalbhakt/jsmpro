@@ -1045,17 +1045,75 @@ def admin_payment_history(request, student_id):
         messages.success(request, f"Offline payment of ₹{amount} recorded successfully.")
         return redirect("admin_payment_history", student_id=student_id)
 
-    payments = Payment.objects.filter(student=student).order_by("-created_at")
+    # Base query for filters
+    payments_all = Payment.objects.filter(student=student)
+    
+    # Get last payment details before filtering
+    last_payment_obj = payments_all.filter(status=Payment.Status.PAID).order_by("-paid_at").first()
+    last_payment_date = last_payment_obj.paid_at if last_payment_obj else None
+
+    # Apply filters
+    q = request.GET.get("q", "")
+    method_filter = request.GET.get("method", "")
+    status_filter = request.GET.get("status", "")
+    installment_filter = request.GET.get("installment", "")
+    start_date = request.GET.get("start_date", "")
+    end_date = request.GET.get("end_date", "")
+
+    payments = payments_all
+    if q:
+        payments = payments.filter(
+            Q(receipt_number__icontains=q) |
+            Q(transaction_id__icontains=q)
+        )
+    if method_filter:
+        payments = payments.filter(method=method_filter)
+    if status_filter:
+        payments = payments.filter(status=status_filter)
+    if installment_filter:
+        payments = payments.filter(installment_period=installment_filter)
+    if start_date:
+        payments = payments.filter(paid_at__date__gte=start_date)
+    if end_date:
+        payments = payments.filter(paid_at__date__lte=end_date)
+
+    payments = payments.order_by("-created_at")
     
     # Calculate Installment statuses
-    paid_installments = list(payments.filter(status=Payment.Status.PAID).values_list("installment_period", flat=True))
+    paid_installments = list(payments_all.filter(status=Payment.Status.PAID).values_list("installment_period", flat=True))
     
+    # Calculate Overdue state
+    from django.utils import timezone
+    is_overdue = False
+    if fee_ledger and fee_ledger.remaining_balance > 0 and fee_ledger.fee_plan.due_date:
+        is_overdue = fee_ledger.fee_plan.due_date < timezone.now().date()
+
+    if fee_ledger:
+        if fee_ledger.remaining_balance == 0:
+            payment_status_display = "Paid"
+        elif fee_ledger.amount_paid > 0:
+            payment_status_display = "Overdue" if is_overdue else "Partial"
+        else:
+            payment_status_display = "Overdue" if is_overdue else "Pending"
+    else:
+        payment_status_display = "Pending"
+
     return render(request, "admin/payment_history.html", {
         "student": student,
         "fee_ledger": fee_ledger,
         "payments": payments,
         "paid_installments": paid_installments,
-        "is_dashboard_view": True
+        "last_payment_date": last_payment_date,
+        "payment_status_display": payment_status_display,
+        "is_overdue": is_overdue,
+        "is_dashboard_view": True,
+        # Filters to populate fields
+        "q": q,
+        "method_filter": method_filter,
+        "status_filter": status_filter,
+        "installment_filter": installment_filter,
+        "start_date": start_date,
+        "end_date": end_date,
     })
 
 @login_required

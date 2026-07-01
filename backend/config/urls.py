@@ -10,7 +10,7 @@ from attendance.views import AttendanceRecordViewSet, AttendanceSessionViewSet
 from cms.views import ContactMessageViewSet, CourseViewSet, FacilityViewSet, GalleryItemViewSet, InquiryViewSet, PageViewSet
 from communication.views import AnnouncementViewSet, ActivityLogViewSet, NotificationViewSet
 from verification.views import VerificationReportViewSet, VerificationSettingViewSet
-from finance.views import FeePlanViewSet, PaymentViewSet
+from finance.views import FeePlanViewSet, PaymentViewSet, StudentLedgerAPIView
 from learning.views import AssignmentSubmissionViewSet, AssignmentViewSet, NoteViewSet, QuizViewSet, VideoLectureViewSet
 from users.views import (
     ChangePasswordView,
@@ -63,6 +63,7 @@ urlpatterns = [
     path("api/auth/change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("api/dashboard/", DashboardStatsView.as_view(), name="dashboard_stats"),
     path("api/public-stats/", PublicStatsView.as_view(), name="public_stats"),
+    path("api/finance/student-ledger/<int:student_id>/", StudentLedgerAPIView.as_view(), name="api_student_ledger"),
     path("api/", include(router.urls)),
     path("", include("dashboard.urls")),
 ]

@@ -1,248 +1,348 @@
 {% extends "dashboard_base.html" %}
 {% load static %}
 
-{% block title %}{{ student.user.full_name }} Fee Dashboard - JSM Shiksha Academy{% endblock %}
+{% block title %}{{ student.user.full_name }} Fee Ledger - JSM Shiksha Academy{% endblock %}
 
 {% block extra_css %}
 <style>
-    .progress-bar-animated {
-        transition: width 0.8s ease-in-out;
-    }
-    .timeline-item {
+    .circular-progress {
         position: relative;
-        padding-left: 24px;
-        margin-bottom: 20px;
+        width: 140px;
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .circular-progress svg {
+        width: 140px;
+        height: 140px;
+        transform: rotate(-90deg);
+    }
+    .circular-progress circle {
+        fill: none;
+        stroke-width: 12;
+    }
+    .circular-progress .bg-circle {
+        stroke: #e2e8f0;
+    }
+    .circular-progress .progress-circle {
+        stroke: #16a34a;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.8s ease-in-out;
+    }
+    .circular-value {
+        position: absolute;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        font-family: 'Outfit', sans-serif;
+    }
+    .timeline-milestone {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 25px;
         border-left: 2px dashed #cbd5e1;
     }
-    .timeline-item::before {
+    .timeline-milestone::before {
         content: '';
         position: absolute;
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
-        background-color: var(--primary-color);
-        left: -6px;
-        top: 6px;
+        background-color: #94a3b8;
+        left: -7px;
+        top: 4px;
+        border: 2px solid #fff;
     }
-    .timeline-item.completed::before {
+    .timeline-milestone.completed::before {
         background-color: #16a34a;
     }
-    .timeline-item:last-child {
+    .timeline-milestone.pending::before {
+        background-color: #ea580c;
+    }
+    .timeline-milestone:last-child {
         border-left: none;
     }
 </style>
 {% endblock %}
 
 {% block dashboard_content %}
-<!-- Page Header -->
+<!-- Page Header / Ledger Header -->
 <div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
     <div class="row align-items-center">
-        <div class="col-md-7">
-            <!-- Breadcrumbs -->
+        <div class="col-md-2 text-center text-md-start mb-3 mb-md-0">
+            {% if student.user.avatar %}
+                <img src="{{ student.user.avatar.url }}" class="rounded-circle border border-3 border-white shadow img-fluid" style="width: 110px; height: 110px; object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle border border-3 border-white shadow bg-white bg-opacity-20 d-flex align-items-center justify-content-center mx-auto mx-md-0" style="width: 110px; height: 110px;">
+                    <i class="fa-solid fa-user-graduate fa-3x text-white"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6 text-center text-md-start">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                <ol class="breadcrumb mb-2 justify-content-center justify-content-md-start" style="font-size: 0.8rem;">
                     <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
                     <li class="breadcrumb-item text-white-50" aria-current="page">Finance</li>
                     <li class="breadcrumb-item"><a href="{% url 'admin_payments' %}" class="text-white-50 text-decoration-none">Fee Ledger</a></li>
                     <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Payment History</li>
                 </ol>
             </nav>
-            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">{{ student.user.full_name }} 💳</h1>
-            <p class="text-white-50 mb-0">Admission No: <strong>{{ student.admission_number }}</strong> | Class: <strong>{{ student.classroom.name }}</strong> | Academic Session: <strong>{{ fee_ledger.academic_year }}</strong></p>
+            <h1 class="h2 fw-bold text-white mb-1" style="font-family:'Outfit',sans-serif;">{{ student.user.full_name }}</h1>
+            <p class="text-white-50 text-sm mb-2">
+                Adm No: <strong>{{ student.admission_number }}</strong> | Roll No: <strong>{{ student.roll_number|default:"—" }}</strong> | Class: <strong>{{ student.classroom.name }}</strong>
+            </p>
+            <div class="d-flex flex-wrap gap-3 text-white-50 text-xs justify-content-center justify-content-md-start">
+                <span><i class="fa-solid fa-user-shield me-1"></i> Guardian: <strong>{{ student.guardian_name|default:"—" }}</strong></span>
+                <span><i class="fa-solid fa-phone me-1"></i> {{ student.guardian_phone|default:"—" }}</span>
+                <span><i class="fa-solid fa-envelope me-1"></i> {{ student.user.email }}</span>
+            </div>
         </div>
-        <div class="col-md-5 text-end mt-3 mt-md-0">
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow me-2 animate-pulse" data-bs-toggle="modal" data-bs-target="#collectPaymentModal">
-                <i class="fa-solid fa-plus-circle me-2"></i> Collect Offline Payment
+        <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-2.5 fw-bold shadow me-1" data-bs-toggle="modal" data-bs-target="#collectPaymentModal">
+                <i class="fa-solid fa-plus-circle me-1"></i> Collect Payment
             </button>
-            <button class="btn btn-premium-outline text-white border-white rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#adjustmentsModal">
-                <i class="fa-solid fa-sliders me-2"></i> Adjustments
+            <button class="btn btn-premium-outline text-white border-white rounded-pill px-4 py-2.5 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#adjustmentsModal">
+                <i class="fa-solid fa-sliders me-1"></i> Adjustments
             </button>
         </div>
     </div>
 </div>
 
 {% if fee_ledger %}
-<!-- Progress Bar -->
-<div class="premium-card p-4 bg-white shadow-sm mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="fw-bold text-primary">Payment Progress</span>
-        <h5 class="fw-bold text-dark mb-0" id="progressPercentage">0%</h5>
-    </div>
-    <div class="progress rounded-pill shadow-inner" style="height: 16px;">
-        <div class="progress-bar progress-bar-striped progress-bar-animated rounded-pill" id="progressBar" role="progressbar" style="width: 0%;"></div>
-    </div>
-</div>
-
-<!-- Four Premium Summary Cards -->
+<!-- Payment Summary Cards -->
 <div class="row g-3 mb-4">
-    <!-- Total Payable (Blue) -->
+    <!-- Card 1: Total Fee -->
     <div class="col-md-3">
-        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-primary h-100 d-flex align-items-center gap-3">
-            <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:48px; height:48px;">
-                <i class="fa-solid fa-file-invoice-dollar fa-lg"></i>
-            </div>
-            <div>
-                <small class="text-muted d-block text-xs uppercase fw-bold">Total Payable</small>
-                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.total_fee }}</h4>
+        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-primary h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <small class="text-muted d-block text-xs uppercase fw-bold">Total Fee (Net)</small>
+                    <h3 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.total_fee }}</h3>
+                    <small class="text-muted text-xs">Gross: ₹{{ fee_ledger.gross_fee }}</small>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
             </div>
         </div>
     </div>
-    <!-- Total Paid (Green) -->
+    <!-- Card 2: Total Paid -->
     <div class="col-md-3">
-        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-success h-100 d-flex align-items-center gap-3">
-            <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:48px; height:48px;">
-                <i class="fa-solid fa-circle-check fa-lg"></i>
-            </div>
-            <div>
-                <small class="text-muted d-block text-xs uppercase fw-bold">Total Paid</small>
-                <h4 class="fw-bold mb-0 text-success" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.amount_paid }}</h4>
-                <small class="text-muted text-[10px]" style="font-size:0.65rem;">{{ payments.count }} Trxns</small>
+        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-success h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <small class="text-muted d-block text-xs uppercase fw-bold">Total Paid</small>
+                    <h3 class="fw-bold mb-1 text-success" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.amount_paid }}</h3>
+                    <small class="text-muted text-xs">Last: {{ last_payment_date|date:"d M Y"|default:"None" }}</small>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success rounded-3 p-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
             </div>
         </div>
     </div>
-    <!-- Remaining Balance (Red) -->
+    <!-- Card 3: Remaining Balance -->
     <div class="col-md-3">
-        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-danger h-100 d-flex align-items-center gap-3">
-            <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:48px; height:48px;">
-                <i class="fa-solid fa-clock-rotate-left fa-lg"></i>
-            </div>
-            <div>
-                <small class="text-muted d-block text-xs uppercase fw-bold">Remaining Balance</small>
-                <h4 class="fw-bold mb-0 text-danger" style="font-family:'Outfit',sans-serif;">
-                    {% if fee_ledger.remaining_balance == 0 %}
-                        ₹0.00
-                    {% else %}
-                        ₹{{ fee_ledger.remaining_balance }}
-                    {% endif %}
-                </h4>
-                <small class="text-muted text-[10px]" style="font-size:0.65rem;">
-                    {% if fee_ledger.remaining_balance == 0 %}
-                        Paid in Full
-                    {% else %}
-                        Pending
-                    {% endif %}
-                </small>
+        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-danger h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <small class="text-muted d-block text-xs uppercase fw-bold">Remaining Balance</small>
+                    <h3 class="fw-bold mb-1 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.remaining_balance }}</h3>
+                    <small class="text-muted text-xs">Adjustments applied</small>
+                </div>
+                <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
             </div>
         </div>
     </div>
-    <!-- Payment Status (Gold) -->
+    <!-- Card 4: Status / Adjustments Summary -->
     <div class="col-md-3">
-        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-warning h-100 d-flex align-items-center gap-3">
-            <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:48px; height:48px;">
-                <i class="fa-solid fa-shield-halved fa-lg"></i>
-            </div>
-            <div>
-                <small class="text-muted d-block text-xs uppercase fw-bold">Payment Status</small>
-                {% if fee_ledger.payment_status == 'paid' %}
-                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">Fully Paid</span>
-                {% elif fee_ledger.payment_status == 'partial' %}
-                    <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">Partial</span>
-                {% else %}
-                    <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">Unpaid</span>
-                {% endif %}
+        <div class="premium-card bg-white p-3 shadow-sm border border-light border-3 border-start border-warning h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <small class="text-muted d-block text-xs uppercase fw-bold">Ledger Status</small>
+                    <div class="mt-1">
+                        {% if payment_status_display == 'Paid' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">Paid in Full</span>
+                        {% elif payment_status_display == 'Partial' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">Partial Paid</span>
+                        {% elif payment_status_display == 'Overdue' %}
+                            <span class="badge bg-danger text-white rounded-pill fw-bold px-3 py-1 animate-pulse" style="background-color:#991b1b;">Overdue</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">Pending</span>
+                        {% endif %}
+                    </div>
+                    <div class="mt-2 text-[10px] text-muted" style="font-size:0.65rem;">
+                        Discount/Schol: ₹{{ fee_ledger.discount }}/₹{{ fee_ledger.scholarship }}
+                    </div>
+                </div>
+                <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-2">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Center Analytics / Breakdowns -->
 <div class="row g-4 mb-4">
     <!-- Fee Breakdown -->
     <div class="col-md-4">
         <div class="premium-card p-4 bg-white shadow-sm h-100">
-            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Detailed Fee Breakdown</h5>
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Fee Breakdown & Ledger</h5>
             <div class="p-3 bg-light rounded-3" style="font-size:0.85rem;">
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Admission Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.admission_fee }}</span>
+                    <span class="text-muted">Admission Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.admission_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Tuition Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.tuition_fee }}</span>
+                    <span class="text-muted">Tuition Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.tuition_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Exam Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.exam_fee }}</span>
+                    <span class="text-muted">Exam Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.exam_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Library Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.library_fee }}</span>
+                    <span class="text-muted">Computer Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.computer_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Sports Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.sports_fee }}</span>
+                    <span class="text-muted">Library Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.library_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Computer Lab Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.computer_fee }}</span>
+                    <span class="text-muted">Sports Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.sports_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Transport Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.transport_fee }}</span>
+                    <span class="text-muted">Transport Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.transport_fee }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Miscellaneous Fee</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.misc_fee }}</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Late Fee Rule Penalty</span>
-                    <span class="fw-bold text-dark">₹{{ fee_ledger.fee_plan.late_fee }}</span>
+                    <span class="text-muted">Misc Fee:</span>
+                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.misc_fee }}</strong>
                 </div>
                 <hr class="my-2">
-                <div class="d-flex justify-content-between mb-2 text-danger">
-                    <span>Discount Allocation</span>
-                    <span class="fw-bold">-₹{{ fee_ledger.discount }}</span>
+                <div class="d-flex justify-content-between text-danger mb-2">
+                    <span>Discount:</span>
+                    <strong class="text-danger">-₹{{ fee_ledger.discount }}</strong>
                 </div>
-                <div class="d-flex justify-content-between mb-2 text-danger">
-                    <span>Scholarship Applied</span>
-                    <span class="fw-bold">-₹{{ fee_ledger.scholarship }}</span>
+                <div class="d-flex justify-content-between text-danger mb-2">
+                    <span>Scholarship:</span>
+                    <strong class="text-danger">-₹{{ fee_ledger.scholarship }}</strong>
                 </div>
-                <div class="d-flex justify-content-between mb-2 text-danger">
-                    <span>Admin Waived</span>
-                    <span class="fw-bold">-₹{{ fee_ledger.waived_amount }}</span>
+                <div class="d-flex justify-content-between text-danger mb-2">
+                    <span>Admin Waiver:</span>
+                    <strong class="text-danger">-₹{{ fee_ledger.waived_amount }}</strong>
                 </div>
                 <hr class="my-2">
-                <div class="d-flex justify-content-between fw-bold text-dark pt-1" style="font-size:1rem;">
-                    <span>Grand Total</span>
+                <div class="d-flex justify-content-between fw-bold text-dark pt-1">
+                    <span>Total Net Fee:</span>
                     <span class="text-success">₹{{ fee_ledger.total_fee }}</span>
                 </div>
+                <div class="d-flex justify-content-between fw-bold text-dark pt-1">
+                    <span>Total Paid:</span>
+                    <span class="text-success">₹{{ fee_ledger.amount_paid }}</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold text-dark pt-1">
+                    <span>Remaining Due:</span>
+                    <span class="text-danger">₹{{ fee_ledger.remaining_balance }}</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Analytics Charts -->
+    <!-- Charts and Progress (Middle) -->
     <div class="col-md-5">
         <div class="premium-card p-4 bg-white shadow-sm h-100">
-            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-chart-pie me-2 text-accent"></i> Fee Collection Analytics</h5>
-            <div style="height: 220px; position: relative;">
-                <canvas id="paymentsDistributionChart"></canvas>
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-chart-pie me-2 text-accent"></i> Payment Progress & Allocation</h5>
+            <div class="d-flex align-items-center justify-content-around flex-wrap gap-3 mt-2">
+                <!-- Circular Progress -->
+                <div class="circular-progress">
+                    <svg>
+                        <circle class="bg-circle" cx="70" cy="70" r="58"></circle>
+                        <circle class="progress-circle" cx="70" cy="70" r="58" id="svgProgressCircle"></circle>
+                    </svg>
+                    <div class="circular-value" id="circularProgressVal">0%</div>
+                </div>
+
+                <!-- Chart.js Distribution -->
+                <div style="width: 180px; height: 180px;">
+                    <canvas id="feeChartCanvas"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Timeline View (Left-side) -->
+    <!-- Payment Timeline Milestones -->
     <div class="col-md-3">
         <div class="premium-card p-4 bg-white shadow-sm h-100">
-            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-route me-2 text-accent"></i> Milestones</h5>
-            <div class="d-flex flex-column gap-1">
-                <div class="timeline-item {% if fee_ledger.amount_paid > 0 %}completed{% endif %}">
-                    <span class="fw-bold d-block text-xs">Admission Fee</span>
-                    <small class="text-muted">Cleared during sign-up</small>
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-route me-2 text-accent"></i> Payment Timeline</h5>
+            <div class="mt-2" style="font-size: 0.85rem;">
+                <div class="timeline-milestone {% if fee_ledger.amount_paid > 0 %}completed{% endif %}">
+                    <span class="fw-bold d-block text-dark">Admission Fee Mapped</span>
+                    <small class="text-muted">Dynamic enrollment check</small>
                 </div>
-                <div class="timeline-item {% if "Q1" in paid_installments or fee_ledger.remaining_balance == 0 %}completed{% endif %}">
-                    <span class="fw-bold d-block text-xs">First Installment (Q1)</span>
-                    <small class="text-muted">Tuition first quarter</small>
+                <div class="timeline-milestone {% if "Q1" in paid_installments or fee_ledger.remaining_balance == 0 %}completed{% else %}pending{% endif %}">
+                    <span class="fw-bold d-block text-dark">Q1 Installment</span>
+                    <small class="text-muted">First quarter fee structure</small>
                 </div>
-                <div class="timeline-item {% if "Q2" in paid_installments or fee_ledger.remaining_balance == 0 %}completed{% endif %}">
-                    <span class="fw-bold d-block text-xs">Second Installment (Q2)</span>
-                    <small class="text-muted">Tuition second quarter</small>
+                <div class="timeline-milestone {% if "Q2" in paid_installments or fee_ledger.remaining_balance == 0 %}completed{% else %}pending{% endif %}">
+                    <span class="fw-bold d-block text-dark">Q2 Installment</span>
+                    <small class="text-muted">Second quarter fee structure</small>
                 </div>
-                <div class="timeline-item {% if fee_ledger.remaining_balance == 0 %}completed{% endif %}">
-                    <span class="fw-bold d-block text-xs">Completed</span>
-                    <small class="text-muted">Fully cleared balance</small>
+                <div class="timeline-milestone {% if fee_ledger.remaining_balance == 0 %}completed{% else %}pending{% endif %}">
+                    <span class="fw-bold d-block text-dark">Completed</span>
+                    <small class="text-muted">Full annual settlement</small>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Filters & Search -->
+<div class="premium-card p-4 bg-white mb-4 shadow-sm">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search Transaction</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Receipt or Txn ID...">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="method">Method</label>
+            <select name="method" id="method" class="form-select rounded-pill">
+                <option value="">-- Mode --</option>
+                <option value="cash" {% if method_filter == 'cash' %}selected{% endif %}>Cash</option>
+                <option value="upi" {% if method_filter == 'upi' %}selected{% endif %}>UPI</option>
+                <option value="card" {% if method_filter == 'card' %}selected{% endif %}>Card</option>
+                <option value="bank_transfer" {% if method_filter == 'bank_transfer' %}selected{% endif %}>Bank</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="installment">Installment</label>
+            <select name="installment" id="installment" class="form-select rounded-pill">
+                <option value="">-- Period --</option>
+                <option value="Annual" {% if installment_filter == 'Annual' %}selected{% endif %}>Annual</option>
+                <option value="Q1" {% if installment_filter == 'Q1' %}selected{% endif %}>Q1</option>
+                <option value="Q2" {% if installment_filter == 'Q2' %}selected{% endif %}>Q2</option>
+                <option value="Q3" {% if installment_filter == 'Q3' %}selected{% endif %}>Q3</option>
+                <option value="Q4" {% if installment_filter == 'Q4' %}selected{% endif %}>Q4</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="start_date">Start</label>
+            <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}" class="form-control rounded-pill">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="end_date">End</label>
+            <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}" class="form-control rounded-pill">
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter"></i></button>
+        </div>
+    </form>
 </div>
 
 <!-- Transaction Table -->
@@ -308,7 +408,7 @@
                 <tr>
                     <td colspan="10" class="text-center py-5 text-muted">
                         <i class="fa-solid fa-receipt fa-2x opacity-25 mb-2"></i>
-                        <p class="mb-2">No payment transaction records found.</p>
+                        <p class="mb-2">No payment transaction records found matching filters.</p>
                         <button class="btn btn-sm btn-premium-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#collectPaymentModal">Create Payment</button>
                     </td>
                 </tr>
@@ -467,51 +567,74 @@
             percent = Math.round((paid / total) * 100);
         }
         
-        const progPercent = document.getElementById("progressPercentage");
-        const progBar = document.getElementById("progressBar");
-        
-        if (progPercent && progBar) {
-            progPercent.innerText = percent + "%";
-            progBar.style.width = percent + "%";
+        // Circular Progress Calculation
+        const circularVal = document.getElementById("circularProgressVal");
+        const svgProgress = document.getElementById("svgProgressCircle");
+        if (circularVal && svgProgress) {
+            circularVal.innerText = percent + "%";
             
-            // Color rules
+            // Calculate stroke-dashoffset based on radius 58 (circumference = 2 * PI * 58 = 364.42)
+            const circumference = 2 * Math.PI * 58;
+            svgProgress.style.strokeDasharray = circumference;
+            const offset = circumference - (percent / 100) * circumference;
+            svgProgress.style.strokeDashoffset = offset;
+            
+            // Apply colors based on threshold
             if (percent <= 30) {
-                progBar.className = "progress-bar progress-bar-striped progress-bar-animated rounded-pill bg-danger";
+                svgProgress.style.stroke = "#dc2626"; // Red
             } else if (percent <= 70) {
-                progBar.className = "progress-bar progress-bar-striped progress-bar-animated rounded-pill bg-warning";
+                svgProgress.style.stroke = "#ea580c"; // Orange
             } else if (percent < 100) {
-                progBar.className = "progress-bar progress-bar-striped progress-bar-animated rounded-pill bg-primary";
+                svgProgress.style.stroke = "#2563eb"; // Blue
             } else {
-                progBar.className = "progress-bar progress-bar-striped progress-bar-animated rounded-pill bg-success";
+                svgProgress.style.stroke = "#16a34a"; // Green
             }
         }
-        
+
         // Chart.js Category Distribution Setup
-        const ctx = document.getElementById('paymentsDistributionChart');
+        const ctx = document.getElementById('feeChartCanvas');
         if (ctx) {
             new Chart(ctx, {
-                type: 'doughnut',
+                type: 'bar',
                 data: {
-                    labels: ['Total Paid (INR)', 'Remaining Balance (INR)'],
+                    labels: ['Admission', 'Tuition', 'Exam', 'Computer', 'Others'],
                     datasets: [{
-                        data: [paid, remaining],
-                        backgroundColor: ['#16a34a', '#dc2626'],
-                        borderWidth: 2,
-                        hoverOffset: 4
+                        label: 'Fee Component (INR)',
+                        data: [
+                            parseFloat("{{ fee_ledger.fee_plan.admission_fee|default:0 }}"),
+                            parseFloat("{{ fee_ledger.fee_plan.tuition_fee|default:0 }}"),
+                            parseFloat("{{ fee_ledger.fee_plan.exam_fee|default:0 }}"),
+                            parseFloat("{{ fee_ledger.fee_plan.computer_fee|default:0 }}"),
+                            parseFloat("{{ fee_ledger.fee_plan.library_fee|default:0 }}") + 
+                            parseFloat("{{ fee_ledger.fee_plan.sports_fee|default:0 }}") + 
+                            parseFloat("{{ fee_ledger.fee_plan.transport_fee|default:0 }}") + 
+                            parseFloat("{{ fee_ledger.fee_plan.misc_fee|default:0 }}")
+                        ],
+                        backgroundColor: '#0c2b4d',
+                        borderColor: '#0c2b4d',
+                        borderWidth: 1,
+                        borderRadius: 5
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    family: "'Outfit', sans-serif",
-                                    size: 11
-                                }
-                            }
+                            display: false
                         }
                     }
                 }
