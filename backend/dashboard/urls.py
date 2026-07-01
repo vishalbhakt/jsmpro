@@ -108,4 +108,8 @@ urlpatterns = [
     path("dashboard/admin/notifications/delete/<int:notif_id>/", views.admin_notifications_delete, name="admin_notifications_delete"),
     
     path("dashboard/admin/profile/", views.admin_profile_redirect, name="admin_profile_redirect"),
+    path("dashboard/admin/id-cards/", views.admin_id_cards, name="admin_id_cards"),
+    path("dashboard/admin/id-cards/view/<str:role>/<int:profile_id>/", views.admin_id_card_view, name="admin_id_card_view"),
+    path("dashboard/admin/id-cards/print/<str:role>/<int:profile_id>/", views.admin_id_card_print, name="admin_id_card_print"),
+    path("verify/id/<str:verification_code>/", views.verify_id_card, name="verify_id_card"),
 ]

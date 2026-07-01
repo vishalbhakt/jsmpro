@@ -1,0 +1,207 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}{{ profile.user.full_name }} ID Card Preview - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_css %}
+<style>
+    .id-card-container {
+        max-width: 380px;
+        margin: 0 auto;
+        perspective: 1000px;
+    }
+    .id-card-wrapper {
+        width: 100%;
+        height: 480px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .id-card-wrapper.flipped {
+        transform: rotateY(180deg);
+    }
+    .id-card-side {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        backface-visibility: hidden;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+    }
+    .id-card-back {
+        transform: rotateY(180deg);
+    }
+    .id-card-header {
+        background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);
+        color: #fff;
+        padding: 15px;
+        text-align: center;
+        border-bottom: 4px solid var(--accent-color);
+    }
+    .id-card-header img {
+        height: 40px;
+        object-fit: contain;
+    }
+    .id-card-body {
+        padding: 24px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .id-card-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        margin-bottom: 15px;
+    }
+    .id-card-meta {
+        font-size: 0.85rem;
+        color: #475569;
+        margin-bottom: 4px;
+        width: 100%;
+    }
+    .id-card-footer {
+        background: #f8fafc;
+        padding: 12px 15px;
+        border-top: 1px solid #e2e8f0;
+        width: 100%;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_id_cards' %}" class="text-white-50 text-decoration-none">ID Cards</a></li>
+                <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Preview</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0 text-primary" style="font-family: 'Outfit', sans-serif;">Digital ID Card Preview 📇</h2>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="premium-card p-4 bg-white text-center shadow-sm">
+            <h5 class="fw-bold mb-3 text-primary">{{ profile.user.full_name }}</h5>
+            <p class="text-muted text-xs mb-4">Click on the card to flip it and view barcode/verification details.</p>
+
+            <div class="id-card-container mb-4">
+                <div class="id-card-wrapper" onclick="this.classList.toggle('flipped')">
+                    <!-- Front Side -->
+                    <div class="id-card-side id-card-front">
+                        <div class="id-card-header">
+                            <img src="{% static 'images/logo.png' %}" class="mb-1">
+                            <div class="text-xs fw-bold text-white uppercase tracking-wider">JSM SHIKSHA ACADEMY</div>
+                            <small class="text-white-50 text-[9px] uppercase tracking-widest block">{% if role == 'student' %}STUDENT{% else %}TEACHER{% endif %} ID CARD</small>
+                        </div>
+                        <div class="id-card-body">
+                            {% if profile.user.avatar %}
+                                <img src="{{ profile.user.avatar.url }}" class="id-card-avatar">
+                            {% else %}
+                                <div class="id-card-avatar d-flex align-items-center justify-content-center bg-light">
+                                    <i class="fa-solid fa-user-graduate fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <h5 class="fw-bold text-primary mb-1">{{ profile.user.full_name }}</h5>
+                            <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1 text-xs mb-3">
+                                {% if role == 'student' %}Adm: {{ profile.admission_number }}{% else %}Emp: {{ profile.employee_id }}{% endif %}
+                            </div>
+                            
+                            <div class="id-card-meta">
+                                {% if role == 'student' %}
+                                    <div class="text-xs">Grade: <strong>{{ profile.classroom.name|default:"—" }}</strong></div>
+                                    <div class="text-xs">Roll Number: <strong>{{ profile.roll_number|default:"—" }}</strong></div>
+                                    <div class="text-xs">Academic Year: <strong>2026-27</strong></div>
+                                {% else %}
+                                    <div class="text-xs">Designation: <strong>{{ profile.designation|default:"Teacher" }}</strong></div>
+                                    <div class="text-xs">Department: <strong>{{ profile.department|default:"Academic" }}</strong></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="id-card-footer text-xs text-muted">
+                            <i class="fa-solid fa-qrcode me-1"></i> Scan QR on back to verify card authenticity
+                        </div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div class="id-card-side id-card-back">
+                        <div class="id-card-header bg-dark">
+                            <div class="text-xs fw-bold text-white uppercase tracking-wider">JSM SHIKSHA ACADEMY</div>
+                            <small class="text-white-50 text-[9px] uppercase tracking-widest block">TERMS & CONDITIONS</small>
+                        </div>
+                        <div class="id-card-body py-3">
+                            <div class="text-[10px] text-muted text-start mb-3">
+                                • This card is property of JSM Shiksha Academy.<br>
+                                • Loss must be reported to school office immediately.<br>
+                                • Emergency Contact: <strong>+91 98765 43210</strong>
+                            </div>
+                            
+                            <!-- QR Code Holder -->
+                            <div class="p-2 border rounded bg-light mb-3" style="width:110px; height:110px; display: flex; align-items: center; justify-content: center;">
+                                <div id="qrCodeContainer"></div>
+                            </div>
+                            
+                            <div class="id-card-meta text-xs">
+                                <div>Blood Group: <strong>{{ profile.blood_group|default:"O+" }}</strong></div>
+                                <div>Valid Till: <strong>30-Jun-2027</strong></div>
+                            </div>
+                        </div>
+                        <div class="id-card-footer text-xs text-muted border-top d-flex justify-content-between align-items-center">
+                            <span>Principal Signature</span>
+                            <span class="fw-bold text-primary">JSM SEAL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download and Print Actions -->
+            <div class="d-flex flex-column gap-2">
+                <a href="{% url 'admin_id_card_print' role profile.id %}" target="_blank" class="btn btn-premium-primary rounded-pill w-100 py-2.5">
+                    <i class="fa-solid fa-print me-2"></i> Print & Download PDF
+                </a>
+                <a href="{% url 'admin_id_cards' %}" class="btn btn-outline-secondary rounded-pill w-100 py-2.5">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Back to Roster
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const verifyUrl = "{{ verify_url }}";
+        const container = document.getElementById("qrCodeContainer");
+        if (container) {
+            new QRCode(container, {
+                text: verifyUrl,
+                width: 90,
+                height: 90,
+                colorDark: "#0c2b4d",
+                colorLight: "#ffffff"
+            });
+        }
+    });
+</script>
+{% endblock %}

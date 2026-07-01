@@ -3,6 +3,86 @@
 
 {% block title %}My Profile - JSM Shiksha Academy{% endblock %}
 
+{% block dashboard_css %}
+<style>
+    .id-card-container {
+        max-width: 380px;
+        margin: 0 auto;
+        perspective: 1000px;
+    }
+    .id-card-wrapper {
+        width: 100%;
+        height: 480px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .id-card-wrapper.flipped {
+        transform: rotateY(180deg);
+    }
+    .id-card-side {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        backface-visibility: hidden;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+    }
+    .id-card-back {
+        transform: rotateY(180deg);
+    }
+    .id-card-header {
+        background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);
+        color: #fff;
+        padding: 15px;
+        text-align: center;
+        border-bottom: 4px solid var(--accent-color);
+        position: relative;
+    }
+    .id-card-header img {
+        height: 38px;
+        object-fit: contain;
+    }
+    .id-card-body {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .id-card-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        margin-bottom: 12px;
+    }
+    .id-card-meta {
+        font-size: 0.82rem;
+        color: #64748b;
+        margin-bottom: 4px;
+        width: 100%;
+    }
+    .id-card-footer {
+        background: #f8fafc;
+        padding: 10px 15px;
+        border-top: 1px solid #e2e8f0;
+        width: 100%;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 <!-- Hero Banner -->
 <div class="premium-card p-5 mb-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #082d54 100%);">
@@ -10,7 +90,7 @@
         <div class="col-md-8">
             <span class="badge-premium-gold mb-3"><i class="fa-solid fa-user-gear me-1"></i> Profile Settings</span>
             <h1 class="display-6 text-white mb-2 fw-bold">My Academy Profile 🎓</h1>
-            <p class="text-white-50 mb-0">Update your personal details, profile picture, and account password.</p>
+            <p class="text-white-50 mb-0">Update your personal details, profile picture, and view your digital ID card.</p>
         </div>
         <div class="col-md-4 text-end d-none d-md-block">
             <i class="fa-solid fa-id-card text-white opacity-10" style="font-size: 7rem;"></i>
@@ -19,9 +99,9 @@
 </div>
 
 <div class="row g-4">
-    <!-- Profile Avatar Card -->
+    <!-- Left Column: Avatar and Info -->
     <div class="col-lg-4">
-        <div class="premium-card p-4 bg-white text-center mb-4">
+        <div class="premium-card p-4 bg-white text-center mb-4 shadow-sm border border-light">
             <div class="mb-3">
                 {% if user.avatar %}
                     <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle border border-4 shadow" style="width: 120px; height: 120px; object-fit: cover; border-color: var(--accent-color) !important;">
@@ -31,14 +111,14 @@
                     </div>
                 {% endif %}
             </div>
-            <h4 class="fw-bold mb-1" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">{{ user.full_name }}</h4>
-            <p class="text-muted mb-3" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">{{ user.role }}</p>
+            <h4 class="fw-bold mb-1 text-primary" style="font-family: 'Outfit', sans-serif;">{{ user.full_name }}</h4>
+            <p class="text-muted mb-3" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">{{ user.role|upper }}</p>
             <span class="badge-premium-gold">@{{ user.username }}</span>
         </div>
 
         <!-- Account Info Card -->
-        <div class="premium-card p-4 bg-white">
-            <h5 class="fw-bold mb-3" style="color: var(--primary-color);"><i class="fa-solid fa-circle-info me-2" style="color: var(--accent-color);"></i> Account Info</h5>
+        <div class="premium-card p-4 bg-white shadow-sm border border-light mb-4">
+            <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-circle-info me-2 text-accent"></i> Account Info</h5>
             <div class="d-flex justify-content-between py-2 border-bottom">
                 <span class="text-muted small">Email</span>
                 <span class="fw-bold small">{{ user.email }}</span>
@@ -56,68 +136,257 @@
                 <span class="badge bg-success bg-opacity-10 text-success small fw-bold">Active ✓</span>
             </div>
         </div>
+
+        <!-- ID Card Preview Section (Only for Students and Teachers) -->
+        {% if user.role == 'student' or user.role == 'teacher' %}
+        <div class="premium-card p-4 bg-white shadow-sm border border-light text-center">
+            <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-id-card me-2 text-accent"></i> Identity Card</h5>
+            <p class="text-muted text-xs mb-4">Your official school digital ID. Click card to flip.</p>
+            
+            <!-- Flappable ID Card -->
+            <div class="id-card-container mb-4">
+                <div class="id-card-wrapper" id="idCardWrapper" onclick="this.classList.toggle('flipped')">
+                    <!-- Front Side -->
+                    <div class="id-card-side id-card-front">
+                        <div class="id-card-header">
+                            <img src="{% static 'images/logo.png' %}" class="mb-1">
+                            <div class="text-xs fw-bold text-white uppercase tracking-wider">JSM SHIKSHA ACADEMY</div>
+                            <small class="text-white-50 text-[9px] uppercase tracking-widest block">{% if user.role == 'student' %}STUDENT{% else %}TEACHER{% endif %} ID CARD</small>
+                        </div>
+                        <div class="id-card-body">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" class="id-card-avatar">
+                            {% else %}
+                                <div class="id-card-avatar d-flex align-items-center justify-content-center bg-light">
+                                    <i class="fa-solid fa-user-graduate fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <h5 class="fw-bold text-primary mb-1">{{ user.full_name }}</h5>
+                            <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1 text-xs mb-3">
+                                {% if user.role == 'student' %}Adm: {{ user.student_profile.admission_number }}{% else %}Emp: {{ user.teacher_profile.employee_id }}{% endif %}
+                            </div>
+                            
+                            <div class="id-card-meta">
+                                {% if user.role == 'student' %}
+                                    <div class="text-xs">Grade: <strong>{{ user.student_profile.classroom.name|default:"—" }}</strong></div>
+                                    <div class="text-xs">Roll Number: <strong>{{ user.student_profile.roll_number|default:"—" }}</strong></div>
+                                    <div class="text-xs">Academic Year: <strong>2026-27</strong></div>
+                                {% else %}
+                                    <div class="text-xs">Designation: <strong>{{ user.teacher_profile.designation|default:"Teacher" }}</strong></div>
+                                    <div class="text-xs">Department: <strong>{{ user.teacher_profile.department|default:"Academic" }}</strong></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="id-card-footer text-xs text-muted">
+                            <i class="fa-solid fa-qrcode me-1"></i> Scan QR on back to verify card authenticity
+                        </div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div class="id-card-side id-card-back">
+                        <div class="id-card-header bg-dark">
+                            <div class="text-xs fw-bold text-white uppercase tracking-wider">JSM SHIKSHA ACADEMY</div>
+                            <small class="text-white-50 text-[9px] uppercase tracking-widest block">TERMS & CONDITIONS</small>
+                        </div>
+                        <div class="id-card-body py-3">
+                            <div class="text-[10px] text-muted text-start mb-3">
+                                • This card is property of JSM Shiksha Academy.<br>
+                                • Loss must be reported to school office immediately.<br>
+                                • Emergency Contact: <strong>+91 98765 43210</strong>
+                            </div>
+                            
+                            <!-- QR Code Holder -->
+                            <div class="p-2 border rounded bg-light mb-3" style="width:110px; height:110px;">
+                                <div id="qrCodeContainer"></div>
+                            </div>
+                            
+                            <div class="id-card-meta text-xs">
+                                <div>Blood Group: <strong>{{ user.student_profile.blood_group|default:user.teacher_profile.blood_group|default:"O+" }}</strong></div>
+                                <div>Valid Till: <strong>30-Jun-2027</strong></div>
+                            </div>
+                        </div>
+                        <div class="id-card-footer text-xs text-muted border-top d-flex justify-content-between align-items-center">
+                            <span>Principal Signature</span>
+                            <span class="fw-bold text-primary">JSM SEAL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download and Print Actions -->
+            <div class="d-flex flex-column gap-2">
+                <a href="{% if user.role == 'student' %}{% url 'admin_id_card_print' 'student' user.student_profile.id %}{% else %}{% url 'admin_id_card_print' 'teacher' user.teacher_profile.id %}{% endif %}" target="_blank" class="btn btn-premium-primary rounded-pill w-100 py-2.5">
+                    <i class="fa-solid fa-print me-2"></i> Print & Download PDF
+                </a>
+                <button type="button" class="btn btn-outline-secondary rounded-pill w-100 py-2.5" onclick="regenerateCard()">
+                    <i class="fa-solid fa-rotate me-2"></i> Regenerate ID Card
+                </button>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Edit Forms -->
+    <!-- Right Column: Edit Forms -->
     <div class="col-lg-8">
         <!-- Personal Info Form -->
-        <div class="premium-card p-5 bg-white mb-4">
-            <h4 class="fw-bold mb-4" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">
-                <i class="fa-solid fa-pen-to-square me-2" style="color: var(--accent-color);"></i> Update Personal Info
+        <div class="premium-card p-5 bg-white mb-4 shadow-sm border border-light">
+            <h4 class="fw-bold mb-4 text-primary" style="font-family: 'Outfit', sans-serif;">
+                <i class="fa-solid fa-pen-to-square me-2 text-accent"></i> Update Personal Info
             </h4>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type="hidden" name="form_type" value="profile">
+                <input type="hidden" name="action" value="update_profile">
+                
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">First Name</label>
-                        <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control" placeholder="First Name" required>
+                        <label class="form-label fw-bold text-sm text-primary">First Name</label>
+                        {{ p_form.first_name }}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Last Name</label>
-                        <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control" placeholder="Last Name">
+                        <label class="form-label fw-bold text-sm text-primary">Last Name</label>
+                        {{ p_form.last_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm text-primary">Email Address</label>
+                        {{ p_form.email }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm text-primary">Phone Number</label>
+                        {{ p_form.phone }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm text-primary">Date of Birth</label>
+                        {{ p_form.date_of_birth }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm text-primary">Gender</label>
+                        {{ p_form.gender }}
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Email Address</label>
-                        <input type="email" name="email" value="{{ user.email }}" class="form-control" placeholder="Email Address" required>
+                        <label class="form-label fw-bold text-sm text-primary">Address</label>
+                        {{ p_form.address }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-sm text-primary">City</label>
+                        {{ p_form.city }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-sm text-primary">State</label>
+                        {{ p_form.state }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-sm text-primary">PIN Code</label>
+                        {{ p_form.pincode }}
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Phone Number</label>
-                        <input type="text" name="phone" value="{{ user.phone|default:'' }}" class="form-control" placeholder="Phone Number">
+                        <label class="form-label fw-bold text-sm text-primary">Profile Picture</label>
+                        {{ p_form.avatar }}
                     </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Profile Picture</label>
-                        <input type="file" name="avatar" class="form-control" accept="image/*">
-                    </div>
+                    
+                    <!-- Sub Profile specific fields -->
+                    {% if user.role == 'student' and sp_form %}
+                        <hr class="my-4">
+                        <h5 class="fw-bold text-accent mb-2"><i class="fa-solid fa-graduation-cap me-2"></i> Academic & Guardian Information</h5>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Roll Number</label>
+                            {{ sp_form.roll_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Blood Group</label>
+                            {{ sp_form.blood_group }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Aadhaar Number (Optional)</label>
+                            {{ sp_form.aadhaar_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Father Name</label>
+                            {{ sp_form.father_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Mother Name</label>
+                            {{ sp_form.mother_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Guardian Name</label>
+                            {{ sp_form.guardian_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Guardian Mobile</label>
+                            {{ sp_form.guardian_phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Emergency Contact</label>
+                            {{ sp_form.emergency_contact }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">House (Group)</label>
+                            {{ sp_form.house }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Bus Route (Optional)</label>
+                            {{ sp_form.bus_route }}
+                        </div>
+                    {% endif %}
+                    
+                    {% if user.role == 'teacher' and tp_form %}
+                        <hr class="my-4">
+                        <h5 class="fw-bold text-accent mb-2"><i class="fa-solid fa-chalkboard-teacher me-2"></i> Teacher Professional Information</h5>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Designation</label>
+                            {{ tp_form.designation }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Qualification</label>
+                            {{ tp_form.qualification }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Department</label>
+                            {{ tp_form.department }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Subjects Taught (Comma Separated)</label>
+                            {{ tp_form.subjects_taught }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Blood Group</label>
+                            {{ tp_form.blood_group }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-sm text-primary">Emergency Contact</label>
+                            {{ tp_form.emergency_contact }}
+                        </div>
+                    {% endif %}
                 </div>
+                
                 <div class="mt-4">
                     <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3">
-                        <i class="fa-solid fa-save me-2"></i> Save Changes
+                        <i class="fa-solid fa-save me-2"></i> Save Changes & Update ID Card
                     </button>
                 </div>
             </form>
         </div>
 
         <!-- Change Password Form -->
-        <div class="premium-card p-5 bg-white">
-            <h4 class="fw-bold mb-4" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">
-                <i class="fa-solid fa-lock me-2" style="color: var(--sky-blue);"></i> Change Password
+        <div class="premium-card p-5 bg-white shadow-sm border border-light">
+            <h4 class="fw-bold mb-4 text-primary" style="font-family: 'Outfit', sans-serif;">
+                <i class="fa-solid fa-lock me-2 text-sky-blue"></i> Change Password
             </h4>
             <form method="post">
                 {% csrf_token %}
-                <input type="hidden" name="form_type" value="password">
+                <input type="hidden" name="action" value="change_password">
                 <div class="row g-3">
                     <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Current Password</label>
-                        <input type="password" name="current_password" class="form-control" placeholder="Current Password" required>
+                        <label class="form-label fw-bold text-sm text-primary">Current Password</label>
+                        <input type="password" name="old_password" class="form-control rounded-xl p-3" placeholder="Current Password" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">New Password</label>
-                        <input type="password" name="new_password1" class="form-control" placeholder="New Password" required>
+                        <label class="form-label fw-bold text-sm text-primary">New Password</label>
+                        <input type="password" name="new_password" class="form-control rounded-xl p-3" placeholder="New Password" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Confirm New Password</label>
-                        <input type="password" name="new_password2" class="form-control" placeholder="Confirm Password" required>
+                        <label class="form-label fw-bold text-sm text-primary">Confirm New Password</label>
+                        <input type="password" name="confirm_password" class="form-control rounded-xl p-3" placeholder="Confirm Password" required>
                     </div>
                 </div>
                 <div class="mt-4">
@@ -129,4 +398,30 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block dashboard_js %}
+{% if user.role == 'student' or user.role == 'teacher' %}
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const verifyUrl = "{% if user.role == 'student' %}{% url 'verify_id_card' user.username %}{% else %}{% url 'verify_id_card' user.username %}{% endif %}";
+        const container = document.getElementById("qrCodeContainer");
+        if (container) {
+            new QRCode(container, {
+                text: window.location.origin + verifyUrl,
+                width: 90,
+                height: 90,
+                colorDark: "#0c2b4d",
+                colorLight: "#ffffff"
+            });
+        }
+    });
+
+    function regenerateCard() {
+        showToast("Success", "Identity card generated successfully with latest updates.");
+    }
+</script>
+{% endif %}
 {% endblock %}

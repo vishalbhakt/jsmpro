@@ -2307,4 +2307,117 @@ def admin_profile_redirect(request):
     return redirect("my_profile")
 
 
+@login_required
+def admin_id_cards(request):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    q = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "")
+    
+    students = StudentProfile.objects.all().select_related("user", "classroom")
+    teachers = TeacherProfile.objects.all().select_related("user")
+    
+    if q:
+        students = students.filter(
+            Q(user__first_name__icontains=q) | 
+            Q(user__last_name__icontains=q) |
+            Q(admission_number__icontains=q)
+        )
+        teachers = teachers.filter(
+            Q(user__first_name__icontains=q) | 
+            Q(user__last_name__icontains=q) |
+            Q(employee_id__icontains=q)
+        )
+        
+    student_list = [{"type": "student", "profile": s, "name": s.user.full_name, "id": s.id, "identifier": s.admission_number, "classroom": s.classroom.name if s.classroom else "—"} for s in students]
+    teacher_list = [{"type": "teacher", "profile": t, "name": t.user.full_name, "id": t.id, "identifier": t.employee_id, "classroom": t.designation} for t in teachers]
+    
+    combined_list = []
+    if role_filter == "student":
+        combined_list = student_list
+    elif role_filter == "teacher":
+        combined_list = teacher_list
+    else:
+        combined_list = student_list + teacher_list
+        
+    # Pagination
+    from django.core.paginator import Paginator
+    paginator = Paginator(combined_list, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "admin/id_cards.html", {
+        "cards": page_obj,
+        "is_dashboard_view": True,
+        "q": q,
+        "role_filter": role_filter
+    })
+
+@login_required
+def admin_id_card_view(request, role, profile_id):
+    # Only Admin or the owner can view
+    is_admin = request.user.role == "admin"
+    
+    profile = None
+    if role == "student":
+        profile = get_object_or_404(StudentProfile, id=profile_id)
+        if not is_admin and request.user != profile.user:
+            return redirect("dashboard_redirect")
+    elif role == "teacher":
+        profile = get_object_or_404(TeacherProfile, id=profile_id)
+        if not is_admin and request.user != profile.user:
+            return redirect("dashboard_redirect")
+    else:
+        return redirect("dashboard_redirect")
+        
+    # Generate verification link for QR Code
+    verify_url = request.build_absolute_uri(f"/verify/id/{profile.user.username}/")
+    
+    return render(request, "admin/id_card_view.html", {
+        "role": role,
+        "profile": profile,
+        "verify_url": verify_url,
+        "is_dashboard_view": True
+    })
+
+@login_required
+def admin_id_card_print(request, role, profile_id):
+    is_admin = request.user.role == "admin"
+    profile = None
+    if role == "student":
+        profile = get_object_or_404(StudentProfile, id=profile_id)
+        if not is_admin and request.user != profile.user:
+            return redirect("dashboard_redirect")
+    elif role == "teacher":
+        profile = get_object_or_404(TeacherProfile, id=profile_id)
+        if not is_admin and request.user != profile.user:
+            return redirect("dashboard_redirect")
+    else:
+        return redirect("dashboard_redirect")
+        
+    verify_url = request.build_absolute_uri(f"/verify/id/{profile.user.username}/")
+    
+    return render(request, "admin/id_card_print.html", {
+        "role": role,
+        "profile": profile,
+        "verify_url": verify_url
+    })
+
+def verify_id_card(request, verification_code):
+    user = get_object_or_404(User, username=verification_code)
+    profile = None
+    role = user.role
+    if role == "student" and hasattr(user, "student_profile"):
+        profile = user.student_profile
+    elif role == "teacher" and hasattr(user, "teacher_profile"):
+        profile = user.teacher_profile
+        
+    return render(request, "accounts/id_card_verify.html", {
+        "user_profile": user,
+        "profile": profile,
+        "role": role
+    })
+
+
 

@@ -40,6 +40,7 @@ class AdmissionInquiryForm(forms.ModelForm):
         }
 
 class ProfileUpdateForm(forms.ModelForm):
+    gender = forms.ChoiceField(choices=[("", "-- Select --"), ("Male", "Male"), ("Female", "Female"), ("Other", "Other")], widget=forms.Select(attrs={"class": "form-select rounded-xl p-3"}), required=False)
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "phone", "bio", "date_of_birth", "gender", "address", "city", "state", "country", "pincode", "avatar"]
@@ -50,7 +51,6 @@ class ProfileUpdateForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "bio": forms.Textarea(attrs={"class": "form-control rounded-xl p-3", "rows": 3}),
             "date_of_birth": forms.DateInput(attrs={"class": "form-control rounded-xl p-3", "type": "date"}),
-            "gender": forms.Select(attrs={"class": "form-select rounded-xl p-3"}),
             "address": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "city": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "state": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
@@ -62,20 +62,31 @@ class ProfileUpdateForm(forms.ModelForm):
 class StudentProfileForm(forms.ModelForm):
     class Meta:
         model = StudentProfile
-        fields = ["guardian_name", "guardian_phone", "blood_group"]
+        fields = ["roll_number", "blood_group", "guardian_name", "guardian_phone", "father_name", "mother_name", "emergency_contact", "house", "bus_route", "aadhaar_number"]
         widgets = {
+            "roll_number": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "blood_group": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "guardian_name": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "guardian_phone": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
-            "blood_group": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "father_name": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "mother_name": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "emergency_contact": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "house": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "bus_route": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "aadhaar_number": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
         }
 
 class TeacherProfileForm(forms.ModelForm):
     class Meta:
         model = TeacherProfile
-        fields = ["designation", "qualification"]
+        fields = ["designation", "qualification", "department", "subjects_taught", "blood_group", "emergency_contact"]
         widgets = {
             "designation": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "qualification": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "department": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "subjects_taught": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "blood_group": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
+            "emergency_contact": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
         }
 
 class UserChangePasswordForm(forms.Form):
