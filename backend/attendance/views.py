@@ -34,8 +34,24 @@ class AttendanceSessionViewSet(viewsets.ModelViewSet):
                 | Q(subject__teacher=user.teacher_profile)
             ).distinct()
         if is_student(user) and hasattr(user, "student_profile"):
-            return qs.filter(classroom=user.student_profile.classroom)
-        return qs.none()
+            qs = qs.filter(classroom=user.student_profile.classroom)
+        elif not is_admin(user):
+            qs = qs.none()
+
+        # Dynamic query filters
+        classroom = self.request.query_params.get("classroom")
+        if classroom:
+            qs = qs.filter(classroom_id=classroom)
+            
+        subject = self.request.query_params.get("subject")
+        if subject:
+            qs = qs.filter(subject_id=subject)
+            
+        date = self.request.query_params.get("date")
+        if date:
+            qs = qs.filter(date=date)
+
+        return qs
 
     def perform_create(self, serializer):
         teacher = getattr(self.request.user, "teacher_profile", None)

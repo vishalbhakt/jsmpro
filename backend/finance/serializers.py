@@ -16,6 +16,7 @@ class FeePlanSerializer(serializers.ModelSerializer):
             "description",
             "amount",
             "due_date",
+            "fee_type",
             "is_active",
             "created_at",
             "updated_at",
@@ -26,9 +27,12 @@ class FeePlanSerializer(serializers.ModelSerializer):
         return str(obj.classroom)
 
 
+from users.models import StudentProfile
+
 class PaymentSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source="student.user.full_name", read_only=True)
     fee_title = serializers.CharField(source="fee_plan.title", read_only=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=StudentProfile.objects.all(), required=False)
 
     class Meta:
         model = Payment
@@ -41,6 +45,9 @@ class PaymentSerializer(serializers.ModelSerializer):
             "amount",
             "status",
             "method",
+            "payment_type",
+            "academic_session",
+            "receipt_number",
             "transaction_id",
             "receipt",
             "paid_at",
@@ -48,3 +55,4 @@ class PaymentSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
+

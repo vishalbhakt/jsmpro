@@ -1,0 +1,177 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Learning Hub Manager - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge mb-3 d-inline-block px-3 py-2 rounded-pill fw-bold" style="background:rgba(255,255,255,0.15); color:white; font-size:0.72rem;">📚 LEARNING MATERIALS</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Learning Hub Manager 📚</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.7);">Upload study notes (PDF) and video lectures for your students.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-cloud-arrow-up text-white opacity-10" style="font-size:7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Nav -->
+<ul class="nav nav-pills mb-4 gap-2" id="hubTab" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active fw-bold rounded-pill px-4 py-2" data-bs-toggle="tab" data-bs-target="#notes-tab-content" type="button">
+            <i class="fa-solid fa-file-pdf me-2"></i> Study Notes ({{ notes|length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-bold rounded-pill px-4 py-2" data-bs-toggle="tab" data-bs-target="#videos-tab-content" type="button">
+            <i class="fa-solid fa-play-circle me-2"></i> Video Lectures ({{ videos|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Notes Tab -->
+    <div class="tab-pane fade show active" id="notes-tab-content">
+        <div class="row g-4">
+            <!-- Upload Form -->
+            <div class="col-lg-4">
+                <div class="premium-card p-4 bg-white">
+                    <h5 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                        <i class="fa-solid fa-upload me-2" style="color:var(--accent-color);"></i> Upload Study Note
+                    </h5>
+                    <form method="post" action="{% url 'teacher_upload_note' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="Note title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Subject</label>
+                            <select name="subject" class="form-select" required>
+                                <option value="">-- Select Subject --</option>
+                                {% for sub in subjects %}
+                                <option value="{{ sub.id }}">{{ sub.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Description</label>
+                            <textarea name="description" class="form-control" rows="2" placeholder="Brief description..."></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">PDF File</label>
+                            <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx" required>
+                        </div>
+                        <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-3 fw-bold">
+                            <i class="fa-solid fa-upload me-2"></i> Upload Note
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Notes List -->
+            <div class="col-lg-8">
+                <div class="row g-3">
+                    {% for note in notes %}
+                    <div class="col-md-6">
+                        <div class="premium-card p-4 bg-white h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge rounded-pill fw-bold px-2 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.68rem;">{{ note.subject.name }}</span>
+                                <small class="text-muted">{{ note.created_at|date:"d M" }}</small>
+                            </div>
+                            <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ note.title }}</h6>
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="{{ note.file.url }}" target="_blank" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold flex-grow-1" style="font-size:0.78rem;">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                                <form method="post" action="{% url 'teacher_delete_note' note.id %}" onsubmit="return confirm('Delete this note?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.78rem;"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div style="font-size:3rem;">📂</div>
+                        <p class="text-muted mt-2 mb-0">No notes uploaded yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Videos Tab -->
+    <div class="tab-pane fade" id="videos-tab-content">
+        <div class="row g-4">
+            <!-- Upload Form -->
+            <div class="col-lg-4">
+                <div class="premium-card p-4 bg-white">
+                    <h5 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                        <i class="fa-solid fa-video me-2" style="color:#2563eb;"></i> Add Video Lecture
+                    </h5>
+                    <form method="post" action="{% url 'teacher_upload_video' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="Video lecture title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Subject</label>
+                            <select name="subject" class="form-select" required>
+                                <option value="">-- Select Subject --</option>
+                                {% for sub in subjects %}
+                                <option value="{{ sub.id }}">{{ sub.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Video URL (YouTube or Direct)</label>
+                            <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/..." required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Description</label>
+                            <textarea name="description" class="form-control" rows="2" placeholder="Brief description..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-3 fw-bold">
+                            <i class="fa-solid fa-link me-2"></i> Add Video
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Videos List -->
+            <div class="col-lg-8">
+                <div class="row g-3">
+                    {% for video in videos %}
+                    <div class="col-md-6">
+                        <div class="premium-card p-4 bg-white h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge rounded-pill fw-bold px-2 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.68rem;">{{ video.subject.name }}</span>
+                                <small class="text-muted">{{ video.created_at|date:"d M" }}</small>
+                            </div>
+                            <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ video.title }}</h6>
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="{{ video.video_url }}" target="_blank" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold flex-grow-1" style="font-size:0.78rem;">
+                                    <i class="fa-solid fa-play me-1"></i> Watch
+                                </a>
+                                <form method="post" action="{% url 'teacher_delete_video' video.id %}" onsubmit="return confirm('Delete this video?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.78rem;"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div style="font-size:3rem;">🎬</div>
+                        <p class="text-muted mt-2 mb-0">No video lectures added yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Profile - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Hero Banner -->
+<div class="premium-card p-5 mb-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #082d54 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge-premium-gold mb-3"><i class="fa-solid fa-user-gear me-1"></i> Profile Settings</span>
+            <h1 class="display-6 text-white mb-2 fw-bold">My Academy Profile 🎓</h1>
+            <p class="text-white-50 mb-0">Update your personal details, profile picture, and account password.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-id-card text-white opacity-10" style="font-size: 7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Profile Avatar Card -->
+    <div class="col-lg-4">
+        <div class="premium-card p-4 bg-white text-center mb-4">
+            <div class="mb-3">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle border border-4 shadow" style="width: 120px; height: 120px; object-fit: cover; border-color: var(--accent-color) !important;">
+                {% else %}
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border border-4 shadow" style="width: 120px; height: 120px; border-color: var(--accent-color) !important;">
+                        <img src="{% static 'images/logo.png' %}" alt="Logo" style="width: 80px; height: 80px; object-fit: contain;">
+                    </div>
+                {% endif %}
+            </div>
+            <h4 class="fw-bold mb-1" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">{{ user.full_name }}</h4>
+            <p class="text-muted mb-3" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">{{ user.role }}</p>
+            <span class="badge-premium-gold">@{{ user.username }}</span>
+        </div>
+
+        <!-- Account Info Card -->
+        <div class="premium-card p-4 bg-white">
+            <h5 class="fw-bold mb-3" style="color: var(--primary-color);"><i class="fa-solid fa-circle-info me-2" style="color: var(--accent-color);"></i> Account Info</h5>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted small">Email</span>
+                <span class="fw-bold small">{{ user.email }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted small">Role</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary small fw-bold text-uppercase">{{ user.role }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted small">Member Since</span>
+                <span class="fw-bold small">{{ user.date_joined|date:"d M, Y" }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2">
+                <span class="text-muted small">Status</span>
+                <span class="badge bg-success bg-opacity-10 text-success small fw-bold">Active ✓</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Forms -->
+    <div class="col-lg-8">
+        <!-- Personal Info Form -->
+        <div class="premium-card p-5 bg-white mb-4">
+            <h4 class="fw-bold mb-4" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">
+                <i class="fa-solid fa-pen-to-square me-2" style="color: var(--accent-color);"></i> Update Personal Info
+            </h4>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="profile">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">First Name</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control" placeholder="First Name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Last Name</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control" placeholder="Last Name">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Email Address</label>
+                        <input type="email" name="email" value="{{ user.email }}" class="form-control" placeholder="Email Address" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Phone Number</label>
+                        <input type="text" name="phone" value="{{ user.phone|default:'' }}" class="form-control" placeholder="Phone Number">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Profile Picture</label>
+                        <input type="file" name="avatar" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3">
+                        <i class="fa-solid fa-save me-2"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change Password Form -->
+        <div class="premium-card p-5 bg-white">
+            <h4 class="fw-bold mb-4" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">
+                <i class="fa-solid fa-lock me-2" style="color: var(--sky-blue);"></i> Change Password
+            </h4>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="password">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Current Password</label>
+                        <input type="password" name="current_password" class="form-control" placeholder="Current Password" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">New Password</label>
+                        <input type="password" name="new_password1" class="form-control" placeholder="New Password" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color: var(--primary-color);">Confirm New Password</label>
+                        <input type="password" name="new_password2" class="form-control" placeholder="Confirm Password" required>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-premium-accent rounded-pill px-5 py-3">
+                        <i class="fa-solid fa-key me-2"></i> Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

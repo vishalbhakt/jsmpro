@@ -1,0 +1,75 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Graded Results - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">Academic</li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Results</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Graded Results 🏆</h1>
+            <p class="text-white-50 mb-0">Monitor scores, grades, percentages, and teacher remarks.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="premium-card p-4 bg-white mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-10">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by student name or assessment title...">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Results Table -->
+<div class="premium-card p-4 bg-white">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Assessment</th>
+                    <th>Subject</th>
+                    <th>Marks Obtained</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in results %}
+                <tr>
+                    <td class="text-muted">{{ forloop.counter }}</td>
+                    <td class="fw-bold">{{ res.student.user.full_name }}</td>
+                    <td>{{ res.assessment.title }}</td>
+                    <td><span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 fw-bold">{{ res.assessment.subject.name }}</span></td>
+                    <td class="fw-bold text-success">{{ res.marks_obtained }}/{{ res.total_marks }}</td>
+                    <td>{{ res.percentage }}%</td>
+                    <td>
+                        <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1">{{ res.grade }}</span>
+                    </td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ res.remarks|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-5 text-muted">No graded results found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

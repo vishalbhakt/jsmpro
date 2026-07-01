@@ -1,0 +1,139 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Finance Reports - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">Finance</li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_payments' %}" class="text-white-50 text-decoration-none">Ledger</a></li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Collection Reports</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Financial Collection Reports 📈</h1>
+            <p class="text-white-50 mb-0">Generate, view, and export detailed daily, monthly, and class-wise fee collections.</p>
+        </div>
+        <div class="col-md-4 text-end mt-3 mt-md-0">
+            <a href="?export=csv{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow">
+                <i class="fa-solid fa-file-csv me-2"></i> Export Report (CSV)
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="premium-card p-4 bg-white mb-4 shadow-sm">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="start_date">Start Date</label>
+            <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}" class="form-control rounded-pill">
+        </div>
+        <div class="col-md-5">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="end_date">End Date</label>
+            <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}" class="form-control rounded-pill">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-sync me-2"></i>Generate</button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    <!-- Payment Methods Chart and Tables -->
+    <div class="col-md-6">
+        <div class="premium-card p-4 bg-white shadow-sm h-100">
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-credit-card me-2 text-accent"></i> Collections by Payment Mode</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Payment Mode</th>
+                            <th class="text-end">Total Collected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in method_report %}
+                        <tr>
+                            <td class="fw-bold text-capitalize">{{ r.method }}</td>
+                            <td class="text-end fw-bold text-success">₹{{ r.total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="text-center py-4 text-muted">No collections recorded in selected range.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class-wise Collections -->
+    <div class="col-md-6">
+        <div class="premium-card p-4 bg-white shadow-sm h-100">
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-school me-2 text-accent"></i> Collections by Classroom Grade</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Classroom Grade</th>
+                            <th class="text-end">Total Collected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in class_report %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ r.classroom.name }}</td>
+                            <td class="text-end fw-bold text-success">₹{{ r.total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="text-center py-4 text-muted">No collections recorded in selected range.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Transaction Details -->
+    <div class="col-12">
+        <div class="premium-card p-4 bg-white shadow-sm">
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Transaction Ledger Details</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Receipt No</th>
+                            <th>Student</th>
+                            <th>Class</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Transaction Reference</th>
+                            <th>Date / Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ p.receipt_number }}</td>
+                            <td class="fw-bold text-primary">{{ p.student.user.full_name }}</td>
+                            <td>{{ p.student.classroom.name|default:"—" }}</td>
+                            <td class="fw-bold text-success">₹{{ p.amount }}</td>
+                            <td class="text-capitalize">{{ p.get_method_display }}</td>
+                            <td class="text-muted" style="font-size:0.8rem;">{{ p.transaction_id|default:"Offline Payment" }}</td>
+                            <td class="text-muted" style="font-size:0.8rem;">{{ p.paid_at|date:"d M Y, h:i A" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center py-5 text-muted">No transactions matching selected criteria.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

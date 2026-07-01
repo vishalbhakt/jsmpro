@@ -1,0 +1,136 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Learning Hub - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge mb-3 d-inline-block px-3 py-2 rounded-pill fw-bold" style="background:rgba(255,255,255,0.15); color:white; font-size:0.72rem;">📚 STUDY RESOURCES</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Learning Hub 📚</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.7);">Access study notes, download PDFs, and watch video lectures uploaded by your teachers.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-book-open text-white opacity-10" style="font-size:7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Nav -->
+<ul class="nav nav-pills mb-4 gap-2" id="learningTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold rounded-pill px-4 py-2" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-pane" type="button">
+            <i class="fa-solid fa-file-pdf me-2"></i> Study Notes ({{ notes|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold rounded-pill px-4 py-2" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos-pane" type="button">
+            <i class="fa-solid fa-play-circle me-2"></i> Video Lectures ({{ videos|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Study Notes Tab -->
+    <div class="tab-pane fade show active" id="notes-pane" role="tabpanel">
+        {% if notes %}
+        <div class="row g-4">
+            {% for note in notes %}
+            <div class="col-md-6 col-lg-4">
+                <div class="premium-card p-4 bg-white h-100 d-flex flex-column">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px; background:rgba(239,68,68,0.1);">
+                            <i class="fa-solid fa-file-pdf text-danger fs-4"></i>
+                        </div>
+                        <div>
+                            <span class="badge rounded-pill fw-bold px-2 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.68rem;">{{ note.subject.name }}</span>
+                            <small class="d-block text-muted mt-1" style="font-size:0.72rem;">{{ note.created_at|date:"d M, Y" }}</small>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ note.title }}</h6>
+                    {% if note.description %}
+                    <p class="text-muted mb-3" style="font-size:0.82rem; line-height:1.5;">{{ note.description|truncatechars:80 }}</p>
+                    {% endif %}
+                    <div class="mt-auto">
+                        <a href="{{ note.file.url }}" target="_blank" class="btn btn-premium-primary rounded-pill py-2 w-100 fw-bold">
+                            <i class="fa-solid fa-download me-1"></i> Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 premium-card p-5 bg-white">
+            <div style="font-size:4rem; margin-bottom:1rem;">📂</div>
+            <h4 class="fw-bold" style="color:var(--primary-color);">No Study Notes Yet</h4>
+            <p class="text-muted mb-0">Your teachers haven't uploaded any notes yet. Check back soon!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Video Lectures Tab -->
+    <div class="tab-pane fade" id="videos-pane" role="tabpanel">
+        {% if videos %}
+        <div class="row g-4">
+            {% for video in videos %}
+            <div class="col-md-6 col-lg-4">
+                <div class="premium-card p-4 bg-white h-100 d-flex flex-column">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px; background:rgba(239,68,68,0.1);">
+                            <i class="fa-brands fa-youtube text-danger fs-4"></i>
+                        </div>
+                        <div>
+                            <span class="badge rounded-pill fw-bold px-2 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.68rem;">{{ video.subject.name }}</span>
+                            <small class="d-block text-muted mt-1" style="font-size:0.72rem;">{{ video.created_at|date:"d M, Y" }}</small>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ video.title }}</h6>
+                    {% if video.description %}
+                    <p class="text-muted mb-3" style="font-size:0.82rem; line-height:1.5;">{{ video.description|truncatechars:80 }}</p>
+                    {% endif %}
+                    <div class="mt-auto">
+                        <button class="btn btn-premium-accent rounded-pill py-2 w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#videoModal{{ forloop.counter }}">
+                            <i class="fa-solid fa-play me-1"></i> Watch Lecture
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Modal -->
+            <div class="modal fade" id="videoModal{{ forloop.counter }}" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content rounded-4 border-0 shadow-lg">
+                        <div class="modal-header border-0 px-4 pt-4 pb-0">
+                            <h5 class="modal-title fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">🎬 {{ video.title }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="ratio ratio-16x9 rounded-3 overflow-hidden">
+                                {% if "youtube.com" in video.video_url or "youtu.be" in video.video_url %}
+                                    <iframe src="{{ video.video_url }}" title="{{ video.title }}" allowfullscreen></iframe>
+                                {% else %}
+                                    <video controls src="{{ video.video_url }}" class="w-100"></video>
+                                {% endif %}
+                            </div>
+                            {% if video.description %}
+                            <p class="text-muted mt-3 mb-0" style="font-size:0.85rem;">{{ video.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 premium-card p-5 bg-white">
+            <div style="font-size:4rem; margin-bottom:1rem;">🎬</div>
+            <h4 class="fw-bold" style="color:var(--primary-color);">No Video Lectures Yet</h4>
+            <p class="text-muted mb-0">Your teachers haven't uploaded any video lectures yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

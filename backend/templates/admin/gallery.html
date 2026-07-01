@@ -1,0 +1,157 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Media Gallery - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">CMS</li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Gallery</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Media Gallery Manager 📸</h1>
+            <p class="text-white-50 mb-0">Upload school activities, sports meets, and event photos for the public gallery.</p>
+        </div>
+        <div class="col-md-4 text-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
+                <i class="fa-solid fa-cloud-arrow-up me-2"></i> Upload Photo(s)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="premium-card p-4 bg-white mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex gap-2 align-items-center overflow-x-auto pb-1" style="max-width:100%; white-space: nowrap;">
+            <a href="{% url 'admin_gallery' %}" class="btn btn-sm rounded-pill px-3 py-2 fw-bold {% if not category_filter %}btn-premium-primary{% else %}btn-outline-secondary{% endif %}">
+                All Moments
+            </a>
+            <a href="{% url 'admin_gallery' %}?category=classroom" class="btn btn-sm rounded-pill px-3 py-2 fw-bold {% if category_filter == 'classroom' %}btn-premium-primary{% else %}btn-outline-secondary{% endif %}">
+                Classroom Activities
+            </a>
+            <a href="{% url 'admin_gallery' %}?category=sports" class="btn btn-sm rounded-pill px-3 py-2 fw-bold {% if category_filter == 'sports' %}btn-premium-primary{% else %}btn-outline-secondary{% endif %}">
+                Sports Meets
+            </a>
+            <a href="{% url 'admin_gallery' %}?category=events" class="btn btn-sm rounded-pill px-3 py-2 fw-bold {% if category_filter == 'events' %}btn-premium-primary{% else %}btn-outline-secondary{% endif %}">
+                School Events
+            </a>
+            <a href="{% url 'admin_gallery' %}?category=celebrations" class="btn btn-sm rounded-pill px-3 py-2 fw-bold {% if category_filter == 'celebrations' %}btn-premium-primary{% else %}btn-outline-secondary{% endif %}">
+                Celebrations
+            </a>
+        </div>
+        <div class="text-muted" style="font-size:0.82rem;">
+            Total items: <strong>{{ gallery_items|length }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Gallery Masonry Grid -->
+<div class="row g-4">
+    {% for item in gallery_items %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="premium-card p-2 bg-white border border-light h-100 text-center d-flex flex-column justify-content-between shadow-sm position-relative group">
+            <!-- Lightbox trigger click -->
+            <div style="cursor:zoom-in;" onclick="openLightbox('{{ item.image.url }}', '{{ item.title }}')">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid rounded-4 mb-2" style="height:160px; object-fit:cover; width:100%; transition:transform 0.3s ease;">
+                {% else %}
+                    <div class="rounded-4 d-flex align-items-center justify-content-center mb-2" style="height:160px; background:#f1f5f9;">
+                        <i class="fa-solid fa-image text-muted fs-2"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <span class="d-block fw-bold text-primary text-truncate px-1" style="font-size:0.83rem;">{{ item.title }}</span>
+                <span class="badge bg-secondary rounded-pill px-2 py-0.5 text-uppercase fw-bold mb-2" style="font-size:0.6rem;">{{ item.category }}</span>
+            </div>
+
+            <!-- Actions block -->
+            <div class="d-flex gap-1 justify-content-center mt-2 border-top pt-2">
+                <a href="{% url 'admin_gallery_edit' item.id %}" class="btn btn-xs btn-premium-accent rounded-pill px-2 py-1" style="font-size:0.7rem;">
+                    <i class="fa-solid fa-pen"></i> Edit
+                </a>
+                <a href="{% url 'admin_gallery_delete' item.id %}" class="btn btn-xs btn-danger rounded-pill px-2 py-1" style="font-size:0.7rem;" onclick="return confirm('Delete this image?')">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 premium-card p-5 bg-white">
+        <div style="font-size:3rem;">📸</div>
+        <p class="text-muted mt-2 mb-0">No photos uploaded in this category. Upload one above!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal: Upload Photo -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1" aria-labelledby="uploadImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="uploadImageModalLabel"><i class="fa-solid fa-images me-2 text-accent"></i> Upload Media Content</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'admin_gallery' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-sm text-primary">Media Title (Optional for bulk)</label>
+                        <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Independence Day Parade">
+                        <small class="text-muted">If uploading multiple, file names will be used as default titles.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-sm text-primary">Category <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select rounded-3" required>
+                            <option value="classroom">Classroom Activities</option>
+                            <option value="sports">Sports Meets</option>
+                            <option value="events">School Events</option>
+                            <option value="celebrations">Celebrations</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-sm text-primary">Select Photo(s) <span class="text-danger">*</span></label>
+                        <input type="file" name="images" class="form-control rounded-3" multiple required>
+                        <small class="text-muted">You can select multiple photos at once for bulk uploads.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-premium-outline rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-4">Upload Photos</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" style="background:rgba(0,0,0,0.85);">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0 text-center">
+            <div class="text-end mb-2">
+                <button type="button" class="btn-close btn-close-white fs-4" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <img id="lightboxImg" src="" class="img-fluid rounded-4 shadow-lg mx-auto" style="max-height:80vh; object-fit:contain;">
+            <h5 id="lightboxCaption" class="text-white mt-3 fw-bold"></h5>
+        </div>
+    </div>
+</div>
+
+<script>
+function openLightbox(url, title) {
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('lightboxCaption').textContent = title;
+    const modal = new bootstrap.Modal(document.getElementById('lightboxModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

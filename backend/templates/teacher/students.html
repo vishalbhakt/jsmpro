@@ -1,0 +1,88 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Students - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge-premium-gold mb-3 d-inline-block"><i class="fa-solid fa-users-viewfinder me-1"></i> Class Roster</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">My Students 👨‍🎓</h1>
+            <p class="text-white-50 mb-0">View all students assigned to your classes across all subjects.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <span class="display-1 text-white opacity-10">👨‍🎓</span>
+        </div>
+    </div>
+</div>
+
+<div class="premium-card p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h4 class="fw-bold mb-0" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+            <i class="fa-solid fa-list me-2" style="color:var(--accent-color);"></i> Students Roster
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill ms-2 fw-bold" style="font-size:0.8rem;">{{ students|length }}</span>
+        </h4>
+        <input type="text" id="studSearch" class="form-control" style="max-width:280px;" placeholder="🔍 Search students..." onkeyup="filterStudents()">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">#</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Student Name</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Roll No</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Class</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Admission No</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Email</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Status</th>
+                </tr>
+            </thead>
+            <tbody id="studTable">
+                {% for student in students %}
+                <tr class="stud-row">
+                    <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:34px; height:34px; background:var(--primary-color); font-size:0.75rem; flex-shrink:0;">
+                                {{ student.user.first_name|slice:":1" }}{{ student.user.last_name|slice:":1" }}
+                            </div>
+                            <span class="fw-bold" style="font-size:0.83rem;">{{ student.user.full_name }}</span>
+                        </div>
+                    </td>
+                    <td><span class="badge-premium-blue" style="font-size:0.72rem;">{{ student.roll_number }}</span></td>
+                    <td style="font-size:0.83rem;">{{ student.classroom.name }}</td>
+                    <td style="font-size:0.83rem;">{{ student.admission_number|default:"—" }}</td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ student.user.email }}</td>
+                    <td>
+                        {% if student.status == 'active' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">✅ Active</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">❌ Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div style="font-size:3rem;">📂</div>
+                        <p class="text-muted mt-2 mb-0">No students assigned to your classes yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+function filterStudents() {
+    const q = document.getElementById('studSearch').value.toLowerCase();
+    document.querySelectorAll('.stud-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

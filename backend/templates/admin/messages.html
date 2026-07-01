@@ -1,0 +1,116 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Messages & Inquiries - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Messages & Inquiries 📫</h1>
+    <p class="text-white-50 mb-0">Review contact messages and admission inquiries received from the website.</p>
+</div>
+
+<div class="premium-card p-4 bg-white">
+    <!-- Tabs Header -->
+    <ul class="nav nav-tabs mb-4" id="messagesTabsList" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold text-primary" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-panel" type="button" role="tab">
+                ✉️ Contact Messages
+                <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 0.72rem;">{{ messages_list|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold text-primary" id="inquiries-tab" data-bs-toggle="tab" data-bs-target="#inquiries-panel" type="button" role="tab">
+                📝 Admission Inquiries
+                <span class="badge bg-info bg-opacity-10 text-info ms-1" style="font-size: 0.72rem;">{{ inquiries|length }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tabs Content -->
+    <div class="tab-content">
+        <!-- Contact Messages Panel -->
+        <div class="tab-pane fade show active" id="contact-panel" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msg in messages_list %}
+                        <tr class="{% if not msg.is_read %}table-primary{% endif %}">
+                            <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                            <td class="fw-bold" style="font-size:0.83rem;">{{ msg.name }}</td>
+                            <td class="text-muted" style="font-size:0.8rem;">{{ msg.email }}</td>
+                            <td class="fw-bold">{{ msg.subject }}</td>
+                            <td class="text-muted" style="font-size:0.8rem; max-width:300px;">{{ msg.message }}</td>
+                            <td class="text-muted" style="font-size:0.8rem;">{{ msg.created_at|date:"d M, Y" }}</td>
+                            <td>
+                                {% if not msg.is_read %}
+                                    <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">🔵 New</span>
+                                {% else %}
+                                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">✅ Read</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No contact messages received yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Admission Inquiries Panel -->
+        <div class="tab-pane fade" id="inquiries-panel" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inq in inquiries %}
+                        <tr>
+                            <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                            <td class="fw-bold" style="font-size:0.83rem;">{{ inq.student_name }}</td>
+                            <td class="text-muted" style="font-size:0.8rem;">{{ inq.email }}</td>
+                            <td>{{ inq.phone|default:"—" }}</td>
+                            <td class="text-muted" style="font-size:0.8rem; max-width:300px;">{{ inq.message }}</td>
+                            <td class="text-muted" style="font-size:0.8rem;">{{ inq.created_at|date:"d M, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No admission inquiries received yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const hash = window.location.hash;
+    if(hash === '#inquiries') {
+        const triggerEl = document.querySelector('#inquiries-tab');
+        if(triggerEl) {
+            bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+        }
+    }
+});
+</script>
+{% endblock %}

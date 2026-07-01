@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us - JSM Shiksha Academy{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">
+    <div class="container py-4 text-center">
+        <span class="badge-premium-gold mb-3 d-inline-block">🏫 Our Story</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="font-family:'Outfit',sans-serif;">About JSM Shiksha Academy</h1>
+        <p class="lead text-white-50 mx-auto" style="max-width:600px;">Nurturing young scholars from UKG to Grade 8 with modern education, friendly technology, and deep values since 2010.</p>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="bg-white py-4" style="border-bottom: 3px solid var(--accent-color);">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ stats.students }}+</h2>
+                <p class="text-muted mb-0 fw-bold" style="font-size:0.78rem; text-transform:uppercase;">Scholars Enrolled</p>
+            </div>
+            <div class="col-6 col-md-3 border-start">
+                <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ stats.teachers }}+</h2>
+                <p class="text-muted mb-0 fw-bold" style="font-size:0.78rem; text-transform:uppercase;">Expert Mentors</p>
+            </div>
+            <div class="col-6 col-md-3 border-start">
+                <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ stats.classrooms }}+</h2>
+                <p class="text-muted mb-0 fw-bold" style="font-size:0.78rem; text-transform:uppercase;">Classrooms</p>
+            </div>
+            <div class="col-6 col-md-3 border-start">
+                <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ stats.subjects }}+</h2>
+                <p class="text-muted mb-0 fw-bold" style="font-size:0.78rem; text-transform:uppercase;">Subjects Taught</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mission & Vision -->
+<div class="py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="badge-premium-gold mb-3">🎯 Our Purpose</span>
+            <h2 class="fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Mission & Vision</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="premium-card p-5 bg-white h-100" style="border-top:5px solid var(--primary-color) !important;">
+                    <div class="mb-3" style="font-size:2.5rem;">🎯</div>
+                    <h3 class="fw-bold mb-3" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Our Mission</h3>
+                    <p class="text-muted" style="line-height:1.8;">To provide every child between UKG and Grade 8 with a structured, joyful, and digitally-connected learning experience that instills academic excellence, moral values, and the confidence to succeed in a modern world.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="premium-card p-5 bg-white h-100" style="border-top:5px solid var(--accent-color) !important;">
+                    <div class="mb-3" style="font-size:2.5rem;">🌟</div>
+                    <h3 class="fw-bold mb-3" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Our Vision</h3>
+                    <p class="text-muted" style="line-height:1.8;">To be the most trusted and innovative school for young learners in India, where every student's journey is celebrated, tracked, and supported through technology, compassion, and expert mentorship.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Us -->
+<div class="py-5 bg-white" style="border-top:1px solid rgba(12,43,77,0.05);">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="badge-premium-gold mb-3">💡 Why JSM?</span>
+            <h2 class="fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Why Choose JSM Shiksha Academy?</h2>
+        </div>
+        <div class="row g-4">
+            {% for item in why_jsm|default:"" %}{% empty %}
+            <div class="col-md-4">
+                <div class="premium-card p-4 bg-light text-center h-100">
+                    <div class="mb-3" style="font-size:2.5rem;">📱</div>
+                    <h5 class="fw-bold mb-2" style="color:var(--primary-color);">Digital ERP Platform</h5>
+                    <p class="text-muted mb-0" style="font-size:0.85rem;">Live attendance, grades, fee tracking, and assignments — all in one friendly dashboard accessible from any device.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="premium-card p-4 bg-light text-center h-100">
+                    <div class="mb-3" style="font-size:2.5rem;">🎓</div>
+                    <h5 class="fw-bold mb-2" style="color:var(--primary-color);">Expert Teaching Staff</h5>
+                    <p class="text-muted mb-0" style="font-size:0.85rem;">Our qualified teachers are trained to make learning engaging, interactive, and appropriate for each grade level from UKG to Grade 8.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="premium-card p-4 bg-light text-center h-100">
+                    <div class="mb-3" style="font-size:2.5rem;">🛡️</div>
+                    <h5 class="fw-bold mb-2" style="color:var(--primary-color);">Safe & Caring Environment</h5>
+                    <p class="text-muted mb-0" style="font-size:0.85rem;">Our campus and digital systems prioritize student safety, privacy, and well-being above all else.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- CTA -->
+<div class="py-5 text-center text-white" style="background:linear-gradient(135deg, var(--primary-color), #0d3b66);">
+    <div class="container py-4">
+        <h2 class="fw-bold mb-3 text-white" style="font-family:'Outfit',sans-serif;">Ready to Join Our Academy Family?</h2>
+        <p class="text-white-50 mb-4">Apply for the 2026-27 academic session today.</p>
+        <a href="{% url 'admission' %}" class="btn btn-premium-accent rounded-pill px-5 py-3 fw-bold">
+            <i class="fa-solid fa-rocket me-2"></i> Apply for Admission
+        </a>
+    </div>
+</div>
+{% endblock %}

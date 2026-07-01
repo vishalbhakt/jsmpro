@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Facilities - JSM Shiksha Academy{% endblock %}
+
+{% block content %}
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">
+    <div class="container py-4 text-center">
+        <span class="badge-premium-gold mb-3 d-inline-block">🏗️ Campus Infrastructure</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="font-family:'Outfit',sans-serif;">Academy Facilities</h1>
+        <p class="lead text-white-50">World-class infrastructure designed for a safe, joyful, and productive learning environment.</p>
+    </div>
+</div>
+
+<div class="py-5">
+    <div class="container py-4">
+        <div class="row g-4">
+            {% for facility in facilities %}
+            <div class="col-md-6 col-lg-4">
+                <div class="premium-card bg-white h-100 d-flex flex-column overflow-hidden">
+                    {% if facility.image %}
+                        <img src="{{ facility.image.url }}" alt="{{ facility.name }}" class="img-fluid" style="height:200px; object-fit:cover; width:100%;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center" style="height:200px; background:linear-gradient(135deg, #f0f7ff, #e0f0fb);">
+                            <i class="{{ facility.icon|default:'fa-solid fa-building' }}" style="font-size:3.5rem; color:var(--sky-blue); opacity:0.5;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="p-4 flex-grow-1">
+                        <h5 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ facility.name }}</h5>
+                        <p class="text-muted mb-0" style="font-size:0.85rem; line-height:1.6;">{{ facility.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Placeholder Facilities -->
+            {% for item in "12345678"|make_list %}
+            <div class="col-md-6 col-lg-4">
+                <div class="premium-card p-4 bg-white text-center h-100">
+                    <div class="mb-3" style="font-size:2.5rem;">{% if forloop.counter == 1 %}📚{% elif forloop.counter == 2 %}🔬{% elif forloop.counter == 3 %}⚽{% elif forloop.counter == 4 %}🎨{% elif forloop.counter == 5 %}💻{% elif forloop.counter == 6 %}🚌{% elif forloop.counter == 7 %}🍽️{% else %}🏥{% endif %}</div>
+                    <h5 class="fw-bold mb-2" style="color:var(--primary-color);">{% if forloop.counter == 1 %}Library{% elif forloop.counter == 2 %}Science Lab{% elif forloop.counter == 3 %}Sports Ground{% elif forloop.counter == 4 %}Art Studio{% elif forloop.counter == 5 %}Computer Lab{% elif forloop.counter == 6 %}School Bus{% elif forloop.counter == 7 %}Cafeteria{% else %}Medical Room{% endif %}</h5>
+                    <p class="text-muted mb-0" style="font-size:0.83rem;">World-class facility for student development.</p>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

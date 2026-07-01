@@ -1,0 +1,63 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Edit Gallery Item - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">✏️ Edit Gallery Item</h1>
+    <p class="text-white-50 mb-0">Modify information details for Gallery item "{{ item.title }}".</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="premium-card p-4 p-md-5 bg-white">
+            <h4 class="fw-bold mb-4 text-primary" style="font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-image me-2 text-accent"></i> Media Details
+            </h4>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Media Title <span class="text-danger">*</span></label>
+                    <input type="text" name="title" value="{{ item.title }}" class="form-control rounded-3" placeholder="e.g. Science Laboratory" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Category <span class="text-danger">*</span></label>
+                    <select name="category" class="form-select rounded-3" required>
+                        <option value="classroom" {% if item.category == 'classroom' %}selected{% endif %}>Classroom Activities</option>
+                        <option value="sports" {% if item.category == 'sports' %}selected{% endif %}>Sports Meets</option>
+                        <option value="events" {% if item.category == 'events' %}selected{% endif %}>School Events</option>
+                        <option value="celebrations" {% if item.category == 'celebrations' %}selected{% endif %}>Celebrations</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Gallery Image</label>
+                    {% if item.image %}
+                        <div class="mb-2">
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-thumbnail rounded" style="max-height:150px;">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="image" class="form-control rounded-3">
+                </div>
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_published" id="pubCheck" {% if item.is_published %}checked{% endif %}>
+                        <label class="form-check-label fw-bold text-sm text-primary" for="pubCheck">Published Status</label>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3 fw-bold flex-grow-1">
+                        <i class="fa-solid fa-save me-2"></i> Save Changes
+                    </button>
+                    <a href="{% url 'admin_gallery' %}" class="btn btn-premium-outline rounded-pill px-4 py-3 fw-bold">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

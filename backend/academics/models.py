@@ -109,5 +109,24 @@ class Result(models.Model):
         ]
         ordering = ["-created_at"]
 
+    def save(self, *args, **kwargs):
+        if not self.grade:
+            max_marks = float(self.assessment.max_marks) if self.assessment and self.assessment.max_marks else 100.0
+            obtained = float(self.marks_obtained)
+            ratio = obtained / max_marks if max_marks > 0 else 0.0
+            if ratio >= 0.9:
+                self.grade = "A+"
+            elif ratio >= 0.8:
+                self.grade = "A"
+            elif ratio >= 0.7:
+                self.grade = "B"
+            elif ratio >= 0.6:
+                self.grade = "C"
+            elif ratio >= 0.5:
+                self.grade = "D"
+            else:
+                self.grade = "F"
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.student} - {self.assessment}"

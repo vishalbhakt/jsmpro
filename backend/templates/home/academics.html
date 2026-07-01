@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Our Academics - JSM Shiksha Academy{% endblock %}
+
+{% block content %}
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">
+    <div class="container py-4 text-center">
+        <span class="badge-premium-gold mb-3 d-inline-block">📚 Grades UKG–8</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="font-family:'Outfit',sans-serif;">Our Academic Programs</h1>
+        <p class="lead text-white-50">Explore all grade levels and subject offerings at JSM Shiksha Academy.</p>
+    </div>
+</div>
+
+<div class="py-5">
+    <div class="container py-4">
+        <!-- Classrooms Grid -->
+        <div class="text-center mb-5">
+            <span class="badge-premium-gold mb-3">🏫 Classroom Divisions</span>
+            <h2 class="fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Our Classrooms</h2>
+        </div>
+        <div class="row g-4 mb-5">
+            {% for cls in classrooms %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="premium-card p-4 bg-white text-center h-100">
+                    <div class="mb-3" style="font-size:2.5rem;">🏫</div>
+                    <h5 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ cls.name }}</h5>
+                    {% if cls.section %}<span class="badge-premium-blue mb-2 d-inline-block" style="font-size:0.72rem;">Section: {{ cls.section }}</span>{% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">No classrooms configured yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Subjects Catalog -->
+        <div class="text-center mb-5">
+            <span class="badge-premium-blue mb-3">📖 Subjects</span>
+            <h2 class="fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Subjects Catalog</h2>
+        </div>
+        <div class="row g-3">
+            {% for sub in subjects %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="premium-card p-3 bg-white text-center h-100 d-flex flex-column align-items-center justify-content-center">
+                    <div class="mb-2" style="font-size:1.8rem;">📚</div>
+                    <h6 class="fw-bold mb-1" style="color:var(--primary-color); font-size:0.88rem;">{{ sub.name }}</h6>
+                    <span class="badge-premium-gold" style="font-size:0.68rem;">{{ sub.code }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">No subjects configured yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

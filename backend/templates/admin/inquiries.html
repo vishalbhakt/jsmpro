@@ -1,0 +1,187 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Admission Inquiries - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">CMS</li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Inquiries</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Admission Inquiries 📝</h1>
+            <p class="text-white-50 mb-0">Track and respond to registration requests submitted by prospective parents.</p>
+        </div>
+        <div class="col-md-4 text-end mt-3 mt-md-0">
+            <!-- Export to CSV Link button -->
+            <a href="?q={{ q|default:'' }}&status={{ status_filter|default:'' }}&export=csv" class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow">
+                <i class="fa-solid fa-file-csv me-2"></i> Export to CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="premium-card p-4 bg-white mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by student name, guardian name...">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🏷️ Follow-up Status</label>
+            <select name="status" id="status" class="form-select rounded-pill">
+                <option value="">-- All Statuses --</option>
+                {% for code, label in status_choices %}
+                <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Inquiries Table -->
+<div class="premium-card p-4 bg-white">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Guardian</th>
+                    <th>Email</th>
+                    <th>Class Preference</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inq in inquiries %}
+                <tr class="{% if inq.status == 'new' %}table-primary fw-bold{% endif %}">
+                    <td class="text-muted" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                    <td style="font-size:0.83rem;">{{ inq.student_name }}</td>
+                    <td style="font-size:0.83rem;">{{ inq.guardian_name }}</td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ inq.email }}</td>
+                    <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">{{ inq.preferred_class }}</span></td>
+                    <td>
+                        {% if inq.status == 'new' %}
+                            <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">New</span>
+                        {% elif inq.status == 'contacted' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Contacted</span>
+                        {% elif inq.status == 'admitted' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Admitted</span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-15 text-secondary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Closed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <!-- Details View Button -->
+                            <button class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" 
+                                    onclick="viewInquiryDetails('{{ inq.student_name }}', '{{ inq.guardian_name }}', '{{ inq.email }}', '{{ inq.phone }}', '{{ inq.preferred_class }}', '{{ inq.message|escapejs }}', '{{ inq.id }}', '{{ inq.status }}')">
+                                <i class="fa-solid fa-eye"></i> View Details
+                            </button>
+                            <a href="{% url 'admin_inquiry_delete' inq.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.75rem;" onclick="return confirm('Delete this inquiry?')">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-muted">No admission inquiries found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: View Inquiry Details -->
+<div class="modal fade" id="inquiryDetailsModal" tabindex="-1" aria-labelledby="inquiryDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="inquiryDetailsModalLabel"><i class="fa-solid fa-file-signature me-2 text-accent"></i> Admission Inquiry Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Student Name</span>
+                        <strong id="detStudName" class="text-primary fs-6"></strong>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Guardian Name</span>
+                        <strong id="detGuardName" class="text-primary fs-6"></strong>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Email Address</span>
+                        <strong id="detEmail" class="text-primary fs-6"></strong>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Phone Number</span>
+                        <strong id="detPhone" class="text-primary fs-6"></strong>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <span class="text-muted text-xs d-block">Preferred Class / Grade Stage</span>
+                    <strong id="detClass" class="text-primary fs-5 d-block"></strong>
+                </div>
+                
+                <div class="p-4 bg-light rounded-4 border mb-4">
+                    <span class="text-muted text-xs d-block mb-2">Inquiry Message / Background</span>
+                    <p id="detMessage" class="mb-0 text-dark" style="white-space: pre-wrap; font-size:0.95rem; line-height:1.6;"></p>
+                </div>
+                
+                <!-- Status Edit Action Form -->
+                <form id="statusForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold text-sm text-primary">Update Inquiries Status</label>
+                            <select name="status" id="detStatusSelect" class="form-select rounded-pill">
+                                {% for code, label in status_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-save me-1"></i> Update Status</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewInquiryDetails(stud_name, guard_name, email, phone, pref_class, message, id, status) {
+    document.getElementById('detStudName').textContent = stud_name;
+    document.getElementById('detGuardName').textContent = guard_name;
+    document.getElementById('detEmail').textContent = email;
+    document.getElementById('detPhone').textContent = phone;
+    document.getElementById('detClass').textContent = pref_class;
+    document.getElementById('detMessage').textContent = message;
+    
+    // Set form action path
+    document.getElementById('statusForm').action = `/dashboard/admin/inquiries/update-status/${id}/`;
+    
+    // Set status select value
+    document.getElementById('detStatusSelect').value = status;
+    
+    const modal = new bootstrap.Modal(document.getElementById('inquiryDetailsModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

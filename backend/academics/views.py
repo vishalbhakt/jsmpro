@@ -72,9 +72,17 @@ class AssessmentViewSet(viewsets.ModelViewSet):
         )
 
 
+from rest_framework.pagination import PageNumberPagination
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
 class ResultViewSet(viewsets.ModelViewSet):
     serializer_class = ResultSerializer
     permission_classes = [IsAdminOrTeacherWrite]
+    pagination_class = StandardResultsSetPagination
     search_fields = ["student__user__first_name", "student__user__last_name", "assessment__title"]
     ordering_fields = ["created_at", "marks_obtained", "published_at"]
 
@@ -95,5 +103,21 @@ class ResultViewSet(viewsets.ModelViewSet):
                 | Q(assessment__subject__teacher=user.teacher_profile)
             ).distinct()
         if is_student(user):
-            return qs.filter(student__user=user)
-        return qs.none()
+            qs = qs.filter(student__user=user)
+        elif not is_admin(user):
+            qs = qs.none()
+
+        # Dynamic query filters
+        classroom = self.request.query_params.get("classroom")
+        if classroom:
+            qs = qs.filter(assessment__classroom_id=classroom)
+            
+        subject = self.request.query_params.get("subject")
+        if subject:
+            qs = qs.filter(assessment__subject_id=subject)
+            
+        assessment = self.request.query_params.get("assessment")
+        if assessment:
+            qs = qs.filter(assessment_id=assessment)
+
+        return qs

@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+/* Premium Collapsible Sidebar & Dashboard Layout */
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--light-bg);
+}
+
+.dashboard-sidebar {
+    width: 280px;
+    background-color: var(--primary-color);
+    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    border-right: 4px solid var(--accent-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+/* Sidebar Scrollable Area */
+.sidebar-scroll {
+    flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.sidebar-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.dashboard-content {
+    flex-grow: 1;
+    background-color: var(--light-bg);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-brand {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-menu {
+    padding: 1rem 0.75rem;
+    list-style: none;
+    margin: 0;
+}
+
+.sidebar-section-header {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.35);
+    padding: 1rem 1.25rem 0.4rem;
+    margin: 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1.25rem;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.05rem;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-link:hover i {
+    transform: scale(1.15);
+}
+
+.sidebar-link.active {
+    color: var(--accent-color) !important;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-left: 4px solid var(--accent-color);
+    border-radius: 0 1rem 1rem 0;
+    padding-left: 1.1rem;
+}
+
+/* Compact Header */
+.dashboard-header {
+    background-color: white;
+    padding: 0.9rem 2rem;
+    border-bottom: 1px solid rgba(12, 43, 77, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.dashboard-body {
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+.user-avatar-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(12, 43, 77, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: var(--primary-color);
+    border: 2px solid var(--accent-color);
+    transition: transform 0.2s ease;
+}
+.user-avatar-wrapper:hover {
+    transform: scale(1.05);
+}
+
+/* Header Dropdown Menu */
+.header-profile-dropdown {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 0.5rem;
+    margin-top: 0.5rem !important;
+}
+.header-profile-dropdown .dropdown-item {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    transition: all 0.2s ease;
+}
+.header-profile-dropdown .dropdown-item:hover {
+    background-color: var(--light-bg);
+    color: var(--primary-color);
+}
+
+/* Collapsed Sidebar Styles for Desktop */
+@media (min-width: 992px) {
+    .dashboard-wrapper.collapsed-sidebar .dashboard-sidebar {
+        width: 80px;
+    }
+    .dashboard-wrapper.collapsed-sidebar .sidebar-brand span,
+    .dashboard-wrapper.collapsed-sidebar .sidebar-section-header,
+    .dashboard-wrapper.collapsed-sidebar .sidebar-link span {
+        display: none !important;
+    }
+    .dashboard-wrapper.collapsed-sidebar .sidebar-link {
+        justify-content: center;
+        padding: 0.75rem 0;
+        border-radius: 12px;
+        margin: 0.25rem 0.5rem;
+    }
+    .dashboard-wrapper.collapsed-sidebar .sidebar-link.active {
+        border-left: 0;
+        border-radius: 12px;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Responsive Drawer for Mobile */
+@media (max-width: 991.98px) {
+    .dashboard-sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
+        z-index: 1050;
+    }
+    .dashboard-sidebar.active {
+        left: 0;
+    }
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1040;
+        display: none;
+    }
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
+{% block dashboard_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper" id="dashboardWrapper">
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Collapsible Sidebar -->
+    <aside class="dashboard-sidebar" id="sidebar">
+        <!-- Brand / Logo Section -->
+        <div class="sidebar-brand">
+            <a class="d-flex align-items-center gap-3 text-decoration-none" href="{% url 'dashboard_redirect' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" style="width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));">
+                <div class="brand-text-wrapper">
+                    <span class="brand-font fs-6 mb-0 d-block text-white" style="font-size: 0.85rem !important;">JSM SHIKSHA</span>
+                    <span class="d-block text-white-50" style="font-size: 0.55rem; letter-spacing: 0.25em; font-weight: 900;">ACADEMY ERP</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Sidebar Navigation Menu -->
+        <div class="sidebar-scroll">
+            <ul class="sidebar-menu">
+                {% if user.role == 'admin' %}
+                    <!-- Admin Navigation -->
+                    <p class="sidebar-section-header">Dashboard</p>
+                    <li><a href="{% url 'admin_overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_overview' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a></li>
+
+                    <p class="sidebar-section-header">Management</p>
+                    <li><a href="{% url 'admin_users' %}" class="sidebar-link {% if 'users' in request.path %}active{% endif %}"><i class="fa-solid fa-user-gear"></i> <span>Users</span></a></li>
+                    <li><a href="{% url 'admin_students' %}" class="sidebar-link {% if 'students' in request.path %}active{% endif %}"><i class="fa-solid fa-user-graduate"></i> <span>Students</span></a></li>
+                    <li><a href="{% url 'admin_teachers' %}" class="sidebar-link {% if 'teachers' in request.path %}active{% endif %}"><i class="fa-solid fa-chalkboard-teacher"></i> <span>Teachers</span></a></li>
+
+                    <p class="sidebar-section-header">Academic</p>
+                    <li><a href="{% url 'admin_classes' %}" class="sidebar-link {% if 'classes' in request.path %}active{% endif %}"><i class="fa-solid fa-school"></i> <span>Classes</span></a></li>
+                    <li><a href="{% url 'admin_subjects' %}" class="sidebar-link {% if 'subjects' in request.path %}active{% endif %}"><i class="fa-solid fa-book-open"></i> <span>Subjects</span></a></li>
+                    <li><a href="{% url 'admin_assessments' %}" class="sidebar-link {% if 'assessments' in request.path %}active{% endif %}"><i class="fa-solid fa-file-pen"></i> <span>Assessments</span></a></li>
+                    <li><a href="{% url 'admin_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}"><i class="fa-solid fa-square-poll-vertical"></i> <span>Results</span></a></li>
+
+                    <p class="sidebar-section-header">Operations</p>
+                    <li><a href="{% url 'admin_attendance_sessions' %}" class="sidebar-link {% if 'attendance-sessions' in request.path %}active{% endif %}"><i class="fa-solid fa-calendar-days"></i> <span>Sessions</span></a></li>
+                    <li><a href="{% url 'admin_attendance_records' %}" class="sidebar-link {% if 'attendance-records' in request.path %}active{% endif %}"><i class="fa-solid fa-clipboard-user"></i> <span>Records</span></a></li>
+
+                    <p class="sidebar-section-header">LMS</p>
+                    <li><a href="{% url 'admin_assignments' %}" class="sidebar-link {% if 'assignments' in request.path %}active{% endif %}"><i class="fa-solid fa-file-signature"></i> <span>Assignments</span></a></li>
+                    <li><a href="{% url 'admin_submissions' %}" class="sidebar-link {% if 'submissions' in request.path %}active{% endif %}"><i class="fa-solid fa-upload"></i> <span>Submissions</span></a></li>
+                    <li><a href="{% url 'admin_notes' %}" class="sidebar-link {% if 'notes' in request.path %}active{% endif %}"><i class="fa-solid fa-file-lines"></i> <span>Notes</span></a></li>
+                    <li><a href="{% url 'admin_videos' %}" class="sidebar-link {% if 'videos' in request.path %}active{% endif %}"><i class="fa-solid fa-video"></i> <span>Videos</span></a></li>
+                    <li><a href="{% url 'admin_quizzes' %}" class="sidebar-link {% if 'quizzes' in request.path %}active{% endif %}"><i class="fa-solid fa-circle-question"></i> <span>Quizzes</span></a></li>
+
+                    <p class="sidebar-section-header">Finance</p>
+                    <li><a href="{% url 'admin_fee_plans' %}" class="sidebar-link {% if 'fee-plans' in request.path %}active{% endif %}"><i class="fa-solid fa-money-check-dollar"></i> <span>Fee Plans</span></a></li>
+                    <li><a href="{% url 'admin_payments' %}" class="sidebar-link {% if 'payments' in request.path %}active{% endif %}"><i class="fa-solid fa-credit-card"></i> <span>Payments</span></a></li>
+
+                    <p class="sidebar-section-header">Communication</p>
+                    <li><a href="{% url 'admin_announcements' %}" class="sidebar-link {% if 'announcements' in request.path %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> <span>Announcements</span></a></li>
+                    <li><a href="{% url 'admin_notifications' %}" class="sidebar-link {% if 'notifications' in request.path %}active{% endif %}"><i class="fa-solid fa-bell"></i> <span>Notifications</span></a></li>
+
+                    <p class="sidebar-section-header">CMS</p>
+                    <li><a href="{% url 'admin_courses' %}" class="sidebar-link {% if 'courses' in request.path %}active{% endif %}"><i class="fa-solid fa-graduation-cap"></i> <span>Courses</span></a></li>
+                    <li><a href="{% url 'admin_facilities' %}" class="sidebar-link {% if 'facilities' in request.path %}active{% endif %}"><i class="fa-solid fa-building-columns"></i> <span>Facilities</span></a></li>
+                    <li><a href="{% url 'admin_gallery' %}" class="sidebar-link {% if 'gallery' in request.path %}active{% endif %}"><i class="fa-solid fa-images"></i> <span>Gallery</span></a></li>
+                    <li><a href="{% url 'admin_contact_messages' %}" class="sidebar-link {% if 'contact-messages' in request.path %}active{% endif %}"><i class="fa-solid fa-envelope"></i> <span>Contact Messages</span></a></li>
+                    <li><a href="{% url 'admin_inquiries' %}" class="sidebar-link {% if 'inquiries' in request.path %}active{% endif %}"><i class="fa-solid fa-circle-info"></i> <span>Inquiries</span></a></li>
+
+                {% elif user.role == 'teacher' %}
+                    <!-- Teacher Navigation -->
+                    <p class="sidebar-section-header">Dashboard</p>
+                    <li><a href="{% url 'teacher_overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'teacher_overview' %}active{% endif %}"><i class="fa-solid fa-compass"></i> <span>Overview</span></a></li>
+
+                    <p class="sidebar-section-header">Management</p>
+                    <li><a href="{% url 'teacher_students' %}" class="sidebar-link {% if 'students' in request.path %}active{% endif %}"><i class="fa-solid fa-users-viewfinder"></i> <span>My Students</span></a></li>
+                    <li><a href="{% url 'teacher_attendance' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}"><i class="fa-solid fa-calendar-check"></i> <span>Attendance</span></a></li>
+
+                    <p class="sidebar-section-header">LMS</p>
+                    <li><a href="{% url 'teacher_assignments' %}" class="sidebar-link {% if 'assignments' in request.path or 'submissions' in request.path %}active{% endif %}"><i class="fa-solid fa-file-invoice"></i> <span>Assignments</span></a></li>
+                    <li><a href="{% url 'teacher_learning' %}" class="sidebar-link {% if 'notes' in request.path or 'videos' in request.path %}active{% endif %}"><i class="fa-solid fa-cloud-arrow-up"></i> <span>Learning Hub</span></a></li>
+
+                    <p class="sidebar-section-header">Evaluation</p>
+                    <li><a href="{% url 'teacher_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}"><i class="fa-solid fa-square-poll-vertical"></i> <span>Exam Results</span></a></li>
+
+                {% else %}
+                    <!-- Student Navigation -->
+                    <p class="sidebar-section-header">Dashboard</p>
+                    <li><a href="{% url 'student_overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_overview' %}active{% endif %}"><i class="fa-solid fa-house-chimney-user"></i> <span>Overview</span></a></li>
+
+                    <p class="sidebar-section-header">Academics</p>
+                    <li><a href="{% url 'student_attendance' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}"><i class="fa-solid fa-calendar-check"></i> <span>Attendance</span></a></li>
+                    <li><a href="{% url 'student_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}"><i class="fa-solid fa-trophy"></i> <span>Exam Results</span></a></li>
+
+                    <p class="sidebar-section-header">LMS</p>
+                    <li><a href="{% url 'student_assignments' %}" class="sidebar-link {% if 'assignments' in request.path %}active{% endif %}"><i class="fa-solid fa-file-signature"></i> <span>Assignments</span></a></li>
+                    <li><a href="{% url 'student_learning' %}" class="sidebar-link {% if 'learning' in request.path %}active{% endif %}"><i class="fa-solid fa-graduation-cap"></i> <span>Learning Hub</span></a></li>
+
+                    <p class="sidebar-section-header">Finance</p>
+                    <li><a href="{% url 'student_payments' %}" class="sidebar-link {% if 'payments' in request.path %}active{% endif %}"><i class="fa-solid fa-credit-card"></i> <span>Pay Dues</span></a></li>
+                {% endif %}
+
+                <!-- Shared Account settings -->
+                <p class="sidebar-section-header">Account</p>
+                <li><a href="{% url 'my_profile' %}" class="sidebar-link {% if 'profile' in request.path %}active{% endif %}"><i class="fa-solid fa-user"></i> <span>My Profile</span></a></li>
+                <li><a href="{% url 'logout' %}" class="sidebar-link text-danger"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <div class="dashboard-content">
+        <!-- Topbar Header -->
+        <header class="dashboard-header">
+            <!-- Sidebar toggle control -->
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-premium-outline px-3" onclick="toggleSidebar()" aria-label="Toggle Navigation Sidebar">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+                <div class="d-none d-md-flex align-items-center gap-2">
+                    <span class="badge-premium-gold"><i class="fa-regular fa-calendar-days me-1"></i> {% now "l, d F Y" %}</span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.72rem;">PORTAL: {{ user.role|upper }}</span>
+                </div>
+            </div>
+
+            <!-- Header widgets -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Dropdown profile trigger -->
+                <div class="dropdown">
+                    <div class="d-flex align-items-center gap-2" style="cursor:pointer;" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="text-end d-none d-sm-block">
+                            <span class="d-block font-bold text-sm text-primary mb-0" style="color: var(--primary-color); font-weight: 800;">{{ user.full_name }}</span>
+                            <small class="text-muted d-block text-[10px] uppercase fw-bold" style="font-size: 0.65rem;">@{{ user.username }}</small>
+                        </div>
+                        <div class="user-avatar-wrapper">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/logo.png' %}" alt="Logo" style="width: 28px; height: 28px; object-fit: contain;">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end header-profile-dropdown">
+                        <div class="px-3 py-2 border-bottom mb-2">
+                            <span class="d-block fw-bold text-primary">{{ user.full_name }}</span>
+                            <small class="text-muted">Role: {{ user.role|title }}</small>
+                        </div>
+
+                        {% if user.role == 'admin' %}
+                        <li><a class="dropdown-item" href="{% url 'admin_profile_redirect' %}"><i class="fa-solid fa-id-card me-2 text-primary"></i> My Profile</a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fa-solid fa-id-card me-2 text-primary"></i> My Profile</a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="/admin/"><i class="fa-solid fa-gears me-2 text-warning"></i> Django Admin</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content Body -->
+        <main class="dashboard-body">
+            {% block dashboard_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleSidebar() {
+        const width = window.innerWidth;
+        if (width >= 992) {
+            // Collapse desktop sidebar
+            document.getElementById('dashboardWrapper').classList.toggle('collapsed-sidebar');
+        } else {
+            // Toggle mobile drawer
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+    }
+</script>
+{% block dashboard_js %}{% endblock %}
+{% endblock %}

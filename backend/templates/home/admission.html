@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apply for Admission - JSM Shiksha Academy{% endblock %}
+
+{% block content %}
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">
+    <div class="container py-4 text-center">
+        <span class="badge-premium-gold mb-3 d-inline-block">🚀 Join Our Family</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="font-family:'Outfit',sans-serif;">Apply for Admission</h1>
+        <p class="lead text-white-50">Submit your inquiry and our admissions team will contact you within 24 hours.</p>
+    </div>
+</div>
+
+<div class="py-5">
+    <div class="container py-4">
+        <div class="row g-5 align-items-start">
+            <!-- Admission Steps -->
+            <div class="col-lg-5">
+                <span class="badge-premium-gold mb-3">📋 How It Works</span>
+                <h2 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Admission Process</h2>
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" style="width:42px; height:42px; background:var(--primary-color); font-family:'Outfit',sans-serif; font-size:1.1rem;">1</div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color:var(--primary-color);">Submit Inquiry</h5>
+                            <p class="text-muted mb-0" style="font-size:0.85rem;">Fill out the form with your child's details and preferred grade.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" style="width:42px; height:42px; background:var(--accent-color); color:var(--primary-color) !important; font-family:'Outfit',sans-serif; font-size:1.1rem;">2</div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color:var(--primary-color);">Counselling Call</h5>
+                            <p class="text-muted mb-0" style="font-size:0.85rem;">Our team will call you within 24 hours to discuss the admission process.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" style="width:42px; height:42px; background:var(--pastel-green); font-family:'Outfit',sans-serif; font-size:1.1rem;">3</div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color:var(--primary-color);">Document Submission</h5>
+                            <p class="text-muted mb-0" style="font-size:0.85rem;">Visit the school with required documents for verification and enrollment.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" style="width:42px; height:42px; background:var(--sky-blue); font-family:'Outfit',sans-serif; font-size:1.1rem;">4</div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color:var(--primary-color);">Welcome to JSM!</h5>
+                            <p class="text-muted mb-0" style="font-size:0.85rem;">Your child receives login credentials and joins the JSM Shiksha Academy family!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inquiry Form -->
+            <div class="col-lg-7">
+                <div class="premium-card p-4 p-md-5 bg-white" style="border-top:5px solid var(--accent-color) !important;">
+                    <h3 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">📋 Send Admission Inquiry</h3>
+                    <p class="text-muted mb-4" style="font-size:0.85rem;">All fields marked * are required.</p>
+
+                    {% if messages %}
+                        {% for msg in messages %}
+                        <div class="alert border-0 rounded-4 py-2 px-3 mb-4 {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+                            {{ msg }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Student Name *</label>
+                                <input type="text" name="student_name" class="form-control" placeholder="Child's full name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Email Address *</label>
+                                <input type="email" name="email" class="form-control" placeholder="Parent email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Phone Number *</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="+91 XXXXXXXXXX" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Preferred Grade</label>
+                                <select name="grade" class="form-select">
+                                    <option>-- Select Grade --</option>
+                                    <option>UKG</option>
+                                    <option>Grade 1</option>
+                                    <option>Grade 2</option>
+                                    <option>Grade 3</option>
+                                    <option>Grade 4</option>
+                                    <option>Grade 5</option>
+                                    <option>Grade 6</option>
+                                    <option>Grade 7</option>
+                                    <option>Grade 8</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Message / Additional Notes</label>
+                                <textarea name="message" class="form-control" rows="4" placeholder="Any questions or special notes..."></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-premium-accent rounded-pill w-100 py-3 fw-bold">
+                                <i class="fa-solid fa-paper-plane me-2"></i> Submit Admission Inquiry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+/* Custom Dashboard style sheet to complement Bootstrap */
+.text-gold {
+    color: var(--accent-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+    border-color: var(--primary-color) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.hover-gold:hover {
+    color: var(--accent-color) !important;
+}
+
+/* Modal details */
+.rounded-xl {
+    border-radius: 1rem !important;
+}
+
+.rounded-2xl {
+    border-radius: 1.5rem !important;
+}

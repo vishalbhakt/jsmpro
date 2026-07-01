@@ -1,0 +1,133 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Attendance - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge mb-3 d-inline-block px-3 py-2 rounded-pill fw-bold" style="background:rgba(255,255,255,0.15); color:white; font-size:0.72rem; letter-spacing:0.08em;">📅 ATTENDANCE RECORD</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">My Attendance Register 📅</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.7);">Track your daily attendance, monitor your percentage, and view session-wise logs.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-calendar-days text-white opacity-10" style="font-size:7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">✅</div>
+            <h2 class="fw-bold mb-1" style="color:#065f46; font-family:'Outfit',sans-serif;">{{ present_count|default:0 }}</h2>
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Present</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">❌</div>
+            <h2 class="fw-bold mb-1" style="color:#dc2626; font-family:'Outfit',sans-serif;">{{ absent_count|default:0 }}</h2>
+            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Absent</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">🕐</div>
+            <h2 class="fw-bold mb-1" style="color:#d97706; font-family:'Outfit',sans-serif;">{{ late_count|default:0 }}</h2>
+            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Late</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
+            <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                {% if att_percentage is not None %}{{ att_percentage }}%{% else %}—{% endif %}
+            </h2>
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Attendance %</span>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance progress bar -->
+{% if att_percentage is not None %}
+<div class="premium-card p-4 bg-white mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0" style="color:var(--primary-color);">Overall Attendance</h6>
+        <span class="fw-bold" style="color:{% if att_percentage >= 75 %}var(--pastel-green){% elif att_percentage >= 60 %}#d97706{% else %}#dc2626{% endif %};">{{ att_percentage }}% — {% if att_percentage >= 75 %}Good 👍{% elif att_percentage >= 60 %}Average ⚠️{% else %}Low ⚠️{% endif %}</span>
+    </div>
+    <div class="progress rounded-pill" style="height: 16px; background:#e2f4ea;">
+        <div class="progress-bar rounded-pill" style="width:{{ att_percentage }}%; background:{% if att_percentage >= 75 %}linear-gradient(90deg, #10b981, #34d399){% elif att_percentage >= 60 %}linear-gradient(90deg, #d97706, #fbbf24){% else %}linear-gradient(90deg, #dc2626, #f87171){% endif %}; transition: width 1s ease;" role="progressbar"></div>
+    </div>
+    <div class="d-flex justify-content-between mt-1">
+        <small class="text-muted">0%</small>
+        <small class="text-muted">Minimum Required: 75%</small>
+        <small class="text-muted">100%</small>
+    </div>
+</div>
+{% endif %}
+
+<!-- Attendance Table -->
+<div class="premium-card p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h4 class="fw-bold mb-0" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+            <i class="fa-solid fa-table-list me-2" style="color:var(--accent-color);"></i> Attendance Logs
+        </h4>
+        <input type="text" id="attSearch" class="form-control" style="max-width:250px;" placeholder="🔍 Search..." onkeyup="filterAtt()">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="font-size:0.75rem; text-transform:uppercase; font-weight:800;">#</th>
+                    <th style="font-size:0.75rem; text-transform:uppercase; font-weight:800;">Date</th>
+                    <th style="font-size:0.75rem; text-transform:uppercase; font-weight:800;">Subject</th>
+                    <th style="font-size:0.75rem; text-transform:uppercase; font-weight:800;">Status</th>
+                    <th style="font-size:0.75rem; text-transform:uppercase; font-weight:800;">Notes</th>
+                </tr>
+            </thead>
+            <tbody id="attTable">
+                {% for record in attendance_records %}
+                <tr class="att-row">
+                    <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                    <td class="fw-bold" style="font-size:0.83rem;">{{ record.session.date|date:"d M, Y" }}</td>
+                    <td style="font-size:0.83rem;">{{ record.session.classroom.name|default:"—" }}</td>
+                    <td>
+                        {% if record.status == 'present' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">✅ Present</span>
+                        {% elif record.status == 'absent' %}
+                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">❌ Absent</span>
+                        {% elif record.status == 'late' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">🕐 Late</span>
+                        {% else %}
+                            <span class="badge bg-info bg-opacity-15 text-info rounded-pill fw-bold px-3 py-1">💙 Excused</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ record.remarks|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div style="font-size:3rem;">📂</div>
+                        <p class="text-muted mt-2 mb-0">No attendance records found.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+function filterAtt() {
+    const q = document.getElementById('attSearch').value.toLowerCase();
+    document.querySelectorAll('.att-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

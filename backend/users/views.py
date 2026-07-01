@@ -23,14 +23,16 @@ class DashboardStatsView(APIView):
         role = getattr(user, 'role', 'student')
         
         # We will import models here to prevent circular imports
-        from academics.models import Assessment
+        from academics.models import Assessment, Subject, Result
         from attendance.models import AttendanceRecord
-        from finance.models import Payment
-        from learning.models import Assignment, AssignmentSubmission
-        from communication.models import Announcement
+        from finance.models import Payment, FeePlan
+        from learning.models import Assignment, AssignmentSubmission, Note, VideoLecture, Quiz
+        from communication.models import Announcement, Notification
         
         stats = []
         today_events = []
+        performance = []
+        summary = None
         
         if role == 'admin':
             student_count = StudentProfile.objects.count()
@@ -65,36 +67,190 @@ class DashboardStatsView(APIView):
                 ]
             except Exception:
                 pass
-                
         else: # student
             try:
                 sp = user.student_profile
-                pending_assignments = Assignment.objects.filter(subject__classroom=sp.classroom).count() - AssignmentSubmission.objects.filter(student=sp).count()
-                pending_fees = Payment.objects.filter(student=sp, status='pending').count()
+                import datetime
+                now = timezone.now()
                 
+                # 1. Assignments
+                total_assignments = Assignment.objects.filter(classroom=sp.classroom, is_published=True).count()
+                completed_assignments = AssignmentSubmission.objects.filter(student=sp).count()
+                pending_assignments = max(0, total_assignments - completed_assignments)
+                due_today = Assignment.objects.filter(classroom=sp.classroom, is_published=True, due_at__date=now.date()).count()
+                overdue = Assignment.objects.filter(
+                    classroom=sp.classroom, 
+                    is_published=True, 
+                    due_at__lt=now
+                ).exclude(
+                    submissions__student=sp
+                ).count()
+                
+                # 2. Fees
+                from django.db.models import Sum
+                total_fee = FeePlan.objects.filter(classroom=sp.classroom).aggregate(total=Sum('amount'))['total'] or 0
+                paid_amount = Payment.objects.filter(student=sp, status='paid').aggregate(total=Sum('amount'))['total'] or 0
+                remaining_fee = max(0, total_fee - paid_amount)
+                
+                # 3. Attendance
+                present_count = AttendanceRecord.objects.filter(student=sp, status='present').count()
+                absent_count = AttendanceRecord.objects.filter(student=sp, status='absent').count()
+                late_count = AttendanceRecord.objects.filter(student=sp, status='late').count()
+                leave_count = AttendanceRecord.objects.filter(student=sp, status='excused').count()
+                total_att = present_count + absent_count + late_count + leave_count
+                att_percentage = int((present_count + late_count + leave_count) / total_att * 100) if total_att > 0 else None
+                
+                # Stats card
                 stats = [
-                    {"label": "Pending Assignments", "value": str(pending_assignments), "trend": "To complete"},
-                    {"label": "Pending Fees", "value": str(pending_fees), "trend": "Unpaid invoices"},
-                    {"label": "Attendance", "value": "N/A", "trend": "Current term"},
-                    {"label": "Profile", "value": "Active", "trend": sp.roll_number},
+                    {
+                        "label": "Pending Assignments", 
+                        "value": str(pending_assignments) if pending_assignments > 0 else "No pending assignments", 
+                        "trend": f"{completed_assignments} completed | {due_today} due today | {overdue} overdue"
+                    },
+                    {
+                        "label": "Pending Fees", 
+                        "value": f"₹{remaining_fee}" if remaining_fee > 0 else "Fully Paid", 
+                        "trend": f"Total: ₹{total_fee} | Paid: ₹{paid_amount}"
+                    },
+                    {
+                        "label": "Attendance", 
+                        "value": f"{att_percentage}%" if att_percentage is not None else "Attendance not available yet", 
+                        "trend": f"{present_count} Pres | {absent_count} Abs | {late_count} Late | {leave_count} Leave" if total_att > 0 else "No records"
+                    },
+                    {
+                        "label": "Profile Status", 
+                        "value": sp.status.title() if sp.status else "Active", 
+                        "trend": f"Roll: {sp.roll_number or 'N/A'}"
+                    },
                 ]
-            except Exception:
+                
+                # 4. Updates Feed
+                updates = []
+                # Announcements
+                announcements = Announcement.objects.filter(
+                    Q(classroom=sp.classroom) | Q(classroom__isnull=True)
+                ).order_by('-created_at')[:4]
+                for a in announcements:
+                    updates.append([
+                        "Announcement",
+                        a.title,
+                        a.created_at.date().isoformat(),
+                        a.created_at.time().strftime("%H:%M"),
+                        "unread"
+                    ])
+                # New Assignments
+                new_assignments = Assignment.objects.filter(classroom=sp.classroom, is_published=True).order_by('-published_at')[:4]
+                for ass in new_assignments:
+                    updates.append([
+                        "Assignment",
+                        f"Task: {ass.title} is assigned",
+                        ass.published_at.date().isoformat(),
+                        ass.published_at.time().strftime("%H:%M"),
+                        "unread"
+                    ])
+                # New Notes
+                new_notes = Note.objects.filter(classroom=sp.classroom, is_published=True).order_by('-published_at')[:4]
+                for n in new_notes:
+                    updates.append([
+                        "Handout",
+                        f"Notes: {n.title} uploaded",
+                        n.published_at.date().isoformat(),
+                        n.published_at.time().strftime("%H:%M"),
+                        "unread"
+                    ])
+                # New Videos
+                new_videos = VideoLecture.objects.filter(classroom=sp.classroom, is_published=True).order_by('-published_at')[:4]
+                for v in new_videos:
+                    updates.append([
+                        "Video Lesson",
+                        f"Lecture: {v.title} published",
+                        v.published_at.date().isoformat(),
+                        v.published_at.time().strftime("%H:%M"),
+                        "unread"
+                    ])
+                
+                updates.sort(key=lambda x: f"{x[2]}T{x[3]}", reverse=True)
+                today_events = updates[:8]
+                
+                # 5. Performance calculations
+                results = Result.objects.filter(student=sp)
+                total_percentage = 0.0
+                eval_count = 0
+                subject_scores = {}
+                monthly_scores = {}
+                
+                for r in results:
+                    max_marks = float(r.assessment.max_marks) if r.assessment and r.assessment.max_marks else 100.0
+                    obtained = float(r.marks_obtained)
+                    percent = (obtained / max_marks * 100) if max_marks > 0 else 0.0
+                    total_percentage += percent
+                    eval_count += 1
+                    
+                    sub_name = r.assessment.subject.name
+                    if sub_name not in subject_scores:
+                        subject_scores[sub_name] = []
+                    subject_scores[sub_name].append(percent)
+                    
+                    month_name = r.created_at.strftime("%b")
+                    if month_name not in monthly_scores:
+                        monthly_scores[month_name] = []
+                    monthly_scores[month_name].append(percent)
+                
+                overall_percentage = round(total_percentage / eval_count, 1) if eval_count > 0 else None
+                overall_grade = "N/A"
+                if overall_percentage is not None:
+                    if overall_percentage >= 90: overall_grade = "A+"
+                    elif overall_percentage >= 80: overall_grade = "A"
+                    elif overall_percentage >= 70: overall_grade = "B"
+                    elif overall_percentage >= 60: overall_grade = "C"
+                    elif overall_percentage >= 50: overall_grade = "D"
+                    else: overall_grade = "F"
+                
+                subject_performance = [
+                    {"name": sub, "results": round(sum(scores)/len(scores), 1)}
+                    for sub, scores in subject_scores.items()
+                ]
+                # Default performance fallback or trend mapping
+                performance = [
+                    {"name": month, "results": round(sum(scores)/len(scores), 1)}
+                    for month, scores in monthly_scores.items()
+                ]
+                if not performance and overall_percentage is not None:
+                    performance = [{"name": "Overall", "results": overall_percentage}]
+                
+                # 6. Summary metrics
+                total_subjects = Subject.objects.filter(classroom=sp.classroom).count()
+                upcoming_assignments = Assignment.objects.filter(classroom=sp.classroom, is_published=True, due_at__gt=now).count()
+                
+                last_result = Result.objects.filter(student=sp).order_by('-created_at').first()
+                latest_result_str = f"{last_result.assessment.title} - {last_result.grade} ({last_result.marks_obtained}/{last_result.assessment.max_marks})" if last_result else "No graded results yet"
+                
+                unread_notifications = Notification.objects.filter(recipient=user, read_at__isnull=True).count()
+                learning_resources_available = Note.objects.filter(classroom=sp.classroom, is_published=True).count() + VideoLecture.objects.filter(classroom=sp.classroom, is_published=True).count()
+                
+                summary = {
+                    "total_subjects": total_subjects,
+                    "upcoming_assignments": upcoming_assignments,
+                    "attendance_percentage": f"{att_percentage}%" if att_percentage is not None else "N/A",
+                    "latest_result": latest_result_str,
+                    "unread_notifications": unread_notifications,
+                    "learning_resources_available": learning_resources_available,
+                    "overall_percentage": overall_percentage,
+                    "overall_grade": overall_grade,
+                    "subject_performance": subject_performance
+                }
+            except Exception as ex:
+                print("Student stats calculation error:", ex)
                 pass
 
-        # Dummy performance data for visual effect since we don't have enough historical data seeded
-        performance = [
-            {"name": "Jan", "attendance": 90, "results": 75, "fees": 60},
-            {"name": "Feb", "attendance": 92, "results": 80, "fees": 70},
-            {"name": "Mar", "attendance": 95, "results": 85, "fees": 80},
-        ]
-
         if not today_events:
-            today_events.append(["System", "Welcome to JSM Dashboard"])
+            today_events.append(["System", "Welcome to JSM Dashboard", timezone.now().date().isoformat(), timezone.now().time().strftime("%H:%M"), "read"])
             
         return Response({
             "stats": stats,
             "performance": performance,
-            "today": today_events
+            "today": today_events,
+            "summary": summary
         })
 
 class TokenPairView(TokenObtainPairView):
@@ -163,7 +319,7 @@ class PublicStatsView(APIView):
         from cms.models import Course
         student_count = User.objects.filter(role=User.Roles.STUDENT).count()
         teacher_count = User.objects.filter(role=User.Roles.TEACHER).count()
-        course_count = Course.objects.filter(status='published').count()
+        course_count = Course.objects.filter(is_published=True).count()
         return Response({
             "students": student_count,
             "teachers": teacher_count,
@@ -173,6 +329,7 @@ class PublicStatsView(APIView):
 
 
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -222,11 +379,12 @@ from django.db import transaction
 class StudentProfileViewSet(viewsets.ModelViewSet):
     serializer_class = StudentProfileSerializer
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = StandardResultsSetPagination
     search_fields = ["user__first_name", "user__last_name", "admission_number", "roll_number", "user__email", "user__phone"]
     ordering_fields = ["created_at", "roll_number", "admission_number"]
 
     def get_queryset(self):
-        qs = StudentProfile.objects.select_related("user", "classroom", "classroom__class_teacher")
+        qs = StudentProfile.objects.select_related("user", "classroom", "classroom__class_teacher").order_by("-created_at")
         user = self.request.user
         if is_admin(user):
             pass
@@ -404,6 +562,45 @@ class TeacherProfileViewSet(viewsets.ModelViewSet):
         if "email" in data:
             user.email = data["email"]
             user_updated = True
+        if "phone" in data:
+            user.phone = data["phone"]
+            user_updated = True
         if user_updated:
             user.save()
         return super().update(request, *args, **kwargs)
+
+    @action(detail=False, methods=["get", "patch"], url_path="my-profile")
+    @transaction.atomic
+    def my_profile(self, request):
+        """Teacher can view/update their own TeacherProfile fields."""
+        user = request.user
+        if not is_teacher(user):
+            return Response({"error": "Not a teacher"}, status=403)
+        try:
+            tp = user.teacher_profile
+        except TeacherProfile.DoesNotExist:
+            return Response({"error": "Teacher profile not found"}, status=404)
+
+        if request.method == "GET":
+            serializer = TeacherProfileSerializer(tp, context={"request": request})
+            return Response(serializer.data)
+
+        # PATCH - update TeacherProfile fields
+        data = request.data
+        for field in ["qualification", "designation", "bio", "joined_on", "status"]:
+            if field in data:
+                setattr(tp, field, data[field])
+        tp.save()
+
+        # Also update related User fields
+        u = user
+        u_changed = False
+        for field in ["first_name", "last_name", "phone"]:
+            if field in data:
+                setattr(u, field, data[field])
+                u_changed = True
+        if u_changed:
+            u.save()
+
+        serializer = TeacherProfileSerializer(tp, context={"request": request})
+        return Response(serializer.data)

@@ -1,0 +1,121 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Mark Attendance - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge mb-3 d-inline-block px-3 py-2 rounded-pill fw-bold" style="background:rgba(255,255,255,0.15); color:white; font-size:0.72rem;">📅 DAILY ATTENDANCE</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Mark Attendance 📅</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.7);">Record daily attendance for your students and review recent sessions.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-calendar-check text-white opacity-10" style="font-size:7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Mark Today's Attendance -->
+    <div class="col-lg-7">
+        <div class="premium-card p-4 p-md-5 bg-white">
+            <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-pen-to-square me-2" style="color:var(--accent-color);"></i> Mark Today's Attendance
+            </h4>
+            <form method="post" action="{% url 'teacher_mark_attendance' %}">
+                {% csrf_token %}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Select Classroom</label>
+                        <select name="classroom" class="form-select" required>
+                            <option value="">-- Choose Classroom --</option>
+                            {% for cls in assigned_classes %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Date</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                </div>
+
+                {% if students %}
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">#</th>
+                                <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Student Name</th>
+                                <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Roll No</th>
+                                <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                                <td class="fw-bold" style="font-size:0.83rem;">{{ student.user.full_name }}</td>
+                                <td><span class="badge-premium-blue" style="font-size:0.72rem;">{{ student.roll_number }}</span></td>
+                                <td>
+                                    <div class="d-flex gap-3 flex-wrap">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="status_{{ student.id }}" value="present" id="p{{ student.id }}" checked>
+                                            <label class="form-check-label text-success fw-bold" for="p{{ student.id }}" style="font-size:0.8rem;">✅ Present</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="status_{{ student.id }}" value="absent" id="a{{ student.id }}">
+                                            <label class="form-check-label text-danger fw-bold" for="a{{ student.id }}" style="font-size:0.8rem;">❌ Absent</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="status_{{ student.id }}" value="late" id="l{{ student.id }}">
+                                            <label class="form-check-label text-warning fw-bold" for="l{{ student.id }}" style="font-size:0.8rem;">🕐 Late</label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3 fw-bold">
+                    <i class="fa-solid fa-save me-2"></i> Save Attendance
+                </button>
+                {% else %}
+                <div class="text-center py-4">
+                    <div style="font-size:3rem;">🏫</div>
+                    <p class="text-muted mt-2 mb-3">Select a classroom above to load students.</p>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="col-lg-5">
+        <div class="premium-card p-4 bg-white">
+            <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-clock-rotate-left me-2" style="color:var(--accent-color);"></i> Recent Sessions
+            </h4>
+            {% for session in recent_sessions %}
+            <div class="p-3 rounded-4 bg-light mb-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-bold d-block" style="font-size:0.83rem; color:var(--primary-color);">{{ session.classroom.name }}</span>
+                    <span class="text-muted" style="font-size:0.78rem;">{{ session.date|date:"d M, Y" }}</span>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">{{ session.present_count }} Present</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <div style="font-size:2.5rem;">📂</div>
+                <p class="text-muted mt-2 mb-0" style="font-size:0.83rem;">No recent sessions recorded.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}{% if edit_user %}Edit User{% else %}Create User{% endif %} - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">
+        {% if edit_user %}✏️ Edit User{% else %}➕ Create New User{% endif %}
+    </h1>
+    <p class="text-white-50 mb-0">{% if edit_user %}Update account details for {{ edit_user.full_name }}{% else %}Add a new student, teacher, or admin account{% endif %}.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="premium-card p-4 p-md-5 bg-white">
+            <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-user-gear me-2" style="color:var(--accent-color);"></i> Account Details
+            </h4>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">First Name <span class="text-danger">*</span></label>
+                        <input type="text" name="first_name" value="{{ edit_user.first_name|default:'' }}" class="form-control" placeholder="First Name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Last Name</label>
+                        <input type="text" name="last_name" value="{{ edit_user.last_name|default:'' }}" class="form-control" placeholder="Last Name">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Username <span class="text-danger">*</span></label>
+                        <input type="text" name="username" value="{{ edit_user.username|default:'' }}" class="form-control" placeholder="e.g. john_doe" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" name="email" value="{{ edit_user.email|default:'' }}" class="form-control" placeholder="email@example.com" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Role <span class="text-danger">*</span></label>
+                        <select name="role" class="form-select" required>
+                            <option value="">-- Select Role --</option>
+                            <option value="student" {% if edit_user.role == 'student' %}selected{% endif %}>👨‍🎓 Student</option>
+                            <option value="teacher" {% if edit_user.role == 'teacher' %}selected{% endif %}>👩‍🏫 Teacher</option>
+                            <option value="admin" {% if edit_user.role == 'admin' %}selected{% endif %}>⚙️ Admin</option>
+                        </select>
+                    </div>
+                    {% if not edit_user %}
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password1" class="form-control" placeholder="Set password" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password2" class="form-control" placeholder="Confirm password" required>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="isActive" {% if not edit_user or edit_user.is_active %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="isActive" style="font-size:0.87rem; color:var(--primary-color);">Account Active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3 fw-bold">
+                        <i class="fa-solid fa-save me-2"></i> {% if edit_user %}Update User{% else %}Create User{% endif %}
+                    </button>
+                    <a href="{% url 'admin_users' %}" class="btn btn-premium-outline rounded-pill px-5 py-3 fw-bold">
+                        <i class="fa-solid fa-xmark me-2"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

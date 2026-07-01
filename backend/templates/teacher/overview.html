@@ -1,0 +1,124 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Welcome Banner -->
+<div class="premium-card p-5 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div style="position:absolute; width:200px; height:200px; border-radius:50%; background:rgba(255,193,7,0.07); top:-60px; right:-40px;"></div>
+    <div class="row align-items-center position-relative">
+        <div class="col-md-8">
+            <span class="badge-premium-gold mb-3 d-inline-block"><i class="fa-solid fa-chalkboard-user me-1"></i> Academic Session 2026-27</span>
+            <h1 class="display-5 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Welcome, {{ user.full_name }}! 🎓</h1>
+            <p class="text-white-50 mb-4">Manage your classes, mark attendance, post assignments, and upload learning materials.</p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{% url 'teacher_students' %}" class="btn btn-premium-accent btn-sm rounded-pill px-4 py-2">
+                    <i class="fa-solid fa-users-viewfinder me-1"></i> My Students
+                </a>
+                <a href="{% url 'teacher_attendance' %}" class="btn rounded-pill px-4 py-2 fw-bold" style="background:rgba(255,255,255,0.12); color:white; border:2px solid rgba(255,255,255,0.2);">
+                    <i class="fa-solid fa-calendar-check me-1"></i> Mark Attendance
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" class="float-animation" style="width:120px; height:120px; object-fit:contain; opacity:0.2;">
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="premium-card p-4 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="fw-bold text-muted" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em;">My Students</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary p-2 rounded-3 fs-5">👨‍🎓</span>
+            </div>
+            <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ students_count }}</h2>
+            <p class="text-muted mb-0" style="font-size:0.78rem;">Across assigned classrooms</p>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="premium-card p-4 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="fw-bold text-muted" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em;">Assignments</span>
+                <span class="badge bg-warning bg-opacity-10 text-warning p-2 rounded-3 fs-5">📋</span>
+            </div>
+            <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ assignments_count }}</h2>
+            <p class="text-muted mb-0" style="font-size:0.78rem;">Active homework tasks</p>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="premium-card p-4 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="fw-bold text-muted" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em;">Study Notes</span>
+                <span class="badge bg-success bg-opacity-10 text-success p-2 rounded-3 fs-5">📄</span>
+            </div>
+            <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ notes_count }}</h2>
+            <p class="text-muted mb-0" style="font-size:0.78rem;">PDFs published</p>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="premium-card p-4 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="fw-bold text-muted" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em;">Video Lectures</span>
+                <span class="badge bg-info bg-opacity-10 text-info p-2 rounded-3 fs-5">🎬</span>
+            </div>
+            <h2 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ videos_count }}</h2>
+            <p class="text-muted mb-0" style="font-size:0.78rem;">Lectures uploaded</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Announcements Board -->
+    <div class="col-lg-8">
+        <div class="premium-card p-4 p-md-5 bg-white">
+            <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-bullhorn me-2" style="color:var(--accent-color);"></i> Announcements Board 📢
+            </h4>
+            {% for ann in announcements %}
+            <div class="p-3 rounded-4 border-start border-4 border-warning bg-warning bg-opacity-5 mb-3">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h6 class="fw-bold mb-0" style="color:var(--primary-color);">{{ ann.title }}</h6>
+                    <small class="text-muted ms-2 text-nowrap">{{ ann.created_at|date:"d M, Y" }}</small>
+                </div>
+                <p class="text-muted mb-0" style="font-size:0.83rem;">{{ ann.body }}</p>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <div style="font-size:3rem;">📭</div>
+                <p class="text-muted mt-2 mb-0">No announcements published yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="premium-card p-4 bg-white mb-4">
+            <h5 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-bolt me-2" style="color:var(--accent-color);"></i> Quick Actions
+            </h5>
+            <div class="d-flex flex-column gap-3">
+                <a href="{% url 'teacher_students' %}" class="btn btn-premium-primary rounded-pill py-3 text-start px-4">
+                    <i class="fa-solid fa-users-viewfinder me-2"></i> View My Students
+                </a>
+                <a href="{% url 'teacher_attendance' %}" class="btn rounded-pill py-3 text-start px-4 fw-bold" style="background:#e8fdf3; color:#065f46; border:2px solid #a7f3d0;">
+                    <i class="fa-solid fa-calendar-check me-2" style="color:#10b981;"></i> Mark Attendance
+                </a>
+                <a href="{% url 'teacher_assignments' %}" class="btn rounded-pill py-3 text-start px-4 fw-bold" style="background:#fffbeb; color:#92400e; border:2px solid #fde68a;">
+                    <i class="fa-solid fa-file-invoice me-2" style="color:#d97706;"></i> Post Assignment
+                </a>
+                <a href="{% url 'teacher_learning' %}" class="btn rounded-pill py-3 text-start px-4 fw-bold" style="background:#e8f4fd; color:#1e40af; border:2px solid #bfdbfe;">
+                    <i class="fa-solid fa-cloud-arrow-up me-2" style="color:#2563eb;"></i> Upload Materials
+                </a>
+                <a href="{% url 'teacher_results' %}" class="btn rounded-pill py-3 text-start px-4 fw-bold" style="background:#fdf2f8; color:#6d28d9; border:2px solid #e9d5ff;">
+                    <i class="fa-solid fa-trophy me-2" style="color:#a855f7;"></i> Grade Results
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

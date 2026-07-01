@@ -1,0 +1,113 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Assignments - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #1e3a5f 0%, #0c2b4d 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge-premium-gold mb-3 d-inline-block"><i class="fa-solid fa-file-signature me-1"></i> Homework & Tasks</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">My Assignments 📝</h1>
+            <p class="text-white-50 mb-0">Submit your homework, track due dates, and review completed tasks.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-file-circle-check text-white opacity-10" style="font-size: 7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Search bar -->
+<div class="mb-4">
+    <div class="position-relative">
+        <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="🔍  Search assignments by title or subject..." onkeyup="filterCards()">
+    </div>
+</div>
+
+{% if assignments %}
+<div class="row g-4" id="assignmentsGrid">
+    {% for item in assignments %}
+    <div class="col-md-6 col-lg-4 assignment-card-wrapper" data-title="{{ item.title|lower }}" data-subject="{{ item.subject.name|lower }}">
+        <div class="premium-card p-4 bg-white h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="badge rounded-pill fw-bold px-3 py-2" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.7rem;">{{ item.subject.name }}</span>
+                {% if item.submission %}
+                    <span class="badge bg-success rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-check me-1"></i> Submitted</span>
+                {% elif item.due_date < today %}
+                    <span class="badge bg-danger rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-clock me-1"></i> Overdue</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-regular fa-clock me-1"></i> Pending</span>
+                {% endif %}
+            </div>
+            <h5 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ item.title }}</h5>
+            <p class="text-muted mb-3" style="font-size:0.83rem; line-height:1.6;">{{ item.description|truncatechars:100 }}</p>
+            <div class="d-flex align-items-center gap-2 mb-3 mt-auto">
+                <i class="fa-regular fa-calendar text-muted" style="font-size:0.8rem;"></i>
+                <span class="text-muted" style="font-size:0.8rem; font-weight:600;">Due: {{ item.due_date|date:"d M, Y" }}</span>
+            </div>
+            {% if item.submission %}
+                <div class="p-2 rounded-3 bg-success bg-opacity-10 text-success text-center fw-bold" style="font-size:0.8rem;">
+                    <i class="fa-solid fa-circle-check me-1"></i> Work submitted on {{ item.submission.submitted_at|date:"d M" }}
+                </div>
+            {% else %}
+                <button type="button" class="btn btn-premium-primary rounded-pill py-2 w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#submitModal{{ item.id }}">
+                    <i class="fa-solid fa-upload me-1"></i> Submit Assignment
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Submit Modal -->
+    {% if not item.submission %}
+    <div class="modal fade" id="submitModal{{ item.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0 px-4 pt-4">
+                    <h5 class="modal-title fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">📤 Submit Assignment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <p class="text-muted mb-3" style="font-size:0.85rem;"><strong>{{ item.title }}</strong> — {{ item.subject.name }}</p>
+                    <form method="post" action="{% url 'submit_assignment' item.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Upload Your Work (PDF or Document)</label>
+                            <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.txt,.jpg,.png" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Comments (Optional)</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Any notes for your teacher..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-premium-accent rounded-pill w-100 py-3 fw-bold">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Submit Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 premium-card p-5 bg-white">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">📂</div>
+    <h4 class="fw-bold" style="color:var(--primary-color);">No Assignments Yet</h4>
+    <p class="text-muted mb-0">Your teachers have not posted any assignments yet. Check back soon!</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.assignment-card-wrapper').forEach(card => {
+        const title = card.dataset.title || '';
+        const subject = card.dataset.subject || '';
+        card.style.display = (title.includes(q) || subject.includes(q)) ? 'block' : 'none';
+    });
+}
+</script>
+{% endblock %}

@@ -80,15 +80,22 @@ class AssignmentSubmissionViewSet(viewsets.ModelViewSet):
         )
         user = self.request.user
         if is_admin(user):
-            return qs
-        if is_teacher(user) and hasattr(user, "teacher_profile"):
-            return qs.filter(
+            pass
+        elif is_teacher(user) and hasattr(user, "teacher_profile"):
+            qs = qs.filter(
                 Q(assignment__teacher=user.teacher_profile)
                 | Q(assignment__subject__teacher=user.teacher_profile)
             ).distinct()
-        if is_student(user):
-            return qs.filter(student__user=user)
-        return qs.none()
+        elif is_student(user):
+            qs = qs.filter(student__user=user)
+        else:
+            qs = qs.none()
+
+        assignment = self.request.query_params.get("assignment")
+        if assignment:
+            qs = qs.filter(assignment_id=assignment)
+
+        return qs
 
     def perform_create(self, serializer):
         if is_student(self.request.user) and hasattr(self.request.user, "student_profile"):

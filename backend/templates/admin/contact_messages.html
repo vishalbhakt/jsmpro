@@ -1,0 +1,174 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Contact Messages - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">CMS</li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Contact Messages</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Inbox: Contact Messages ✉️</h1>
+            <p class="text-white-50 mb-0">View and respond to inquiries submitted through the website's Contact Us page.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="premium-card p-4 bg-white mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by name, subject, or message content...">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🏷️ Status Filter</label>
+            <select name="status" id="status" class="form-select rounded-pill">
+                <option value="">-- All Statuses --</option>
+                {% for code, label in status_choices %}
+                <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Contact Messages Table -->
+<div class="premium-card p-4 bg-white">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages_list %}
+                <tr class="{% if msg.status == 'new' %}table-primary fw-bold{% endif %}">
+                    <td class="text-muted" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                    <td style="font-size:0.83rem;">{{ msg.name }}</td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ msg.email }}</td>
+                    <td style="font-size:0.83rem;">{{ msg.subject }}</td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ msg.created_at|date:"d M Y, h:i A" }}</td>
+                    <td>
+                        {% if msg.status == 'new' %}
+                            <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">New</span>
+                        {% elif msg.status == 'in_progress' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">In Progress</span>
+                        {% elif msg.status == 'resolved' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Resolved</span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-15 text-secondary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Closed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <!-- Details View Button -->
+                            <button class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" 
+                                    onclick="viewMessageDetails('{{ msg.name }}', '{{ msg.email }}', '{{ msg.phone|default:'—' }}', '{{ msg.subject|escapejs }}', '{{ msg.message|escapejs }}', '{{ msg.id }}', '{{ msg.status }}')">
+                                <i class="fa-solid fa-eye"></i> View Details
+                            </button>
+                            <a href="{% url 'admin_contact_message_delete' msg.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.75rem;" onclick="return confirm('Are you sure you want to delete this message?')">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-muted">No messages found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: View Message Details -->
+<div class="modal fade" id="messageDetailsModal" tabindex="-1" aria-labelledby="messageDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="messageDetailsModalLabel"><i class="fa-solid fa-envelope me-2 text-accent"></i> Message Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <span class="text-muted text-xs d-block">Sender Name</span>
+                        <strong id="detName" class="text-primary fs-6"></strong>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="text-muted text-xs d-block">Email Address</span>
+                        <strong id="detEmail" class="text-primary fs-6"></strong>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="text-muted text-xs d-block">Phone Number</span>
+                        <strong id="detPhone" class="text-primary fs-6"></strong>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <span class="text-muted text-xs d-block">Subject</span>
+                    <strong id="detSubject" class="text-primary fs-5 d-block"></strong>
+                </div>
+                <div class="p-4 bg-light rounded-4 border mb-4">
+                    <span class="text-muted text-xs d-block mb-2">Message Body</span>
+                    <p id="detMessage" class="mb-0 text-dark" style="white-space: pre-wrap; font-size:0.95rem; line-height:1.6;"></p>
+                </div>
+                
+                <!-- Status Edit Action Form -->
+                <form id="statusForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold text-sm text-primary">Update Action Status</label>
+                            <select name="status" id="detStatusSelect" class="form-select rounded-pill">
+                                {% for code, label in status_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-save me-1"></i> Update Status</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewMessageDetails(name, email, phone, subject, message, id, status) {
+    document.getElementById('detName').textContent = name;
+    document.getElementById('detEmail').textContent = email;
+    document.getElementById('detPhone').textContent = phone;
+    document.getElementById('detSubject').textContent = subject;
+    document.getElementById('detMessage').textContent = message;
+    
+    // Set form action path
+    document.getElementById('statusForm').action = `/dashboard/admin/contact-messages/update-status/${id}/`;
+    
+    // Set status select value
+    document.getElementById('detStatusSelect').value = status;
+    
+    const modal = new bootstrap.Modal(document.getElementById('messageDetailsModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

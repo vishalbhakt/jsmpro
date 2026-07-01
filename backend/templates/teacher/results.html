@@ -1,0 +1,86 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Results Manager - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge mb-3 d-inline-block px-3 py-2 rounded-pill fw-bold" style="background:rgba(255,255,255,0.15); color:white; font-size:0.72rem;">🏆 GRADE RESULTS</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Results Manager 🏆</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.7);">View and manage exam results and grades for your students.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-trophy text-white opacity-10" style="font-size:7rem;"></i>
+        </div>
+    </div>
+</div>
+
+<div class="premium-card p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h4 class="fw-bold mb-0" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+            <i class="fa-solid fa-table-list me-2" style="color:#6d28d9;"></i> Student Results
+        </h4>
+        <input type="text" id="resultSearch" class="form-control" style="max-width:280px;" placeholder="🔍 Search results..." onkeyup="filterResults()">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">#</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Student</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Assessment</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Subject</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Marks</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">%</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Grade</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Date</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTable">
+                {% for result in results %}
+                <tr class="result-row">
+                    <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.student.user.full_name }}</td>
+                    <td style="font-size:0.83rem;">{{ result.assessment.title }}</td>
+                    <td><span class="badge rounded-pill fw-bold px-2 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.7rem;">{{ result.assessment.subject.name }}</span></td>
+                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.marks_obtained }}/{{ result.total_marks }}</td>
+                    <td style="font-size:0.83rem;">{{ result.percentage }}%</td>
+                    <td>
+                        {% if result.grade == 'A+' or result.grade == 'A' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1">{{ result.grade }}</span>
+                        {% elif result.grade == 'B+' or result.grade == 'B' %}
+                            <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-2 py-1">{{ result.grade }}</span>
+                        {% elif result.grade == 'C' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2 py-1">{{ result.grade }}</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-2 py-1">{{ result.grade }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ result.created_at|date:"d M, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div style="font-size:3rem;">🏆</div>
+                        <p class="text-muted mt-2 mb-0">No results published yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+function filterResults() {
+    const q = document.getElementById('resultSearch').value.toLowerCase();
+    document.querySelectorAll('.result-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

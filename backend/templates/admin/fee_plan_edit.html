@@ -1,0 +1,123 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Edit Fee Plan - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">Finance</li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_fee_plans' %}" class="text-white-50 text-decoration-none">Fee Plans</a></li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Edit Structure</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Edit Structure: {{ plan.title }}</h1>
+            <p class="text-white-50 mb-0">Modify master class fee breakdown components and rules.</p>
+        </div>
+    </div>
+</div>
+
+<div class="premium-card p-4 bg-white shadow-sm">
+    <form method="post" action="{% url 'admin_fee_plans_edit' plan.id %}">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-sm text-primary">Structure Title <span class="text-danger">*</span></label>
+                <input type="text" name="title" class="form-control rounded-3" value="{{ plan.title }}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-sm text-primary">Classroom <span class="text-danger">*</span></label>
+                <select name="classroom" class="form-select rounded-3" required>
+                    {% for cls in classrooms %}
+                    <option value="{{ cls.id }}" {% if cls == plan.classroom %}selected{% endif %}>{{ cls.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-sm text-primary">Academic Year <span class="text-danger">*</span></label>
+                <input type="text" name="academic_year" class="form-control rounded-3" value="{{ plan.academic_year }}" required>
+            </div>
+            
+            <hr class="my-3">
+            <h6 class="fw-bold text-accent mb-0 mt-1"><i class="fa-solid fa-list-check me-2"></i>Fee Components (Annual Breakdown)</h6>
+            
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Admission Fee (INR)</label>
+                <input type="number" step="0.01" name="admission_fee" class="form-control rounded-3" value="{{ plan.admission_fee }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Tuition Fee (INR)</label>
+                <input type="number" step="0.01" name="tuition_fee" class="form-control rounded-3" value="{{ plan.tuition_fee }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Examination Fee (INR)</label>
+                <input type="number" step="0.01" name="exam_fee" class="form-control rounded-3" value="{{ plan.exam_fee }}">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Computer Lab Fee (INR)</label>
+                <input type="number" step="0.01" name="computer_fee" class="form-control rounded-3" value="{{ plan.computer_fee }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Library Fee (INR)</label>
+                <input type="number" step="0.01" name="library_fee" class="form-control rounded-3" value="{{ plan.library_fee }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Sports Fee (INR)</label>
+                <input type="number" step="0.01" name="sports_fee" class="form-control rounded-3" value="{{ plan.sports_fee }}">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Transport Fee (INR - Optional)</label>
+                <input type="number" step="0.01" name="transport_fee" class="form-control rounded-3" value="{{ plan.transport_fee }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Misc./Extra Fee (INR)</label>
+                <input type="number" step="0.01" name="misc_fee" class="form-control rounded-3" value="{{ plan.misc_fee }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Late Fee Penalty (INR)</label>
+                <input type="number" step="0.01" name="late_fee" class="form-control rounded-3" value="{{ plan.late_fee }}">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Standard Discount (INR)</label>
+                <input type="number" step="0.01" name="discount" class="form-control rounded-3" value="{{ plan.discount }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Standard Scholarship (INR)</label>
+                <input type="number" step="0.01" name="scholarship" class="form-control rounded-3" value="{{ plan.scholarship }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Due Date <span class="text-danger">*</span></label>
+                <input type="date" name="due_date" class="form-control rounded-3" value="{{ plan.due_date|date:'Y-m-d' }}" required>
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-sm text-primary">Plan Type Frequency</label>
+                <select name="fee_type" class="form-select rounded-3">
+                    <option value="annual" {% if plan.fee_type == 'annual' %}selected{% endif %}>Annual Plan</option>
+                    <option value="monthly" {% if plan.fee_type == 'monthly' %}selected{% endif %}>Monthly Plan</option>
+                    <option value="admission" {% if plan.fee_type == 'admission' %}selected{% endif %}>Admission Only</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-center mt-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="is_active" id="isActiveCheck" {% if plan.is_active %}checked{% endif %}>
+                    <label class="form-check-label fw-bold text-sm text-primary" for="isActiveCheck">Status Active</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top d-flex gap-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill px-4">Save Structure Changes</button>
+            <a href="{% url 'admin_fee_plans' %}" class="btn btn-premium-outline rounded-pill px-4">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

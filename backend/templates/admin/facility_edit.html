@@ -1,0 +1,67 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Edit Facility - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">✏️ Edit Facility</h1>
+    <p class="text-white-50 mb-0">Modify information details for Facility "{{ facility.title }}".</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="premium-card p-4 p-md-5 bg-white">
+            <h4 class="fw-bold mb-4 text-primary" style="font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-building me-2 text-accent"></i> Facility Information
+            </h4>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Facility Title <span class="text-danger">*</span></label>
+                    <input type="text" name="title" value="{{ facility.title }}" class="form-control rounded-3" placeholder="e.g. Science Laboratory" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">FontAwesome Icon Class <span class="text-danger">*</span></label>
+                    <input type="text" name="icon" value="{{ facility.icon }}" class="form-control rounded-3" placeholder="e.g. fa-solid fa-flask" required>
+                    <small class="text-muted">Use standard FontAwesome class names like <code>fa-solid fa-book</code>.</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Display Order (Sort Order) <span class="text-danger">*</span></label>
+                    <input type="number" name="sort_order" value="{{ facility.sort_order }}" class="form-control rounded-3" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Facility Description <span class="text-danger">*</span></label>
+                    <textarea name="description" rows="4" class="form-control rounded-3" placeholder="Details about this campus amenity..." required>{{ facility.description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Photo / Image</label>
+                    {% if facility.image %}
+                        <div class="mb-2">
+                            <img src="{{ facility.image.url }}" alt="{{ facility.title }}" class="img-thumbnail rounded" style="max-height:100px;">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="image" class="form-control rounded-3">
+                </div>
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_published" id="pubCheck" {% if facility.is_published %}checked{% endif %}>
+                        <label class="form-check-label fw-bold text-sm text-primary" for="pubCheck">Published Status</label>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3 fw-bold flex-grow-1">
+                        <i class="fa-solid fa-save me-2"></i> Save Changes
+                    </button>
+                    <a href="{% url 'admin_facilities' %}" class="btn btn-premium-outline rounded-pill px-4 py-3 fw-bold">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Media Gallery - JSM Shiksha Academy{% endblock %}
+
+{% block content %}
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">
+    <div class="container py-4 text-center">
+        <span class="badge-premium-gold mb-3 d-inline-block">📸 Our Academy Life</span>
+        <h1 class="display-4 fw-bold text-white mb-3" style="font-family:'Outfit',sans-serif;">Academy Media Gallery</h1>
+        <p class="lead text-white-50">Glimpses of life at JSM Shiksha Academy — learning, celebrations, sports, and more.</p>
+    </div>
+</div>
+
+<div class="py-5 bg-light">
+    <div class="container py-2">
+        {% if gallery_items %}
+        <!-- Redesigned Gallery Filter & Search Bar -->
+        <div class="gallery-controls-container mb-5">
+            <div class="row g-4 align-items-center justify-content-between">
+                <!-- Category Tabs/Pills -->
+                <div class="col-12 col-lg-8">
+                    <div class="gallery-scroll-container">
+                        <div class="gallery-chips-wrapper" id="categoryFilters" role="tablist" aria-label="Gallery Categories">
+                            <button class="btn btn-gallery-chip active-filter" data-category="all" onclick="filterGallery('all', this)" role="tab" aria-selected="true" tabindex="0">
+                                <i class="fa-solid fa-shapes filter-icon"></i> All Moments
+                            </button>
+                            {% for cat in categories %}
+                                {% if cat %}
+                                <button class="btn btn-gallery-chip" data-category="{{ cat|slugify }}" onclick="filterGallery('{{ cat|slugify }}', this)" role="tab" aria-selected="false" tabindex="-1">
+                                    <i class="fa-solid fa-folder filter-icon"></i> {{ cat }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Search Input Container -->
+                <div class="col-12 col-lg-4">
+                    <div class="gallery-search-box">
+                        <span class="gallery-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="gallerySearch" class="form-control gallery-search-input" placeholder="Search moments..." onkeyup="searchGallery()" aria-label="Search gallery items">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="row g-4" id="galleryGrid">
+            {% for item in gallery_items %}
+            <div class="col-sm-6 col-md-4 col-lg-3 gallery-item-wrapper" data-category="{{ item.category|slugify }}" data-title="{{ item.title|lower }}" data-caption="{{ item.caption|lower }}">
+                <div class="premium-card bg-white h-100 overflow-hidden d-flex flex-column" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#galleryModal{{ forloop.counter }}">
+                    <!-- Image Container -->
+                    <div class="position-relative overflow-hidden" style="aspect-ratio: 4/3; background: #f8fafc;">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-100 h-100 img-zoom" loading="lazy" style="object-fit: cover; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-image text-muted opacity-30 fs-1"></i>
+                            </div>
+                        {% endif %}
+                        <!-- Category Tag overlay -->
+                        <span class="position-absolute top-3 start-3 badge bg-white bg-opacity-90 text-primary fw-bold px-2 py-1 shadow-sm" style="font-size:0.65rem; border-radius:6px; letter-spacing: 0.05em; text-transform: uppercase;">
+                            {{ item.category|title }}
+                        </span>
+                    </div>
+                    <!-- Body info -->
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+                        <h6 class="fw-bold mb-1 text-primary text-truncate" style="font-family:'Outfit',sans-serif; font-size:0.95rem;">{{ item.title }}</h6>
+                        <p class="text-muted text-truncate mb-2" style="font-size:0.75rem;">{{ item.caption|default:"No description" }}</p>
+                        <div class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between">
+                            <span class="text-muted" style="font-size:0.68rem; font-weight:700;"><i class="fa-regular fa-calendar-days me-1 text-accent"></i> {{ item.created_at|date:"d M, Y" }}</span>
+                            <span class="text-primary fw-bold" style="font-size:0.7rem;">View Info <i class="fa-solid fa-arrow-right-long text-xs ms-1"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Detail Modal / Lightbox -->
+            <div class="modal fade" id="galleryModal{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+                        <div class="modal-header border-0 bg-light px-4 py-3 align-items-center">
+                            <span class="badge bg-primary text-white fw-bold px-3 py-1 rounded-pill me-2" style="font-size:0.7rem; text-transform:uppercase;">
+                                {{ item.category|title }}
+                            </span>
+                            <h5 class="modal-title fw-bold text-primary mb-0" style="font-family:'Outfit',sans-serif;">{{ item.title }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-0 bg-black text-center d-flex align-items-center justify-content-center" style="min-height:350px; max-height: 550px; overflow: hidden;">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid" style="max-height: 550px; width: auto; object-fit: contain;">
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer border-0 bg-light px-4 py-3 d-flex justify-content-between align-items-center">
+                            <div class="text-start">
+                                <p class="text-muted mb-1" style="font-size:0.85rem;">{{ item.caption|default:"No description provided." }}</p>
+                                <small class="text-muted" style="font-size:0.75rem;"><i class="fa-regular fa-clock me-1"></i> Uploaded on {{ item.created_at|date:"F d, Y" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Empty state placeholder for JS filters -->
+        <div id="galleryEmptyState" class="text-center py-5 premium-card bg-white mt-4 d-none">
+            <div style="font-size: 3.5rem;">🔍</div>
+            <h4 class="fw-bold mt-3 text-primary" style="font-family:'Outfit',sans-serif;">No Matches Found</h4>
+            <p class="text-muted mb-0">Try adjusting your filters or search terms.</p>
+        </div>
+
+        {% else %}
+        <!-- Default Backend Empty State -->
+        <div class="text-center py-5 premium-card bg-white">
+            <div style="font-size:4rem;">📷</div>
+            <h4 class="fw-bold mt-3" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">Gallery Coming Soon</h4>
+            <p class="text-muted">We're curating our best moments. Check back soon!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Base image zoom transitions */
+.img-zoom:hover {
+    transform: scale(1.06);
+}
+
+/* Controls Container Styling */
+.gallery-controls-container {
+    padding: 0;
+}
+
+/* Horizontal Scroll Container for Mobile / Wrap for Desktop & Tablet */
+.gallery-scroll-container {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+    padding: 2px 0;
+}
+.gallery-scroll-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.gallery-chips-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+}
+
+@media (min-width: 992px) {
+    .gallery-chips-wrapper {
+        flex-wrap: wrap; /* Wrap on desktop / tablet to keep everything clean */
+    }
+}
+
+@media (max-width: 991px) {
+    .gallery-chips-wrapper {
+        padding-bottom: 8px; /* Room for scroll aesthetics */
+    }
+}
+
+/* Premium Filter Chips Design */
+.btn-gallery-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 24px;
+    border-radius: 50px;
+    border: 2px solid var(--primary-color);
+    background-color: #ffffff;
+    color: var(--primary-color);
+    font-size: 0.88rem;
+    font-weight: 800;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+}
+
+.btn-gallery-chip .filter-icon {
+    margin-right: 8px;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+/* Hover State */
+.btn-gallery-chip:hover {
+    background-color: rgba(12, 43, 77, 0.04);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Active State */
+.btn-gallery-chip.active-filter {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 15px -3px rgba(12, 43, 77, 0.25), 0 4px 6px -2px rgba(12, 43, 77, 0.15);
+}
+
+.btn-gallery-chip.active-filter .filter-icon {
+    color: var(--accent-color) !important; /* Golden active icon */
+}
+
+/* Focus / Keyboard Navigation States */
+.btn-gallery-chip:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Search Box Styling */
+.gallery-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.gallery-search-icon {
+    position: absolute;
+    left: 20px;
+    color: var(--text-muted);
+    pointer-events: none;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+}
+
+.gallery-search-input {
+    height: 46px;
+    padding-left: 50px !important;
+    padding-right: 20px !important;
+    border-radius: 50px !important;
+    border: 2px solid #e2e8f0 !important;
+    background-color: #ffffff !important;
+    color: var(--text-main) !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.gallery-search-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 10px 15px -3px rgba(12, 43, 77, 0.08), 0 4px 6px -2px rgba(12, 43, 77, 0.04) !important;
+    outline: none !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentCategory = 'all';
+
+function filterGallery(category, button) {
+    currentCategory = category;
+    
+    // Manage active tab state styles
+    const filterButtons = document.querySelectorAll('#categoryFilters button');
+    filterButtons.forEach(btn => {
+        btn.classList.remove('active-filter');
+        btn.setAttribute('aria-selected', 'false');
+        btn.setAttribute('tabindex', '-1');
+    });
+    
+    button.classList.add('active-filter');
+    button.setAttribute('aria-selected', 'true');
+    button.setAttribute('tabindex', '0');
+
+    applyFilters();
+}
+
+function searchGallery() {
+    applyFilters();
+}
+
+function applyFilters() {
+    const q = document.getElementById('gallerySearch').value.toLowerCase();
+    const items = document.querySelectorAll('.gallery-item-wrapper');
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        const itemCat = item.getAttribute('data-category');
+        const itemTitle = item.getAttribute('data-title');
+        const itemCaption = item.getAttribute('data-caption');
+
+        const catMatches = (currentCategory === 'all' || itemCat === currentCategory);
+        const searchMatches = (itemTitle.includes(q) || itemCaption.includes(q));
+
+        if (catMatches && searchMatches) {
+            item.classList.remove('d-none');
+            visibleCount++;
+        } else {
+            item.classList.add('d-none');
+        }
+    });
+
+    // Toggle Empty State UI
+    const emptyState = document.getElementById('galleryEmptyState');
+    if (emptyState) {
+        if (visibleCount === 0) {
+            emptyState.classList.remove('d-none');
+        } else {
+            emptyState.classList.add('d-none');
+        }
+    }
+}
+
+// Add simple keyboard navigation logic for tabs
+document.getElementById('categoryFilters').addEventListener('keydown', function(e) {
+    const buttons = Array.from(document.querySelectorAll('#categoryFilters button'));
+    let activeIndex = buttons.indexOf(document.activeElement);
+    
+    if (activeIndex === -1) return;
+
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        let nextIndex = (activeIndex + 1) % buttons.length;
+        buttons[nextIndex].focus();
+        e.preventDefault();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        let prevIndex = (activeIndex - 1 + buttons.length) % buttons.length;
+        buttons[prevIndex].focus();
+        e.preventDefault();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+        document.activeElement.click();
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

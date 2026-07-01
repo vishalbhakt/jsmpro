@@ -24,6 +24,8 @@ class ResourceSerializerMixin(serializers.ModelSerializer):
 
 
 class NoteSerializer(ResourceSerializerMixin):
+    file_size = serializers.SerializerMethodField()
+
     class Meta:
         model = Note
         fields = [
@@ -37,12 +39,27 @@ class NoteSerializer(ResourceSerializerMixin):
             "title",
             "description",
             "file",
+            "file_size",
             "is_published",
             "published_at",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
+
+    def get_file_size(self, obj):
+        try:
+            if obj.file and hasattr(obj.file, "size"):
+                size_bytes = obj.file.size
+                if size_bytes < 1024:
+                    return f"{size_bytes} B"
+                elif size_bytes < 1024 * 1024:
+                    return f"{round(size_bytes / 1024, 1)} KB"
+                else:
+                    return f"{round(size_bytes / (1024 * 1024), 1)} MB"
+        except Exception:
+            return "N/A"
+        return "N/A"
 
 
 class VideoLectureSerializer(ResourceSerializerMixin):
@@ -98,9 +115,12 @@ class AssignmentSerializer(ResourceSerializerMixin):
         read_only_fields = ["created_at", "updated_at"]
 
 
+from users.models import StudentProfile
+
 class AssignmentSubmissionSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source="student.user.full_name", read_only=True)
     assignment_title = serializers.CharField(source="assignment.title", read_only=True)
+    student = serializers.PrimaryKeyRelatedField(queryset=StudentProfile.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = AssignmentSubmission

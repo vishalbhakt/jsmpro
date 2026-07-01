@@ -1,0 +1,118 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Exam Results - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <span class="badge mb-3 d-inline-block px-3 py-2 rounded-pill fw-bold" style="background:rgba(255,255,255,0.15); color:white; font-size:0.72rem;">🏆 ACADEMIC RESULTS</span>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">My Exam Results 🏆</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.7);">Review your marks, grades, and academic performance across all subjects.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fa-solid fa-trophy text-white opacity-10" style="font-size:7rem;"></i>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<!-- Summary Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
+            <h2 class="fw-bold mb-1" style="color:#6d28d9; font-family:'Outfit',sans-serif;">{{ overall_avg|default:"—" }}%</h2>
+            <span class="badge rounded-pill fw-bold px-3 py-1" style="background:rgba(109,40,217,0.1); color:#6d28d9; font-size:0.72rem;">Overall Average</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">🥇</div>
+            <h2 class="fw-bold mb-1" style="color:var(--accent-color); font-family:'Outfit',sans-serif;">{{ best_grade|default:"—" }}</h2>
+            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Best Grade</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="premium-card p-4 bg-white text-center">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📝</div>
+            <h2 class="fw-bold mb-1" style="color:var(--pastel-green); font-family:'Outfit',sans-serif;">{{ results|length }}</h2>
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Assessments</span>
+        </div>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="premium-card p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h4 class="fw-bold mb-0" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+            <i class="fa-solid fa-table-list me-2" style="color:#6d28d9;"></i> Detailed Results
+        </h4>
+        <input type="text" id="resultSearch" class="form-control" style="max-width:250px;" placeholder="🔍 Search..." onkeyup="filterResults()">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">#</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Assessment</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Subject</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Marks</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Percentage</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Grade</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Date</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTable">
+                {% for result in results %}
+                <tr class="result-row">
+                    <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
+                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.assessment.title }}</td>
+                    <td><span class="badge rounded-pill fw-bold px-3 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.72rem;">{{ result.assessment.subject.name }}</span></td>
+                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.marks_obtained }}/{{ result.total_marks }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress rounded-pill flex-grow-1" style="height:8px; width:80px;">
+                                <div class="progress-bar rounded-pill" style="width:{{ result.percentage }}%; background:linear-gradient(90deg, var(--primary-color), var(--sky-blue));"></div>
+                            </div>
+                            <span class="fw-bold" style="font-size:0.8rem;">{{ result.percentage }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if result.grade == 'A+' or result.grade == 'A' %}
+                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
+                        {% elif result.grade == 'B' or result.grade == 'B+' %}
+                            <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
+                        {% elif result.grade == 'C' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted" style="font-size:0.8rem;">{{ result.created_at|date:"d M, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 premium-card p-5 bg-white">
+    <div style="font-size:4rem; margin-bottom:1rem;">🏆</div>
+    <h4 class="fw-bold" style="color:var(--primary-color);">No Results Published Yet</h4>
+    <p class="text-muted mb-0">Results will appear here once your teachers evaluate and publish exam scores.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+function filterResults() {
+    const q = document.getElementById('resultSearch').value.toLowerCase();
+    document.querySelectorAll('.result-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}
