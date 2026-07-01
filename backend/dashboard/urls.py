@@ -88,6 +88,9 @@ urlpatterns = [
     path("dashboard/admin/fee-plans/", views.admin_fee_plans, name="admin_fee_plans"),
     path("dashboard/admin/fee-plans/edit/<int:plan_id>/", views.admin_fee_plans_edit, name="admin_fee_plans_edit"),
     path("dashboard/admin/fee-plans/delete/<int:plan_id>/", views.admin_fee_plans_delete, name="admin_fee_plans_delete"),
+    path("dashboard/admin/fee-plans/duplicate/<int:plan_id>/", views.admin_fee_plans_duplicate, name="admin_fee_plans_duplicate"),
+    path("dashboard/admin/fee-plans/toggle/<int:plan_id>/", views.admin_fee_plans_toggle_active, name="admin_fee_plans_toggle_active"),
+    path("dashboard/admin/fee-plans/bulk/", views.admin_fee_plans_bulk, name="admin_fee_plans_bulk"),
     
     path("dashboard/admin/payments/history/<int:student_id>/", views.admin_payment_history, name="admin_payment_history"),
     path("dashboard/admin/payments/receipt/<int:payment_id>/pdf/", views.admin_receipt_pdf, name="admin_receipt_pdf"),

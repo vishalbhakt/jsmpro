@@ -1,7 +1,7 @@
 {% extends "dashboard_base.html" %}
 {% load static %}
 
-{% block title %}Payments - JSM Shiksha Academy{% endblock %}
+{% block title %}Payments Ledger - JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
 <!-- Page Header -->
@@ -41,6 +41,18 @@
             </div>
         </div>
     </div>
+    <!-- Weekly Collection -->
+    <div class="col-md-3">
+        <div class="premium-card bg-white p-3 shadow-sm border border-light h-100 d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+                <i class="fa-solid fa-calendar-week fa-lg"></i>
+            </div>
+            <div>
+                <small class="text-muted d-block text-xs uppercase fw-bold">Weekly Collection</small>
+                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ weekly_collection }}</h4>
+            </div>
+        </div>
+    </div>
     <!-- Monthly Collection -->
     <div class="col-md-3">
         <div class="premium-card bg-white p-3 shadow-sm border border-light h-100 d-flex align-items-center gap-3">
@@ -53,7 +65,22 @@
             </div>
         </div>
     </div>
-    <!-- Pending Amount -->
+    <!-- Yearly Collection -->
+    <div class="col-md-3">
+        <div class="premium-card bg-white p-3 shadow-sm border border-light h-100 d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+                <i class="fa-solid fa-calendar-days fa-lg"></i>
+            </div>
+            <div>
+                <small class="text-muted d-block text-xs uppercase fw-bold">Yearly Collection</small>
+                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ yearly_collection }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Outstanding Balance -->
     <div class="col-md-3">
         <div class="premium-card bg-white p-3 shadow-sm border border-light h-100 d-flex align-items-center gap-3">
             <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
@@ -62,6 +89,30 @@
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Outstanding Balance</small>
                 <h4 class="fw-bold mb-0 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ total_pending }}</h4>
+            </div>
+        </div>
+    </div>
+    <!-- Total Revenue -->
+    <div class="col-md-3">
+        <div class="premium-card bg-white p-3 shadow-sm border border-light h-100 d-flex align-items-center gap-3">
+            <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+                <i class="fa-solid fa-vault fa-lg"></i>
+            </div>
+            <div>
+                <small class="text-muted d-block text-xs uppercase fw-bold">Total Revenue</small>
+                <h4 class="fw-bold mb-0 text-success" style="font-family:'Outfit',sans-serif;">₹{{ total_revenue }}</h4>
+            </div>
+        </div>
+    </div>
+    <!-- Average Collection -->
+    <div class="col-md-3">
+        <div class="premium-card bg-white p-3 shadow-sm border border-light h-100 d-flex align-items-center gap-3">
+            <div class="bg-info bg-opacity-10 text-info rounded-3 p-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
+                <i class="fa-solid fa-calculator fa-lg"></i>
+            </div>
+            <div>
+                <small class="text-muted d-block text-xs uppercase fw-bold">Average Collection</small>
+                <h4 class="fw-bold mb-0 text-info" style="font-family:'Outfit',sans-serif;">₹{{ average_collection|floatformat:2 }}</h4>
             </div>
         </div>
     </div>
@@ -118,11 +169,13 @@
                 <tr>
                     <th>Student Details</th>
                     <th>Class / Year</th>
-                    <th>Annual Fee</th>
-                    <th>Amount Paid</th>
-                    <th>Balance Due</th>
+                    <th>Total Fee (Net)</th>
+                    <th>Paid Amount</th>
+                    <th>Remaining Balance</th>
+                    <th>Discount/Schol</th>
+                    <th>Installment</th>
+                    <th>Last Payment</th>
                     <th>Status</th>
-                    <th>Last Date</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -131,9 +184,13 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; font-size:0.8rem;">
-                                {{ item.ledger.student.user.first_name|slice:":1" }}{{ item.ledger.student.user.last_name|slice:":1" }}
-                            </div>
+                            {% if item.ledger.student.user.avatar %}
+                                <img src="{{ item.ledger.student.user.avatar.url }}" class="rounded-circle" style="width:36px; height:36px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; font-size:0.8rem;">
+                                    {{ item.ledger.student.user.first_name|slice:":1" }}{{ item.ledger.student.user.last_name|slice:":1" }}
+                                </div>
+                            {% endif %}
                             <div>
                                 <span class="d-block fw-bold text-primary">{{ item.ledger.student.user.full_name }}</span>
                                 <small class="text-muted d-block text-xs">Adm: {{ item.ledger.student.admission_number }} | Roll: {{ item.ledger.student.roll_number|default:"—" }}</small>
@@ -147,6 +204,11 @@
                     <td class="fw-bold">₹{{ item.total_fee }}</td>
                     <td class="text-success fw-bold">₹{{ item.amount_paid }}</td>
                     <td class="{% if item.remaining_balance > 0 %}text-danger{% else %}text-muted{% endif %} fw-bold">₹{{ item.remaining_balance }}</td>
+                    <td class="text-muted" style="font-size:0.8rem;">₹{{ item.ledger.discount }}/₹{{ item.ledger.scholarship }}</td>
+                    <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold text-capitalize">{{ item.ledger.fee_plan.fee_type }}</span></td>
+                    <td class="text-muted" style="font-size:0.75rem;">
+                        {{ item.last_payment_date|date:"d M Y"|default:"—" }}
+                    </td>
                     <td>
                         {% if item.status == 'paid' %}
                             <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-3 py-1 fw-bold">Paid</span>
@@ -155,9 +217,6 @@
                         {% else %}
                             <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill px-3 py-1 fw-bold">Unpaid</span>
                         {% endif %}
-                    </td>
-                    <td class="text-muted" style="font-size:0.75rem;">
-                        {{ item.last_payment_date|date:"d M Y"|default:"—" }}
                     </td>
                     <td class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
@@ -173,7 +232,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8" class="text-center py-5 text-muted">No students linked to active fee structures.</td></tr>
+                <tr><td colspan="10" class="text-center py-5 text-muted">No students linked to active fee structures.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

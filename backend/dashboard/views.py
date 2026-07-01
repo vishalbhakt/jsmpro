@@ -953,11 +953,18 @@ def admin_payments(request):
     # Summary Stats
     all_paid_payments = Payment.objects.filter(status=Payment.Status.PAID)
     today = timezone.now().date()
+    start_of_week = timezone.now() - timezone.timedelta(days=7)
     start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    start_of_year = timezone.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     
     todays_collection = all_paid_payments.filter(paid_at__date=today).aggregate(total=Sum("amount"))["total"] or 0.00
+    weekly_collection = all_paid_payments.filter(paid_at__gte=start_of_week).aggregate(total=Sum("amount"))["total"] or 0.00
     monthly_collection = all_paid_payments.filter(paid_at__gte=start_of_month).aggregate(total=Sum("amount"))["total"] or 0.00
+    yearly_collection = all_paid_payments.filter(paid_at__gte=start_of_year).aggregate(total=Sum("amount"))["total"] or 0.00
     total_revenue = all_paid_payments.aggregate(total=Sum("amount"))["total"] or 0.00
+    
+    paid_payments_count = all_paid_payments.count()
+    average_collection = total_revenue / paid_payments_count if paid_payments_count > 0 else 0.00
     
     total_pending = sum(item["remaining_balance"] for item in ledger_list)
     paid_count = sum(1 for item in ledger_list if item["status"] == StudentFee.Status.PAID)
@@ -972,17 +979,19 @@ def admin_payments(request):
                 overdue_count += 1
                 
     classrooms = ClassRoom.objects.all()
-    
     return render(request, "admin/payments.html", {
         "ledger_list": ledger_list,
         "classrooms": classrooms,
         "todays_collection": todays_collection,
+        "weekly_collection": weekly_collection,
         "monthly_collection": monthly_collection,
+        "yearly_collection": yearly_collection,
         "total_revenue": total_revenue,
         "total_pending": total_pending,
         "paid_count": paid_count,
         "pending_count": pending_count,
         "overdue_count": overdue_count,
+        "average_collection": average_collection,
         "is_dashboard_view": True,
         "q": q,
         "class_filter": int(class_filter) if class_filter else "",
@@ -2031,7 +2040,28 @@ def admin_fee_plans(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
         
-    plans = FeePlan.objects.all().select_related("classroom").order_by("-created_at")
+    plans = FeePlan.objects.all().select_related("classroom")
+    
+    # Search and Filter
+    q = request.GET.get("q", "")
+    classroom_filter = request.GET.get("classroom", "")
+    status_filter = request.GET.get("status", "")
+    
+    if q:
+        plans = plans.filter(title__icontains=q)
+    if classroom_filter:
+        plans = plans.filter(classroom_id=classroom_filter)
+    if status_filter:
+        is_act = status_filter == "active"
+        plans = plans.filter(is_active=is_act)
+        
+    plans = plans.order_by("-created_at")
+    
+    # Pagination
+    from django.core.paginator import Paginator
+    paginator = Paginator(plans, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     if request.method == "POST":
         title = request.POST.get("title")
@@ -2084,9 +2114,12 @@ def admin_fee_plans(request):
         
     classrooms = ClassRoom.objects.all()
     return render(request, "admin/fee_plans.html", {
-        "plans": plans,
+        "plans": page_obj,
         "classrooms": classrooms,
-        "is_dashboard_view": True
+        "is_dashboard_view": True,
+        "q": q,
+        "classroom_filter": classroom_filter,
+        "status_filter": status_filter,
     })
 
 @login_required
@@ -2145,6 +2178,66 @@ def admin_fee_plans_delete(request, plan_id):
     p = get_object_or_404(FeePlan, id=plan_id)
     p.delete()
     messages.success(request, "Fee plan deleted successfully.")
+    return redirect("admin_fee_plans")
+
+@login_required
+def admin_fee_plans_duplicate(request, plan_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    p = get_object_or_404(FeePlan, id=plan_id)
+    FeePlan.objects.create(
+        title=f"Copy of {p.title}",
+        classroom=p.classroom,
+        academic_year=p.academic_year,
+        admission_fee=p.admission_fee,
+        tuition_fee=p.tuition_fee,
+        exam_fee=p.exam_fee,
+        computer_fee=p.computer_fee,
+        library_fee=p.library_fee,
+        sports_fee=p.sports_fee,
+        transport_fee=p.transport_fee,
+        misc_fee=p.misc_fee,
+        discount=p.discount,
+        scholarship=p.scholarship,
+        late_fee=p.late_fee,
+        due_date=p.due_date,
+        fee_type=p.fee_type,
+        is_active=p.is_active
+    )
+    messages.success(request, f"Fee plan '{p.title}' duplicated successfully.")
+    return redirect("admin_fee_plans")
+
+@login_required
+def admin_fee_plans_toggle_active(request, plan_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    p = get_object_or_404(FeePlan, id=plan_id)
+    p.is_active = not p.is_active
+    p.save()
+    status_str = "activated" if p.is_active else "archived"
+    messages.success(request, f"Fee plan '{p.title}' {status_str} successfully.")
+    return redirect("admin_fee_plans")
+
+@login_required
+def admin_fee_plans_bulk(request):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    if request.method == "POST":
+        action = request.POST.get("action")
+        plan_ids = request.POST.getlist("plan_ids")
+        if action == "delete":
+            FeePlan.objects.filter(id__in=plan_ids).delete()
+            messages.success(request, "Selected fee plans deleted successfully.")
+        elif action == "activate":
+            FeePlan.objects.filter(id__in=plan_ids).update(is_active=True)
+            messages.success(request, "Selected fee plans activated successfully.")
+        elif action == "archive":
+            FeePlan.objects.filter(id__in=plan_ids).update(is_active=False)
+            messages.success(request, "Selected fee plans archived successfully.")
+            
     return redirect("admin_fee_plans")
 
 @login_required

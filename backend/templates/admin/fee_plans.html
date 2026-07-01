@@ -17,7 +17,7 @@
                 </ol>
             </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Tuition Fee Structures 💰</h1>
-            <p class="text-white-50 mb-0">Configure master academic fee breakdowns and late rules per classroom grade.</p>
+            <p class="text-white-50 mb-0">Configure master academic fee breakdowns, late rules, installments, waives, and bulk updates.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
             <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#createFeePlanModal">
@@ -27,81 +27,157 @@
     </div>
 </div>
 
-<!-- Plans Grid -->
-<div class="row g-4">
-    {% for plan in plans %}
-    <div class="col-md-4">
-        <div class="premium-card p-4 bg-white border border-light h-100 d-flex flex-column justify-content-between shadow-sm">
-            <div>
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">{{ plan.title }}</h5>
-                    <span class="badge {% if plan.is_active %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if plan.is_active %}text-success{% else %}text-secondary{% endif %} rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.65rem;">
-                        {% if plan.is_active %}Active{% else %}Inactive{% endif %}
-                    </span>
-                </div>
-                <div class="d-flex gap-2 mb-3">
-                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-bold px-2.5 py-1" style="font-size:0.7rem;"><i class="fa-solid fa-school me-1"></i>{{ plan.classroom.name }}</span>
-                    <span class="badge bg-secondary rounded-pill px-2.5 py-1 fw-bold" style="font-size:0.7rem;"><i class="fa-regular fa-calendar-days me-1"></i>{{ plan.academic_year }}</span>
+<!-- Search & Filters -->
+<div class="premium-card p-4 bg-white mb-4 shadow-sm">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search Structure Title</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search structures...">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="classroom">Classroom Grade</label>
+            <select name="classroom" id="classroom" class="form-select rounded-pill">
+                <option value="">-- All Classes --</option>
+                {% for cls in classrooms %}
+                <option value="{{ cls.id }}" {% if cls.id|stringformat:"s" == classroom_filter %}selected{% endif %}>{{ cls.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">Status</label>
+            <select name="status" id="status" class="form-select rounded-pill">
+                <option value="">-- Status --</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>Archived</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Bulk Actions Form -->
+<form method="post" action="{% url 'admin_fee_plans_bulk' %}" id="bulkActionForm">
+    {% csrf_token %}
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <select name="action" class="form-select form-select-sm rounded-pill" style="width:160px;" required>
+                <option value="">-- Bulk Actions --</option>
+                <option value="activate">Activate Selected</option>
+                <option value="archive">Archive Selected</option>
+                <option value="delete">Delete Selected</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="return confirm('Apply bulk action to selected items?')">Apply</button>
+        </div>
+        <div class="text-muted text-xs">
+            Show plans: {{ plans.start_index }}-{{ plans.end_index }} of {{ plans.paginator.count }}
+        </div>
+    </div>
+
+    <!-- Plans Grid -->
+    <div class="row g-4">
+        {% for plan in plans %}
+        <div class="col-md-4">
+            <div class="premium-card p-4 bg-white border border-light h-100 d-flex flex-column justify-content-between shadow-sm">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="checkbox" name="plan_ids" value="{{ plan.id }}" class="form-check-input">
+                            <h5 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">{{ plan.title }}</h5>
+                        </div>
+                        <a href="{% url 'admin_fee_plans_toggle_active' plan.id %}" class="badge {% if plan.is_active %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if plan.is_active %}text-success{% else %}text-secondary{% endif %} rounded-pill px-2.5 py-1 fw-bold text-decoration-none" style="font-size: 0.65rem;" title="Click to Toggle Status">
+                            {% if plan.is_active %}Active{% else %}Archived{% endif %}
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-bold px-2.5 py-1" style="font-size:0.7rem;"><i class="fa-solid fa-school me-1"></i>{{ plan.classroom.name }}</span>
+                        <span class="badge bg-secondary rounded-pill px-2.5 py-1 fw-bold" style="font-size:0.7rem;"><i class="fa-regular fa-calendar-days me-1"></i>{{ plan.academic_year }}</span>
+                    </div>
+                    
+                    <!-- Financial Breakdown -->
+                    <div class="p-3 bg-light rounded-3 mb-3" style="font-size: 0.8rem;">
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span>Admission Fee</span>
+                            <span class="fw-bold text-dark">₹{{ plan.admission_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span>Tuition Fee</span>
+                            <span class="fw-bold text-dark">₹{{ plan.tuition_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span>Exam Fee</span>
+                            <span class="fw-bold text-dark">₹{{ plan.exam_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span>Computer Fee</span>
+                            <span class="fw-bold text-dark">₹{{ plan.computer_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span>Library/Sports</span>
+                            <span class="fw-bold text-dark">₹{{ plan.library_fee }}/₹{{ plan.sports_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span>Discounts/Scholarship</span>
+                            <span class="fw-bold text-danger">-₹{{ plan.discount }}/-₹{{ plan.scholarship }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted pt-1 border-top fw-bold text-dark">
+                            <span>Annual Total</span>
+                            <span class="text-success">₹{{ plan.amount }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Installments Info -->
+                    <div class="mb-3" style="font-size: 0.72rem;">
+                        <div class="text-muted mb-1"><i class="fa-solid fa-coins me-1"></i> Installments breakdown:</div>
+                        <div class="d-flex flex-wrap gap-2 text-dark font-medium">
+                            <span class="bg-light px-2 py-0.5 rounded">Monthly: <strong>₹{{ plan.monthly_fee }}</strong></span>
+                            <span class="bg-light px-2 py-0.5 rounded">Quarterly: <strong>₹{{ plan.quarterly_fee }}</strong></span>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Financial Breakdown -->
-                <div class="p-3 bg-light rounded-3 mb-3" style="font-size: 0.8rem;">
-                    <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Admission Fee</span>
-                        <span class="fw-bold text-dark">₹{{ plan.admission_fee }}</span>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                    <small class="text-danger fw-bold"><i class="fa-solid fa-clock me-1"></i>Due: {{ plan.due_date|date:"d M Y" }}</small>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'admin_fee_plans_edit' plan.id %}" class="btn btn-xs btn-outline-primary rounded-pill px-2.5" title="Edit"><i class="fa-solid fa-pencil"></i></a>
+                        <a href="{% url 'admin_fee_plans_duplicate' plan.id %}" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5" title="Duplicate"><i class="fa-solid fa-copy"></i></a>
+                        <a href="{% url 'admin_fee_plans_delete' plan.id %}" class="btn btn-xs btn-danger rounded-pill px-2.5" onclick="return confirm('Delete this plan structure?')" title="Delete"><i class="fa-solid fa-trash"></i></a>
                     </div>
-                    <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Tuition Fee</span>
-                        <span class="fw-bold text-dark">₹{{ plan.tuition_fee }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Exam Fee</span>
-                        <span class="fw-bold text-dark">₹{{ plan.exam_fee }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Computer Fee</span>
-                        <span class="fw-bold text-dark">₹{{ plan.computer_fee }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Library/Sports</span>
-                        <span class="fw-bold text-dark">₹{{ plan.library_fee }}/₹{{ plan.sports_fee }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Discounts/Scholarship</span>
-                        <span class="fw-bold text-danger">-₹{{ plan.discount }}/-₹{{ plan.scholarship }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted pt-1 border-top fw-bold text-dark">
-                        <span>Annual Total</span>
-                        <span class="text-success">₹{{ plan.amount }}</span>
-                    </div>
-                </div>
-                
-                <!-- Installments Info -->
-                <div class="mb-3" style="font-size: 0.72rem;">
-                    <div class="text-muted mb-1"><i class="fa-solid fa-coins me-1"></i> Installments breakdown:</div>
-                    <div class="d-flex flex-wrap gap-2 text-dark font-medium">
-                        <span class="bg-light px-2 py-0.5 rounded">Monthly: <strong>₹{{ plan.monthly_fee }}</strong></span>
-                        <span class="bg-light px-2 py-0.5 rounded">Quarterly: <strong>₹{{ plan.quarterly_fee }}</strong></span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                <small class="text-danger fw-bold"><i class="fa-solid fa-clock me-1"></i>Due: {{ plan.due_date|date:"d M Y" }}</small>
-                <div class="d-flex gap-2">
-                    <a href="{% url 'admin_fee_plans_edit' plan.id %}" class="btn btn-xs btn-outline-primary rounded-pill px-3"><i class="fa-solid fa-pencil"></i> Edit</a>
-                    <a href="{% url 'admin_fee_plans_delete' plan.id %}" class="btn btn-xs btn-danger rounded-pill px-3" onclick="return confirm('Delete this plan structure?')"><i class="fa-solid fa-trash"></i> Delete</a>
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 premium-card p-5 bg-white">
+            <img src="{% static 'images/logo.png' %}" class="mb-3 opacity-25" style="width: 80px; filter: grayscale(1);">
+            <p class="text-muted mb-0">No fee plans configured yet. Create a structure for class enrollment fee rules.</p>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-12 text-center py-5 premium-card p-5 bg-white">
-        <img src="{% static 'images/logo.png' %}" class="mb-3 opacity-25" style="width: 80px; filter: grayscale(1);">
-        <p class="text-muted mb-0">No fee plans configured yet. Create a structure for class enrollment fee rules.</p>
-    </div>
-    {% endfor %}
+</form>
+
+<!-- Pagination Section -->
+{% if plans.has_other_pages %}
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination pagination-rounded gap-1">
+            {% if plans.has_previous %}
+                <li class="page-item"><a class="page-link rounded-circle" href="?page={{ plans.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if classroom_filter %}&classroom={{ classroom_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="fa-solid fa-chevron-left"></i></a></li>
+            {% endif %}
+            {% for i in plans.paginator.page_range %}
+                {% if plans.number == i %}
+                    <li class="page-item active"><span class="page-link rounded-circle">{{ i }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link rounded-circle" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}{% if classroom_filter %}&classroom={{ classroom_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if plans.has_next %}
+                <li class="page-item"><a class="page-link rounded-circle" href="?page={{ plans.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if classroom_filter %}&classroom={{ classroom_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="fa-solid fa-chevron-right"></i></a></li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
+{% endif %}
 
 <!-- Modal: Create Fee Plan -->
 <div class="modal fade" id="createFeePlanModal" tabindex="-1" aria-labelledby="createFeePlanModalLabel" aria-hidden="true">
