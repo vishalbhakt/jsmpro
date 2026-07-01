@@ -1071,7 +1071,6 @@ def admin_update_fee_adjustments(request, fee_id):
         fee.save()
         messages.success(request, f"Fee adjustments updated for {fee.student.user.full_name}.")
     return redirect("admin_payment_history", student_id=fee.student.id)
-
 @login_required
 def admin_receipt_pdf(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
@@ -1079,6 +1078,50 @@ def admin_receipt_pdf(request, payment_id):
         "payment": payment,
         "school_logo": "/static/images/logo.png"
     })
+
+@login_required
+def admin_payment_edit(request, payment_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    payment = get_object_or_404(Payment, id=payment_id)
+    if request.method == "POST":
+        payment.amount = request.POST.get("amount")
+        payment.status = request.POST.get("status")
+        payment.method = request.POST.get("method")
+        payment.payment_type = request.POST.get("payment_type")
+        payment.installment_period = request.POST.get("installment_period")
+        payment.transaction_id = request.POST.get("transaction_id", "")
+        payment.save()
+        
+        # Recalculate StudentFee balance
+        if payment.student_fee:
+            payment.student_fee.save()
+            
+        messages.success(request, "Transaction updated successfully.")
+        return redirect("admin_payment_history", student_id=payment.student.id)
+        
+    return render(request, "admin/payment_edit.html", {
+        "payment": payment,
+        "is_dashboard_view": True
+    })
+
+@login_required
+def admin_payment_delete(request, payment_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    payment = get_object_or_404(Payment, id=payment_id)
+    student_id = payment.student.id
+    payment.delete()
+    
+    # Recalculate StudentFee balance
+    fee_ledgers = StudentFee.objects.filter(student_id=student_id)
+    for ledger in fee_ledgers:
+        ledger.save()
+        
+    messages.success(request, "Transaction deleted successfully.")
+    return redirect("admin_payment_history", student_id=student_id)
 
 @login_required
 def admin_finance_reports(request):

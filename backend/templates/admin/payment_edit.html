@@ -1,0 +1,95 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Edit Transaction - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">Finance</li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_payments' %}" class="text-white-50 text-decoration-none">Fee Ledger</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_payment_history' payment.student.id %}" class="text-white-50 text-decoration-none">{{ payment.student.user.full_name }}</a></li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Edit Transaction</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Edit Transaction: {{ payment.receipt_number }}</h1>
+            <p class="text-white-50 mb-0">Modify transaction amount, status, method, and installment schedules.</p>
+        </div>
+    </div>
+</div>
+
+<div class="premium-card p-4 bg-white shadow-sm max-w-lg mx-auto">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-bold text-sm text-primary">Amount Paid (INR) <span class="text-danger">*</span></label>
+            <input type="number" step="0.01" name="amount" class="form-control rounded-3" value="{{ payment.amount }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-sm text-primary">Status <span class="text-danger">*</span></label>
+            <select name="status" class="form-select rounded-3" required>
+                <option value="paid" {% if payment.status == 'paid' %}selected{% endif %}>Paid</option>
+                <option value="pending" {% if payment.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="failed" {% if payment.status == 'failed' %}selected{% endif %}>Failed</option>
+                <option value="refunded" {% if payment.status == 'refunded' %}selected{% endif %}>Refunded</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-sm text-primary">Payment Mode <span class="text-danger">*</span></label>
+            <select name="method" class="form-select rounded-3" required>
+                <option value="cash" {% if payment.method == 'cash' %}selected{% endif %}>Cash</option>
+                <option value="upi" {% if payment.method == 'upi' %}selected{% endif %}>UPI</option>
+                <option value="card" {% if payment.method == 'card' %}selected{% endif %}>Card (Debit/Credit)</option>
+                <option value="bank_transfer" {% if payment.method == 'bank_transfer' %}selected{% endif %}>Bank Transfer</option>
+                <option value="cheque" {% if payment.method == 'cheque' %}selected{% endif %}>Cheque</option>
+                <option value="dd" {% if payment.method == 'dd' %}selected{% endif %}>Demand Draft</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-sm text-primary">Payment Type <span class="text-danger">*</span></label>
+            <select name="payment_type" class="form-select rounded-3" required>
+                <option value="monthly_installment" {% if payment.payment_type == 'monthly_installment' %}selected{% endif %}>Monthly Installment</option>
+                <option value="quarterly" {% if payment.payment_type == 'quarterly' %}selected{% endif %}>Quarterly Payment</option>
+                <option value="full_annual" {% if payment.payment_type == 'full_annual' %}selected{% endif %}>Full Annual Payment</option>
+                <option value="partial" {% if payment.payment_type == 'partial' %}selected{% endif %}>Partial Payment</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-sm text-primary">Installment Period <span class="text-danger">*</span></label>
+            <select name="installment_period" class="form-select rounded-3" required>
+                <option value="Annual" {% if payment.installment_period == 'Annual' %}selected{% endif %}>Annual / One-time</option>
+                <option value="Q1" {% if payment.installment_period == 'Q1' %}selected{% endif %}>Q1</option>
+                <option value="Q2" {% if payment.installment_period == 'Q2' %}selected{% endif %}>Q2</option>
+                <option value="Q3" {% if payment.installment_period == 'Q3' %}selected{% endif %}>Q3</option>
+                <option value="Q4" {% if payment.installment_period == 'Q4' %}selected{% endif %}>Q4</option>
+                <option value="January" {% if payment.installment_period == 'January' %}selected{% endif %}>January</option>
+                <option value="February" {% if payment.installment_period == 'February' %}selected{% endif %}>February</option>
+                <option value="March" {% if payment.installment_period == 'March' %}selected{% endif %}>March</option>
+                <option value="April" {% if payment.installment_period == 'April' %}selected{% endif %}>April</option>
+                <option value="May" {% if payment.installment_period == 'May' %}selected{% endif %}>May</option>
+                <option value="June" {% if payment.installment_period == 'June' %}selected{% endif %}>June</option>
+                <option value="July" {% if payment.installment_period == 'July' %}selected{% endif %}>July</option>
+                <option value="August" {% if payment.installment_period == 'August' %}selected{% endif %}>August</option>
+                <option value="September" {% if payment.installment_period == 'September' %}selected{% endif %}>September</option>
+                <option value="October" {% if payment.installment_period == 'October' %}selected{% endif %}>October</option>
+                <option value="November" {% if payment.installment_period == 'November' %}selected{% endif %}>November</option>
+                <option value="December" {% if payment.installment_period == 'December' %}selected{% endif %}>December</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-sm text-primary">Transaction Reference ID</label>
+            <input type="text" name="transaction_id" class="form-control rounded-3" value="{{ payment.transaction_id|default:'' }}">
+        </div>
+        
+        <div class="pt-3 border-top d-flex gap-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill px-4">Update Transaction</button>
+            <a href="{% url 'admin_payment_history' payment.student.id %}" class="btn btn-premium-outline rounded-pill px-4">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

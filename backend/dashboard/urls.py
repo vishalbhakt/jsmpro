@@ -91,6 +91,8 @@ urlpatterns = [
     
     path("dashboard/admin/payments/history/<int:student_id>/", views.admin_payment_history, name="admin_payment_history"),
     path("dashboard/admin/payments/receipt/<int:payment_id>/pdf/", views.admin_receipt_pdf, name="admin_receipt_pdf"),
+    path("dashboard/admin/payments/edit/<int:payment_id>/", views.admin_payment_edit, name="admin_payment_edit"),
+    path("dashboard/admin/payments/delete/<int:payment_id>/", views.admin_payment_delete, name="admin_payment_delete"),
     path("dashboard/admin/payments/update-adjustments/<int:fee_id>/", views.admin_update_fee_adjustments, name="admin_update_fee_adjustments"),
     path("dashboard/admin/payments/reports/", views.admin_finance_reports, name="admin_finance_reports"),
     
