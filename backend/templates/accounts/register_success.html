@@ -1,67 +1,297 @@
+<!-- templates/register/register_success.html -->
 {% extends "base.html" %}
 {% load static %}
 
 {% block title %}Application Submitted - JSM Shiksha Academy{% endblock %}
 
 {% block extra_css %}
+/* Navbar hide karo */
+.navbar {
+    display: none !important;
+}
 body {
-    background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 50%, #0c2b4d 100%) !important;
+    background: linear-gradient(145deg, #f0f7ff 0%, #e6f0fa 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: 'Inter', sans-serif;
+    padding: 1.5rem;
+    margin-top: 0 !important; /* Agar navbar ki wajah se margin ho to */
+    padding-top: 0 !important;
+}
+.success-wrapper {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
 }
 .success-card {
-    border-radius: 2.5rem;
-    border: none;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-    max-width: 540px;
-    width: 100%;
-    background: white;
+    background: #FFFFFF;
+    border-radius: 3rem;
+    box-shadow: 0 25px 60px -10px rgba(11, 44, 83, 0.15), 0 10px 30px -15px rgba(0,0,0,0.05);
     overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(2px);
+    transition: transform 0.2s ease;
+}
+.success-card:hover {
+    transform: translateY(-4px);
 }
 .success-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    padding: 3rem;
+    background: linear-gradient(135deg, #0B2C53 0%, #1a4a7a 100%);
+    padding: 2.5rem 2rem 2rem;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.success-header::after {
+    content: "🎓";
+    position: absolute;
+    right: -10px;
+    bottom: -20px;
+    font-size: 8rem;
+    opacity: 0.06;
+    transform: rotate(-12deg);
+}
+.check-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: #22C55E;
+    border-radius: 50%;
+    box-shadow: 0 12px 30px rgba(34, 197, 94, 0.3);
+    margin-bottom: 1.25rem;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.check-icon i {
+    font-size: 2.8rem;
     color: white;
-    border-bottom: 4px solid var(--accent-color);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+.success-header h2 {
+    color: white;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.25rem;
+}
+.success-header p {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.95rem;
+    margin-bottom: 0;
 }
 .success-body {
-    padding: 3rem;
+    padding: 2.25rem 2rem 2rem;
+}
+.status-timeline {
+    background: #F8FAFC;
+    border-radius: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    border-left: 4px solid #FFC107;
+}
+.status-timeline .step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #1e293b;
+    padding: 0.35rem 0;
+}
+.status-timeline .step i {
+    width: 22px;
+    color: #22C55E;
+    font-size: 1rem;
+}
+.status-timeline .step.pending i {
+    color: #FFC107;
+}
+.status-timeline .step.pending .badge {
+    background: #FFC107;
+    color: #0B2C53;
+    font-weight: 600;
+    margin-left: auto;
+    padding: 0.25rem 1rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    letter-spacing: 0.3px;
+}
+.status-card {
+    background: #FEF9E7;
+    border-radius: 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.status-card .label {
+    font-weight: 600;
+    color: #0B2C53;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+.status-card .badge-status {
+    background: #22C55E;
+    color: white;
+    font-weight: 600;
+    padding: 0.25rem 1.2rem;
+    border-radius: 40px;
+    font-size: 0.75rem;
+}
+.status-card .sub {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-left: auto;
+}
+.info-text {
+    color: #475569;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1.75rem;
+}
+.info-text strong {
+    color: #0B2C53;
+}
+.action-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.btn-premium {
+    background: #0B2C53;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.9rem 1.5rem;
+    border-radius: 60px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(11, 44, 83, 0.15);
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-premium:hover {
+    background: #1a4a7a;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(11, 44, 83, 0.2);
+    color: white;
+    text-decoration: none;
+}
+.btn-outline-premium {
+    background: transparent;
+    border: 1.5px solid #0B2C53;
+    color: #0B2C53;
+    font-weight: 600;
+    padding: 0.9rem 1.5rem;
+    border-radius: 60px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+    cursor: not-allowed;
+    opacity: 0.6;
+    position: relative;
+}
+.btn-outline-premium[disabled] {
+    pointer-events: none;
+}
+.btn-outline-premium .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background: #0B2C53;
+    color: #fff;
+    text-align: center;
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    position: absolute;
+    z-index: 1;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-weight: 400;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+.btn-outline-premium .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #0B2C53 transparent transparent transparent;
+}
+.btn-outline-premium:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+@keyframes popIn {
+    0% { transform: scale(0.7); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@media (max-width: 480px) {
+    .success-header { padding: 2rem 1.25rem; }
+    .success-body { padding: 1.5rem 1.25rem; }
+    .check-icon { width: 64px; height: 64px; }
+    .check-icon i { font-size: 2.2rem; }
+    .success-header h2 { font-size: 1.5rem; }
+    .status-timeline { padding: 1rem; }
+    .status-card { flex-direction: column; align-items: flex-start; }
 }
 {% endblock %}
 
 {% block content %}
-<div class="success-card">
-    <div class="success-header">
-        <div class="mb-3">
-            <i class="fa-solid fa-circle-check fa-4x text-white mb-2"></i>
+<div class="success-wrapper">
+    <div class="success-card">
+        <div class="success-header">
+            <div class="check-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2>Application Submitted!</h2>
+            <p>Thank you, {{ name }}. Your registration is being reviewed.</p>
         </div>
-        <h2 class="fw-bold text-white mb-1" style="font-family: 'Outfit', sans-serif;">Application Submitted!</h2>
-        <p class="text-white-50 mb-0 uppercase tracking-wider text-xs">JSM Shiksha Academy Enrollment</p>
-    </div>
-    
-    <div class="success-body text-center">
-        <h4 class="fw-bold mb-3 text-primary" style="font-family: 'Outfit', sans-serif;">Welcome, {{ name }}!</h4>
-        <p class="text-muted text-sm mb-4" style="line-height: 1.6;">
-            Your registration request for the role of <strong>{{ role }}</strong> has been received successfully. 
-            All new account approvals are monitored by the school administration board to prevent system spam.
-        </p>
+        <div class="success-body">
+            <!-- Timeline -->
+            <div class="status-timeline">
+                <div class="step"><i class="fa-regular fa-circle-check"></i> Registration Submitted</div>
+                <div class="step pending"><i class="fa-regular fa-clock"></i> Admin Verification <span class="badge">In Progress</span></div>
+                <div class="step"><i class="fa-regular fa-circle"></i> Approval &amp; Access</div>
+                <div class="step"><i class="fa-regular fa-circle"></i> Profile Completion</div>
+            </div>
 
-        <div class="p-3 bg-light rounded-4 border mb-4 text-start">
-            <div class="fw-bold text-xs uppercase text-muted mb-2"><i class="fa-solid fa-circle-info me-1"></i> Current Status:</div>
-            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill px-3 py-1.5 fw-bold text-xs">
-                Awaiting Administrator Approval
-            </span>
-            <small class="text-muted d-block mt-2 text-xs">
-                You will receive a notification and be granted login access once the review is completed.
-            </small>
+            <!-- Status Card -->
+            <div class="status-card">
+                <span class="label"><i class="fa-regular fa-flag me-1"></i> Current Status:</span>
+                <span class="badge-status">Pending Approval</span>
+                <span class="sub"><i class="fa-regular fa-hourglass-half me-1"></i> Under review</span>
+            </div>
+
+            <div class="info-text">
+                <strong>Your registration for {{ role }}</strong> has been received. 
+                Our administrator will verify your details. Once approved, 
+                you'll receive an email notification and can log in to complete your profile.
+            </div>
+
+            <div class="action-group">
+                <a href="{% url 'login' %}" class="btn-premium"><i class="fa-regular fa-arrow-right me-2"></i> Go to Login</a>
+                <button class="btn-outline-premium" disabled>
+                    <i class="fa-regular fa-lock me-2"></i> Login (disabled)
+                    <span class="tooltip-text">Available after account approval</span>
+                </button>
+                <a href="{% url 'home' %}" class="btn-premium" style="background:#F8FAFC;color:#0B2C53;box-shadow:none;border:1px solid #e2e8f0;">Return Home</a>
+            </div>
         </div>
-
-        <a href="{% url 'login' %}" class="btn btn-premium-primary rounded-pill w-100 py-3 fw-bold">
-            <i class="fa-solid fa-arrow-left me-2"></i> Back to Login Portal
-        </a>
     </div>
 </div>
 {% endblock %}

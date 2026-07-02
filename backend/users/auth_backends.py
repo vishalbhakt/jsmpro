@@ -18,3 +18,6 @@ class EmailOrUsernameModelBackend(ModelBackend):
             # difference between an existing and a non-existing user.
             User().set_password(password)
         return None
+
+    def user_can_authenticate(self, user):
+        return True

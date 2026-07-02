@@ -125,8 +125,14 @@ def login_view(request):
             # Allow login using email or username
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                if user.registration_status == 'pending':
-                    messages.error(request, "Your account is awaiting administrator approval.")
+                if user.registration_status == 'pending' or not user.is_active:
+                    from django.utils.safestring import mark_safe
+                    messages.error(request, mark_safe(
+                        "Your registration request has been submitted.<br><br>"
+                        "Our administrator will verify your application.<br><br>"
+                        "You will receive approval shortly.<br><br>"
+                        "After approval you can login and complete your profile."
+                    ))
                 elif user.registration_status == 'rejected':
                     messages.error(request, f"Your registration request was rejected. Reason: {user.rejected_reason or 'No reason provided.'}")
                 else:
@@ -2434,71 +2440,54 @@ def student_register(request):
     if request.method == "POST":
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
-        
-        father_name = request.POST.get("father_name")
-        mother_name = request.POST.get("mother_name")
         gender = request.POST.get("gender")
         date_of_birth = request.POST.get("date_of_birth")
-        blood_group = request.POST.get("blood_group")
-        parent_phone = request.POST.get("parent_phone")
-        address = request.POST.get("address")
-        city = request.POST.get("city")
-        state = request.POST.get("state")
-        pincode = request.POST.get("pincode")
         admission_class = request.POST.get("admission_class")
-        previous_school = request.POST.get("previous_school")
-        aadhaar_number = request.POST.get("aadhaar_number", "")
         
-        avatar = request.FILES.get("avatar")
+        guardian_name = request.POST.get("guardian_name")
+        parent_phone = request.POST.get("parent_phone")
+        parent_email = request.POST.get("parent_email")
+        
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
         
         # Validation checks
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return render(request, "accounts/student_register.html", {"classrooms": classrooms})
             
-        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
-            messages.error(request, "Email address is already registered.")
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username is already taken.")
             return render(request, "accounts/student_register.html", {"classrooms": classrooms})
-            
-        if User.objects.filter(phone=phone).exists():
-            messages.error(request, "Phone number is already registered.")
+
+        if User.objects.filter(email=parent_email).exists():
+            messages.error(request, "Email is already registered.")
             return render(request, "accounts/student_register.html", {"classrooms": classrooms})
             
         # Create User
         user = User.objects.create_user(
-            username=email,
-            email=email,
+            username=username,
+            email=parent_email,
             first_name=first_name,
             last_name=last_name,
             password=password,
             role=User.Roles.STUDENT,
-            phone=phone,
-            address=address,
             gender=gender,
-            city=city,
-            state=state,
-            pincode=pincode,
-            avatar=avatar,
+            date_of_birth=date_of_birth if date_of_birth else None,
             registration_status='pending'
         )
+        user.is_active = False
+        user.save()
         
-        # Get or create StudentProfile (signals might have created it; let's update it!)
+        # Update StudentProfile
         profile, created = StudentProfile.objects.get_or_create(user=user)
-        profile.father_name = father_name
-        profile.mother_name = mother_name
-        profile.guardian_name = father_name
+        profile.guardian_name = guardian_name
         profile.guardian_phone = parent_phone
         profile.date_of_birth = date_of_birth if date_of_birth else None
-        profile.blood_group = blood_group
-        profile.emergency_contact = parent_phone
-        profile.aadhaar_number = aadhaar_number
-        profile.previous_school = previous_school
         profile.admission_class = admission_class
         profile.status = StudentProfile.Status.INACTIVE
+        profile.is_profile_complete = False
         profile.save()
         
         return render(request, "accounts/register_success.html", {
@@ -2516,70 +2505,51 @@ def teacher_register(request):
     if request.method == "POST":
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
-        
         gender = request.POST.get("gender")
         date_of_birth = request.POST.get("date_of_birth")
-        blood_group = request.POST.get("blood_group")
-        qualification = request.POST.get("qualification")
-        experience_years = request.POST.get("experience_years", 0)
-        department = request.POST.get("department")
-        subjects_taught = request.POST.get("subjects_taught")
-        address = request.POST.get("address")
-        city = request.POST.get("city")
-        state = request.POST.get("state")
-        pincode = request.POST.get("pincode")
-        emergency_contact = request.POST.get("emergency_contact")
         
-        avatar = request.FILES.get("avatar")
-        resume = request.FILES.get("resume")
-        certificate = request.FILES.get("certificate")
+        department = request.POST.get("department")
+        subject = request.POST.get("subject")
+        
+        email = request.POST.get("email")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
         
         # Validation checks
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return render(request, "accounts/teacher_register.html")
             
-        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
-            messages.error(request, "Email address is already registered.")
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username is already taken.")
             return render(request, "accounts/teacher_register.html")
-            
-        if User.objects.filter(phone=phone).exists():
-            messages.error(request, "Phone number is already registered.")
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email address is already registered.")
             return render(request, "accounts/teacher_register.html")
             
         # Create User
         user = User.objects.create_user(
-            username=email,
+            username=username,
             email=email,
             first_name=first_name,
             last_name=last_name,
             password=password,
             role=User.Roles.TEACHER,
-            phone=phone,
-            address=address,
             gender=gender,
-            city=city,
-            state=state,
-            pincode=pincode,
-            avatar=avatar,
+            date_of_birth=date_of_birth if date_of_birth else None,
             registration_status='pending'
         )
+        user.is_active = False
+        user.save()
         
-        # Get or create TeacherProfile
+        # Update TeacherProfile
         profile, created = TeacherProfile.objects.get_or_create(user=user)
-        profile.qualification = qualification
         profile.department = department
-        profile.subjects_taught = subjects_taught
-        profile.blood_group = blood_group
-        profile.emergency_contact = emergency_contact
-        profile.experience_years = int(experience_years) if experience_years else 0
-        profile.resume = resume
-        profile.certificate = certificate
+        profile.subjects_taught = subject
         profile.status = TeacherProfile.Status.INACTIVE
+        profile.is_profile_complete = False
         profile.save()
         
         return render(request, "accounts/register_success.html", {

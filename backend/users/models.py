@@ -64,6 +64,13 @@ class TeacherProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="teacher_profile")
     employee_id = models.CharField(max_length=40, unique=True)
+    alternate_phone = models.CharField(max_length=20, blank=True, null=True, default="")
+    pan_number = models.CharField(max_length=20, blank=True, null=True, default="")
+    bank_account_no = models.CharField(max_length=40, blank=True, null=True, default="")
+    bank_ifsc_code = models.CharField(max_length=20, blank=True, null=True, default="")
+    specialization = models.CharField(max_length=150, blank=True, null=True, default="")
+    assigned_class = models.CharField(max_length=50, blank=True, null=True, default="")
+    signature = models.ImageField(upload_to="signatures/", blank=True, null=True)
     qualification = models.CharField(max_length=160, blank=True)
     designation = models.CharField(max_length=120, default="Teacher")
     department = models.CharField(max_length=120, blank=True)
@@ -76,6 +83,7 @@ class TeacherProfile(models.Model):
     bio = models.TextField(blank=True)
     joined_on = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    is_profile_complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,7 +120,18 @@ class StudentProfile(models.Model):
     blood_group = models.CharField(max_length=10, blank=True, null=True, default="")
     previous_school = models.CharField(max_length=150, blank=True, null=True, default="")
     admission_class = models.CharField(max_length=50, blank=True, null=True, default="")
+    
+    guardian_occupation = models.CharField(max_length=120, blank=True, null=True, default="")
+    birth_certificate = models.FileField(upload_to="birth_certs/", blank=True, null=True)
+    student_signature = models.ImageField(upload_to="student_signatures/", blank=True, null=True)
+    religion = models.CharField(max_length=50, blank=True, null=True, default="")
+    nationality = models.CharField(max_length=50, blank=True, null=True, default="Indian")
+    transport = models.CharField(max_length=120, blank=True, null=True, default="")
+    medical_notes = models.TextField(blank=True, null=True, default="")
+    documents = models.FileField(upload_to="student_docs/", blank=True, null=True)
+
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+    is_profile_complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
