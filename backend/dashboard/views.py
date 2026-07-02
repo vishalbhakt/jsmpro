@@ -125,9 +125,14 @@ def login_view(request):
             # Allow login using email or username
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                auth_login(request, user)
-                messages.success(request, f"Welcome back, {user.full_name}!")
-                return redirect("dashboard_redirect")
+                if user.registration_status == 'pending':
+                    messages.error(request, "Your account is awaiting administrator approval.")
+                elif user.registration_status == 'rejected':
+                    messages.error(request, f"Your registration request was rejected. Reason: {user.rejected_reason or 'No reason provided.'}")
+                else:
+                    auth_login(request, user)
+                    messages.success(request, f"Welcome back, {user.full_name}!")
+                    return redirect("dashboard_redirect")
             else:
                 messages.error(request, "Invalid username or password.")
     else:
@@ -2418,6 +2423,281 @@ def verify_id_card(request, verification_code):
         "profile": profile,
         "role": role
     })
+
+
+def student_register(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard_redirect")
+        
+    classrooms = ClassRoom.objects.all()
+    
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        
+        father_name = request.POST.get("father_name")
+        mother_name = request.POST.get("mother_name")
+        gender = request.POST.get("gender")
+        date_of_birth = request.POST.get("date_of_birth")
+        blood_group = request.POST.get("blood_group")
+        parent_phone = request.POST.get("parent_phone")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        pincode = request.POST.get("pincode")
+        admission_class = request.POST.get("admission_class")
+        previous_school = request.POST.get("previous_school")
+        aadhaar_number = request.POST.get("aadhaar_number", "")
+        
+        avatar = request.FILES.get("avatar")
+        
+        # Validation checks
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return render(request, "accounts/student_register.html", {"classrooms": classrooms})
+            
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+            messages.error(request, "Email address is already registered.")
+            return render(request, "accounts/student_register.html", {"classrooms": classrooms})
+            
+        if User.objects.filter(phone=phone).exists():
+            messages.error(request, "Phone number is already registered.")
+            return render(request, "accounts/student_register.html", {"classrooms": classrooms})
+            
+        # Create User
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            password=password,
+            role=User.Roles.STUDENT,
+            phone=phone,
+            address=address,
+            gender=gender,
+            city=city,
+            state=state,
+            pincode=pincode,
+            avatar=avatar,
+            registration_status='pending'
+        )
+        
+        # Get or create StudentProfile (signals might have created it; let's update it!)
+        profile, created = StudentProfile.objects.get_or_create(user=user)
+        profile.father_name = father_name
+        profile.mother_name = mother_name
+        profile.guardian_name = father_name
+        profile.guardian_phone = parent_phone
+        profile.date_of_birth = date_of_birth if date_of_birth else None
+        profile.blood_group = blood_group
+        profile.emergency_contact = parent_phone
+        profile.aadhaar_number = aadhaar_number
+        profile.previous_school = previous_school
+        profile.admission_class = admission_class
+        profile.status = StudentProfile.Status.INACTIVE
+        profile.save()
+        
+        return render(request, "accounts/register_success.html", {
+            "name": user.full_name,
+            "role": "Student"
+        })
+        
+    return render(request, "accounts/student_register.html", {"classrooms": classrooms})
+
+
+def teacher_register(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard_redirect")
+        
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        
+        gender = request.POST.get("gender")
+        date_of_birth = request.POST.get("date_of_birth")
+        blood_group = request.POST.get("blood_group")
+        qualification = request.POST.get("qualification")
+        experience_years = request.POST.get("experience_years", 0)
+        department = request.POST.get("department")
+        subjects_taught = request.POST.get("subjects_taught")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        pincode = request.POST.get("pincode")
+        emergency_contact = request.POST.get("emergency_contact")
+        
+        avatar = request.FILES.get("avatar")
+        resume = request.FILES.get("resume")
+        certificate = request.FILES.get("certificate")
+        
+        # Validation checks
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return render(request, "accounts/teacher_register.html")
+            
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+            messages.error(request, "Email address is already registered.")
+            return render(request, "accounts/teacher_register.html")
+            
+        if User.objects.filter(phone=phone).exists():
+            messages.error(request, "Phone number is already registered.")
+            return render(request, "accounts/teacher_register.html")
+            
+        # Create User
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            password=password,
+            role=User.Roles.TEACHER,
+            phone=phone,
+            address=address,
+            gender=gender,
+            city=city,
+            state=state,
+            pincode=pincode,
+            avatar=avatar,
+            registration_status='pending'
+        )
+        
+        # Get or create TeacherProfile
+        profile, created = TeacherProfile.objects.get_or_create(user=user)
+        profile.qualification = qualification
+        profile.department = department
+        profile.subjects_taught = subjects_taught
+        profile.blood_group = blood_group
+        profile.emergency_contact = emergency_contact
+        profile.experience_years = int(experience_years) if experience_years else 0
+        profile.resume = resume
+        profile.certificate = certificate
+        profile.status = TeacherProfile.Status.INACTIVE
+        profile.save()
+        
+        return render(request, "accounts/register_success.html", {
+            "name": user.full_name,
+            "role": "Teacher"
+        })
+        
+    return render(request, "accounts/teacher_register.html")
+
+
+@login_required
+def admin_pending_registrations(request):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    pending_students = StudentProfile.objects.filter(user__registration_status='pending').select_related('user')
+    pending_teachers = TeacherProfile.objects.filter(user__registration_status='pending').select_related('user')
+    
+    classrooms = ClassRoom.objects.all()
+    
+    return render(request, "admin/pending_registrations.html", {
+        "pending_students": pending_students,
+        "pending_teachers": pending_teachers,
+        "classrooms": classrooms,
+        "is_dashboard_view": True
+    })
+
+@login_required
+def admin_approve_registration(request, role, user_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    user = get_object_or_404(User, id=user_id)
+    classroom_id = request.POST.get("classroom")
+    
+    if role == "student":
+        profile = get_object_or_404(StudentProfile, user=user)
+        # Generate Admission Number and Student ID
+        total_students = StudentProfile.objects.exclude(admission_number="").count()
+        seq = total_students + 1
+        std_username = f"STD2026{seq:04d}"
+        adm_no = f"ADM2026{seq:04d}"
+        
+        # Verify uniqueness
+        while User.objects.filter(username=std_username).exists():
+            seq += 1
+            std_username = f"STD2026{seq:04d}"
+            adm_no = f"ADM2026{seq:04d}"
+            
+        user.username = std_username
+        profile.admission_number = adm_no
+        profile.roll_number = str(seq)
+        
+        if classroom_id:
+            profile.classroom = get_object_or_404(ClassRoom, id=classroom_id)
+            
+        profile.status = StudentProfile.Status.ACTIVE
+        profile.save()
+        
+        # Link to classroom fee plans automatically
+        if profile.classroom:
+            plans = FeePlan.objects.filter(classroom=profile.classroom, is_active=True)
+            for plan in plans:
+                StudentFee.objects.get_or_create(
+                    student=profile,
+                    fee_plan=plan,
+                    academic_year=plan.academic_year
+                )
+                
+    elif role == "teacher":
+        profile = get_object_or_404(TeacherProfile, user=user)
+        # Generate Employee ID & Teacher ID
+        total_teachers = TeacherProfile.objects.exclude(employee_id="").count()
+        seq = total_teachers + 1
+        tch_username = f"TCH2026{seq:04d}"
+        emp_id = f"EMP2026{seq:04d}"
+        
+        # Verify uniqueness
+        while User.objects.filter(username=tch_username).exists():
+            seq += 1
+            tch_username = f"TCH2026{seq:04d}"
+            emp_id = f"EMP2026{seq:04d}"
+            
+        user.username = tch_username
+        profile.employee_id = emp_id
+        profile.status = TeacherProfile.Status.ACTIVE
+        profile.save()
+        
+    # Update User Status
+    user.registration_status = 'approved'
+    user.approved_at = timezone.now()
+    user.approved_by = request.user
+    user.save()
+    
+    # Create notification
+    Notification.objects.create(
+        recipient=user,
+        title="Congratulations! Account Approved 🎉",
+        message="Your school account has been approved by the administrator. You now have full access to your dashboard!"
+    )
+    
+    messages.success(request, f"Registration for '{user.full_name}' approved successfully.")
+    return redirect("admin_pending_registrations")
+
+@login_required
+def admin_reject_registration(request, role, user_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    user = get_object_or_404(User, id=user_id)
+    reason = request.POST.get("rejected_reason", "Application does not meet requirements.")
+    
+    user.registration_status = 'rejected'
+    user.rejected_reason = reason
+    user.save()
+    
+    messages.warning(request, f"Registration for '{user.full_name}' has been rejected.")
+    return redirect("admin_pending_registrations")
 
 
 

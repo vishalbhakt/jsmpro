@@ -9,21 +9,25 @@
     <div style="position: absolute; width: 350px; height: 350px; border-radius: 50%; background: rgba(255, 193, 7, 0.07); top: -80px; right: -80px; filter: blur(20px);"></div>
     <div style="position: absolute; width: 250px; height: 250px; border-radius: 50%; background: rgba(56, 189, 248, 0.1); bottom: -60px; left: -60px; filter: blur(15px);"></div>
     
-    <div class="container py-5 my-3 position-relative" style="z-index: 5;">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-7 text-center text-lg-start">
-                <span class="badge-premium-gold mb-3 float-animation" style="background-color: rgba(255, 193, 7, 0.2); border-color: var(--accent-color); color: var(--accent-color); font-size: 0.85rem;"><i class="fa-solid fa-star me-1"></i> UKG to Grade 8 Learning Haven</span>
-                <h1 class="display-3 mb-4 text-white font-black leading-tight" style="font-size: 3.5rem; font-weight: 900; font-family: 'Outfit', sans-serif;">Where Learning is a <span style="color: var(--accent-color); text-shadow: 0 4px 10px rgba(255, 193, 7, 0.25);">Joyful Adventure!</span></h1>
-                <p class="fs-5 text-white-50 mb-5 leading-relaxed" style="font-size: 1.15rem;">We combine digital academic portfolios with deep values and playful interactive activities to help young scholars learn, play, and grow.</p>
-                <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
-                    <a href="{% url 'admission' %}" class="btn btn-premium-accent btn-lg py-3 px-5 rounded-pill"><i class="fa-solid fa-rocket me-2"></i> Apply Today</a>
-                    <a href="{% url 'courses' %}" class="btn btn-premium-outline btn-lg py-3 px-5 rounded-pill" style="border-color: white; color: white; border-width: 3px;"><i class="fa-solid fa-graduation-cap me-2"></i> Our Courses</a>
+    <div class="container py-4 py-md-5 my-2 my-md-3 position-relative" style="z-index: 5;">
+        <div class="row align-items-center g-4 g-lg-5">
+            <div class="col-12 col-lg-7 text-center text-lg-start">
+                <span class="badge-premium-gold mb-3 float-animation d-inline-block" style="background-color: rgba(255, 193, 7, 0.2); border-color: var(--accent-color); color: var(--accent-color); font-size: clamp(0.75rem, 2.5vw, 0.85rem);"><i class="fa-solid fa-star me-1"></i> UKG to Grade 8 Learning Haven</span>
+                <h1 class="display-3 mb-4 text-white font-black leading-tight" style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; font-family: 'Outfit', sans-serif;">Where Learning is a <span style="color: var(--accent-color); text-shadow: 0 4px 10px rgba(255, 193, 7, 0.25);">Joyful Adventure!</span></h1>
+                <p class="fs-5 text-white-50 mb-4 mb-md-5 leading-relaxed" style="font-size: clamp(0.95rem, 3vw, 1.15rem);">We combine digital academic portfolios with deep values and playful interactive activities to help young scholars learn, play, and grow.</p>
+                <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 hero-ctas mb-3">
+                    <a href="{% url 'admission' %}" class="btn btn-premium-accent btn-lg py-3 px-5 rounded-pill w-xs-100"><i class="fa-solid fa-rocket me-2"></i> Apply Today</a>
+                    <a href="{% url 'courses' %}" class="btn btn-premium-outline btn-lg py-3 px-5 rounded-pill w-xs-100" style="border-color: white; color: white; border-width: 3px;"><i class="fa-solid fa-graduation-cap me-2"></i> Our Courses</a>
+                </div>
+                <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 hero-ctas">
+                    <a href="{% url 'student_register' %}" class="btn btn-outline-light rounded-pill px-4 py-2 text-xs fw-bold"><i class="fa-solid fa-user-graduate me-2"></i> Student Registration</a>
+                    <a href="{% url 'teacher_register' %}" class="btn btn-outline-light rounded-pill px-4 py-2 text-xs fw-bold" style="opacity: 0.85;"><i class="fa-solid fa-chalkboard-teacher me-2"></i> Teacher Registration</a>
                 </div>
             </div>
-            <div class="col-lg-5 text-center d-none d-lg-block">
-                <div class="p-4 bg-white bg-opacity-5 rounded-circle d-inline-block border border-white border-opacity-10 shadow-lg float-animation">
-                    <div class="bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 320px; height: 320px;">
-                        <img src="{% static 'images/logo.png' %}" alt="Owl Logo" class="img-fluid" style="width: 240px; height: 240px; object-fit: contain;">
+            <div class="col-12 col-lg-5 text-center mt-4 mt-lg-0">
+                <div class="p-3 p-md-4 bg-white bg-opacity-5 rounded-circle d-inline-block border border-white border-opacity-10 shadow-lg float-animation hero-illustration-wrapper">
+                    <div class="bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center hero-illustration-circle" style="width: clamp(200px, 45vw, 320px); height: clamp(200px, 45vw, 320px);">
+                        <img src="{% static 'images/logo.png' %}" alt="Owl Logo" class="img-fluid hero-illustration-img" style="width: clamp(140px, 30vw, 240px); height: clamp(140px, 30vw, 240px); object-fit: contain;">
                     </div>
                 </div>
             </div>

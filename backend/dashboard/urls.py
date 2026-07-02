@@ -112,4 +112,10 @@ urlpatterns = [
     path("dashboard/admin/id-cards/view/<str:role>/<int:profile_id>/", views.admin_id_card_view, name="admin_id_card_view"),
     path("dashboard/admin/id-cards/print/<str:role>/<int:profile_id>/", views.admin_id_card_print, name="admin_id_card_print"),
     path("verify/id/<str:verification_code>/", views.verify_id_card, name="verify_id_card"),
+    
+    path("register/student/", views.student_register, name="student_register"),
+    path("register/teacher/", views.teacher_register, name="teacher_register"),
+    path("dashboard/admin/pending-registrations/", views.admin_pending_registrations, name="admin_pending_registrations"),
+    path("dashboard/admin/pending-registrations/approve/<str:role>/<int:user_id>/", views.admin_approve_registration, name="admin_approve_registration"),
+    path("dashboard/admin/pending-registrations/reject/<str:role>/<int:user_id>/", views.admin_reject_registration, name="admin_reject_registration"),
 ]

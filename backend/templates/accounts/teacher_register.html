@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Teacher Registration - JSM Shiksha Academy{% endblock %}
+
+{% block extra_css %}
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+}
+.register-card {
+    border-radius: 2rem;
+    border: none;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+.step-container {
+    display: none;
+}
+.step-container.active {
+    display: block;
+}
+.step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #cbd5e1;
+    color: #475569;
+    font-weight: 700;
+    margin-right: 8px;
+}
+.step-dot.active {
+    background: var(--primary-color);
+    color: white;
+}
+.step-dot.completed {
+    background: #10b981;
+    color: white;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card register-card bg-white p-4 p-md-5">
+                
+                <!-- Logo & Heading -->
+                <div class="text-center mb-4">
+                    <img src="{% static 'images/logo.png' %}" style="width: 70px;" class="mb-2">
+                    <h2 class="fw-bold text-primary" style="font-family:'Outfit',sans-serif;">Teacher Recruitment Portal 🍎</h2>
+                    <p class="text-muted text-sm">Join our elite academic team at JSM Shiksha Academy</p>
+                </div>
+
+                <!-- Stepper Progress -->
+                <div class="d-flex justify-content-center mb-4 text-xs font-semibold gap-3 flex-wrap">
+                    <div><span class="step-dot active" id="dot-1">1</span> Personal Info</div>
+                    <div><span class="step-dot" id="dot-2">2</span> Qualifications & Resume</div>
+                    <div><span class="step-dot" id="dot-3">3</span> Credentials & Security</div>
+                </div>
+
+                {% if messages %}
+                    {% for msg in messages %}
+                    <div class="alert alert-{{ msg.tags }} border-0 rounded-4 py-2 px-3 mb-4 text-sm">
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" id="teacherRegForm">
+                    {% csrf_token %}
+
+                    <!-- Step 1: Personal Info -->
+                    <div class="step-container active" id="step-1">
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-user me-2 text-accent"></i> 1. Personal Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">First Name <span class="text-danger">*</span></label>
+                                <input type="text" name="first_name" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" name="last_name" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Gender <span class="text-danger">*</span></label>
+                                <select name="gender" class="form-select rounded-3" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Date of Birth <span class="text-danger">*</span></label>
+                                <input type="date" name="date_of_birth" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Blood Group</label>
+                                <input type="text" name="blood_group" class="form-control rounded-3" placeholder="e.g. B+">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Emergency Contact Number <span class="text-danger">*</span></label>
+                                <input type="text" name="emergency_contact" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Residential Address <span class="text-danger">*</span></label>
+                                <input type="text" name="address" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">City <span class="text-danger">*</span></label>
+                                <input type="text" name="city" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">State <span class="text-danger">*</span></label>
+                                <input type="text" name="state" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">PIN Code <span class="text-danger">*</span></label>
+                                <input type="text" name="pincode" class="form-control rounded-3" required>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-end">
+                            <button type="button" class="btn btn-premium-primary rounded-pill px-4" onclick="nextStep(2)">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Qualifications & Resume -->
+                    <div class="step-container" id="step-2">
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-graduation-cap me-2 text-accent"></i> 2. Qualifications & Experience</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Highest Qualification <span class="text-danger">*</span></label>
+                                <input type="text" name="qualification" class="form-control rounded-3" placeholder="e.g. M.Sc Physics, B.Ed" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Years of Experience <span class="text-danger">*</span></label>
+                                <input type="number" name="experience_years" class="form-control rounded-3" value="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Target Department <span class="text-danger">*</span></label>
+                                <input type="text" name="department" class="form-control rounded-3" placeholder="e.g. Science / Languages" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Specialization Subjects (Comma Separated) <span class="text-danger">*</span></label>
+                                <input type="text" name="subjects_taught" class="form-control rounded-3" placeholder="e.g. English, Social Studies" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Upload Resume (PDF only) <span class="text-danger">*</span></label>
+                                <input type="file" name="resume" class="form-control rounded-3" accept=".pdf" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Upload Certification Documents (PDF only)</label>
+                                <input type="file" name="certificate" class="form-control rounded-3" accept=".pdf">
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(1)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
+                            <button type="button" class="btn btn-premium-primary rounded-pill px-4" onclick="nextStep(3)">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Credentials & Security -->
+                    <div class="step-container" id="step-3">
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-lock-open me-2 text-accent"></i> 3. Security Credentials & Profile Photo</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" name="email" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Contact Mobile <span class="text-danger">*</span></label>
+                                <input type="text" name="phone" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Password <span class="text-danger">*</span></label>
+                                <input type="password" name="password" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" name="confirm_password" class="form-control rounded-3" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Profile Photo <span class="text-danger">*</span></label>
+                                <input type="file" name="avatar" class="form-control rounded-3" accept="image/*" required>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label text-xs text-muted" for="terms">
+                                        I certify that all details submitted in this job application are correct.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(2)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
+                            <button type="submit" class="btn btn-premium-accent rounded-pill px-5"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Submit Application</button>
+                        </div>
+                    </div>
+
+                </form>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'login' %}" class="text-muted text-decoration-none text-xs fw-bold"><i class="fa-solid fa-chevron-left me-1"></i> Already registered? Log in here</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function nextStep(stepNum) {
+        // Simple client-side validation check
+        let valid = true;
+        const currentContainer = document.querySelector(".step-container.active");
+        currentContainer.querySelectorAll("[required]").forEach(input => {
+            if (!input.value) {
+                valid = false;
+                input.classList.add("is-invalid");
+            } else {
+                input.classList.remove("is-invalid");
+            }
+        });
+
+        if (!valid) {
+            alert("Please fill in all required fields before proceeding.");
+            return;
+        }
+
+        document.querySelectorAll(".step-container").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".step-dot").forEach(d => d.classList.remove("active"));
+
+        document.getElementById(`step-${stepNum}`).classList.add("active");
+        for (let i = 1; i <= stepNum; i++) {
+            const dot = document.getElementById(`dot-${i}`);
+            if (i < stepNum) {
+                dot.classList.add("completed");
+            } else {
+                dot.classList.add("active");
+            }
+        }
+    }
+
+    function prevStep(stepNum) {
+        document.querySelectorAll(".step-container").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".step-dot").forEach(d => d.classList.remove("active", "completed"));
+
+        document.getElementById(`step-${stepNum}`).classList.add("active");
+        for (let i = 1; i <= stepNum; i++) {
+            const dot = document.getElementById(`dot-${i}`);
+            dot.classList.add("active");
+        }
+    }
+</script>
+{% endblock %}

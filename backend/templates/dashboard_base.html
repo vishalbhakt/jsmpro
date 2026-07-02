@@ -243,6 +243,7 @@
                     <li><a href="{% url 'admin_students' %}" class="sidebar-link {% if 'students' in request.path %}active{% endif %}"><i class="fa-solid fa-user-graduate"></i> <span>Students</span></a></li>
                     <li><a href="{% url 'admin_teachers' %}" class="sidebar-link {% if 'teachers' in request.path %}active{% endif %}"><i class="fa-solid fa-chalkboard-teacher"></i> <span>Teachers</span></a></li>
                     <li><a href="{% url 'admin_id_cards' %}" class="sidebar-link {% if 'id-cards' in request.path %}active{% endif %}"><i class="fa-solid fa-id-card"></i> <span>ID Cards</span></a></li>
+                    <li><a href="{% url 'admin_pending_registrations' %}" class="sidebar-link {% if 'pending-registrations' in request.path %}active{% endif %}"><i class="fa-solid fa-user-plus"></i> <span>Pending Regs</span></a></li>
 
                     <p class="sidebar-section-header">Academic</p>
                     <li><a href="{% url 'admin_classes' %}" class="sidebar-link {% if 'classes' in request.path %}active{% endif %}"><i class="fa-solid fa-school"></i> <span>Classes</span></a></li>

@@ -100,7 +100,22 @@ body {
                 </button>
             </form>
 
-            <div class="text-center mt-4">
+            <hr class="my-4">
+            <h5 class="text-center mb-3 fw-bold" style="color: var(--primary-color); font-size: 0.9rem;">Join JSM Shiksha Academy 🎒</h5>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <a href="{% url 'student_register' %}" class="btn btn-outline-primary btn-sm rounded-pill w-100 py-2 fw-bold text-xs uppercase tracking-wider">
+                        <i class="fa-solid fa-user-graduate me-1"></i> Student Reg
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'teacher_register' %}" class="btn btn-outline-secondary btn-sm rounded-pill w-100 py-2 fw-bold text-xs uppercase tracking-wider">
+                        <i class="fa-solid fa-chalkboard-teacher me-1"></i> Teacher Reg
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
                 <a href="{% url 'home' %}" class="text-muted text-decoration-none" style="font-size: 0.82rem; font-weight: 600;">
                     <i class="fa-solid fa-arrow-left me-1"></i> Back to Main Website
                 </a>

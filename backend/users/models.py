@@ -28,6 +28,20 @@ class User(AbstractUser):
     system_notifications = models.BooleanField(default=True)
     theme = models.CharField(max_length=20, default="light")
     language = models.CharField(max_length=20, default="en")
+    registration_status = models.CharField(
+        max_length=20, 
+        choices=[('pending', 'Pending Approval'), ('approved', 'Approved'), ('rejected', 'Rejected')], 
+        default='approved'
+    )
+    approved_at = models.DateTimeField(blank=True, null=True)
+    approved_by = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        related_name='approved_users'
+    )
+    rejected_reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -54,8 +68,11 @@ class TeacherProfile(models.Model):
     designation = models.CharField(max_length=120, default="Teacher")
     department = models.CharField(max_length=120, blank=True)
     subjects_taught = models.CharField(max_length=200, blank=True)
-    blood_group = models.CharField(max_length=10, blank=True)
+    blood_group = models.CharField(max_length=10, blank=True, null=True, default="")
     emergency_contact = models.CharField(max_length=20, blank=True)
+    experience_years = models.IntegerField(default=0)
+    resume = models.FileField(upload_to="resumes/", blank=True, null=True)
+    certificate = models.FileField(upload_to="certificates/", blank=True, null=True)
     bio = models.TextField(blank=True)
     joined_on = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
@@ -92,7 +109,9 @@ class StudentProfile(models.Model):
     house = models.CharField(max_length=80, blank=True)
     bus_route = models.CharField(max_length=80, blank=True)
     aadhaar_number = models.CharField(max_length=20, blank=True)
-    blood_group = models.CharField(max_length=10, blank=True)
+    blood_group = models.CharField(max_length=10, blank=True, null=True, default="")
+    previous_school = models.CharField(max_length=150, blank=True, null=True, default="")
+    admission_class = models.CharField(max_length=50, blank=True, null=True, default="")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

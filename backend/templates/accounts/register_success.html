@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Application Submitted - JSM Shiksha Academy{% endblock %}
+
+{% block extra_css %}
+body {
+    background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 50%, #0c2b4d 100%) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.success-card {
+    border-radius: 2.5rem;
+    border: none;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+    max-width: 540px;
+    width: 100%;
+    background: white;
+    overflow: hidden;
+}
+.success-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    padding: 3rem;
+    text-align: center;
+    color: white;
+    border-bottom: 4px solid var(--accent-color);
+}
+.success-body {
+    padding: 3rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="success-card">
+    <div class="success-header">
+        <div class="mb-3">
+            <i class="fa-solid fa-circle-check fa-4x text-white mb-2"></i>
+        </div>
+        <h2 class="fw-bold text-white mb-1" style="font-family: 'Outfit', sans-serif;">Application Submitted!</h2>
+        <p class="text-white-50 mb-0 uppercase tracking-wider text-xs">JSM Shiksha Academy Enrollment</p>
+    </div>
+    
+    <div class="success-body text-center">
+        <h4 class="fw-bold mb-3 text-primary" style="font-family: 'Outfit', sans-serif;">Welcome, {{ name }}!</h4>
+        <p class="text-muted text-sm mb-4" style="line-height: 1.6;">
+            Your registration request for the role of <strong>{{ role }}</strong> has been received successfully. 
+            All new account approvals are monitored by the school administration board to prevent system spam.
+        </p>
+
+        <div class="p-3 bg-light rounded-4 border mb-4 text-start">
+            <div class="fw-bold text-xs uppercase text-muted mb-2"><i class="fa-solid fa-circle-info me-1"></i> Current Status:</div>
+            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill px-3 py-1.5 fw-bold text-xs">
+                Awaiting Administrator Approval
+            </span>
+            <small class="text-muted d-block mt-2 text-xs">
+                You will receive a notification and be granted login access once the review is completed.
+            </small>
+        </div>
+
+        <a href="{% url 'login' %}" class="btn btn-premium-primary rounded-pill w-100 py-3 fw-bold">
+            <i class="fa-solid fa-arrow-left me-2"></i> Back to Login Portal
+        </a>
+    </div>
+</div>
+{% endblock %}
