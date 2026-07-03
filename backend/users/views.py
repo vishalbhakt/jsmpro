@@ -353,7 +353,21 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user.is_verified = True
         user.is_active = True
+        user.registration_status = 'approved'
+        user.approved_at = timezone.now()
+        if request.user.is_authenticated:
+            user.approved_by = request.user
         user.save()
+        
+        if hasattr(user, 'student_profile'):
+            profile = user.student_profile
+            profile.status = 'active'
+            profile.save()
+        elif hasattr(user, 'teacher_profile'):
+            profile = user.teacher_profile
+            profile.status = 'active'
+            profile.save()
+            
         return Response({"status": "user approved"})
 
     @action(detail=True, methods=["post"])
