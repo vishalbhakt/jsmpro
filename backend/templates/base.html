@@ -36,11 +36,22 @@
             --text-muted: #64748b;
         }
 
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
             background-color: var(--light-bg);
             color: var(--text-main);
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
         }
 
         h1, h2, h3, h4, h5, h6, .brand-font {
@@ -373,13 +384,13 @@
 
     <!-- Main Content wrapper -->
     <main>
-        <!-- Messages System -->
         {% if messages %}
         <div class="container mt-4">
             {% for msg in messages %}
-            <div class="alert alert-dismissible fade show premium-card border-0 py-3 px-4 mb-3 d-flex align-items-center justify-content-between {% if msg.tags == 'error' %}alert-danger bg-danger bg-opacity-10 text-danger{% else %}alert-success bg-success bg-opacity-10 text-success{% endif %}" role="alert">
+            {% if 'contact_success' not in msg.tags and 'inquiry_success' not in msg.tags and 'pending_approval' not in msg.tags %}
+            <div class="alert alert-dismissible fade show premium-card border-0 py-3 px-4 mb-3 d-flex align-items-center justify-content-between {% if 'error' in msg.tags %}alert-danger bg-danger bg-opacity-10 text-danger{% else %}alert-success bg-success bg-opacity-10 text-success{% endif %}" role="alert">
                 <div class="d-flex align-items-center gap-2">
-                    {% if msg.tags == 'error' %}
+                    {% if 'error' in msg.tags %}
                         <i class="fa-solid fa-face-frown fs-4"></i>
                     {% else %}
                         <i class="fa-solid fa-face-smile fs-4"></i>
@@ -388,6 +399,7 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            {% endif %}
             {% endfor %}
         </div>
         {% endif %}

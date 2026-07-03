@@ -168,19 +168,29 @@ body {
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control rounded-3" required>
+                                <input type="email" name="email" class="form-control rounded-3" required onchange="checkUniqueDetail(this, 'email')">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Contact Mobile <span class="text-danger">*</span></label>
-                                <input type="text" name="phone" class="form-control rounded-3" required>
+                                <input type="text" name="phone" class="form-control rounded-3" required onchange="checkUniqueDetail(this, 'phone')">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Password <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control rounded-3" required>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="id_password" class="form-control rounded-start-3" required style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('id_password', 'eye_pwd_icon')" style="border-top-right-radius: 1.25rem; border-bottom-right-radius: 1.25rem; border-color: rgba(12, 43, 77, 0.08); background-color: #fafbfc;">
+                                        <i class="fa-solid fa-eye" id="eye_pwd_icon"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Confirm Password <span class="text-danger">*</span></label>
-                                <input type="password" name="confirm_password" class="form-control rounded-3" required>
+                                <div class="input-group">
+                                    <input type="password" name="confirm_password" id="id_confirm_password" class="form-control rounded-start-3" required style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('id_confirm_password', 'eye_confirm_pwd_icon')" style="border-top-right-radius: 1.25rem; border-bottom-right-radius: 1.25rem; border-color: rgba(12, 43, 77, 0.08); background-color: #fafbfc;">
+                                        <i class="fa-solid fa-eye" id="eye_confirm_pwd_icon"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Profile Photo <span class="text-danger">*</span></label>
@@ -256,6 +266,37 @@ body {
             const dot = document.getElementById(`dot-${i}`);
             dot.classList.add("active");
         }
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    function checkUniqueDetail(inputElement, fieldType) {
+        const val = inputElement.value.trim();
+        if (!val) return;
+        
+        let url = `/register/check-unique/?${fieldType}=` + encodeURIComponent(val);
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    alert(`The provided ${fieldType === 'email' ? 'email address' : 'mobile number'} (${val}) is already registered. Please enter alternative details.`);
+                    inputElement.value = '';
+                    inputElement.classList.add('is-invalid');
+                } else {
+                    inputElement.classList.remove('is-invalid');
+                }
+            })
+            .catch(err => console.error("Validation error:", err));
     }
 </script>
 {% endblock %}

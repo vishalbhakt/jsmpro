@@ -18,11 +18,12 @@ class LoginForm(forms.Form):
 class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
-        fields = ["name", "email", "phone", "message"]
+        fields = ["name", "email", "phone", "subject", "message"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control rounded-xl p-3", "placeholder": "Enter full name"}),
             "email": forms.EmailInput(attrs={"class": "form-control rounded-xl p-3", "placeholder": "Enter email address"}),
             "phone": forms.TextInput(attrs={"class": "form-control rounded-xl p-3", "placeholder": "Enter contact number"}),
+            "subject": forms.TextInput(attrs={"class": "form-control rounded-xl p-3", "placeholder": "Enter subject"}),
             "message": forms.Textarea(attrs={"class": "form-control rounded-xl p-3", "rows": 4, "placeholder": "Write your query..."}),
         }
 

@@ -4,6 +4,33 @@
 {% block title %}Contact Us - JSM Shiksha Academy{% endblock %}
 
 {% block content %}
+    {% if messages %}
+        {% for msg in messages %}
+            {% if 'contact_success' in msg.tags %}
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const modalHtml = `
+                        <div id="contactSuccessModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(12, 43, 77, 0.4); display: flex; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); animation: fadeIn 0.3s ease-out;">
+                            <div style="background: white; border-radius: 2rem; width: 90%; max-width: 450px; padding: 2.5rem 2rem; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 3px solid var(--sky-blue); transform: scale(0.9); animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+                                <div style="width: 80px; height: 80px; background: #E0F2FE; color: #0284c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; box-shadow: 0 10px 20px rgba(2, 132, 199, 0.15);">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </div>
+                                <h3 style="color: #0c2b4d; font-weight: 800; margin-bottom: 0.75rem; font-family: 'Outfit', sans-serif;">Message Sent!</h3>
+                                <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">{{ msg }}</p>
+                                <button onclick="document.getElementById('contactSuccessModal').remove()" class="btn btn-premium-primary w-100" style="padding: 0.8rem; font-size: 0.95rem; background-color: var(--sky-blue); border: none;">Got it!</button>
+                            </div>
+                        </div>
+                        <style>
+                            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                            @keyframes scaleIn { to { transform: scale(1); } }
+                        </style>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                });
+            </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 <div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">
     <div class="container py-4 text-center">
         <span class="badge-premium-gold mb-3 d-inline-block">📞 Get In Touch</span>

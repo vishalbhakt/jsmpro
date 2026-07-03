@@ -1,0 +1,139 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Assign Teacher Workload - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_teachers' %}" class="text-white-50 text-decoration-none">Teachers</a></li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Assign Workload</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Assign Workload ⚙️</h1>
+            <p class="text-white-50 mb-0">Configure classroom and subject assignments for teacher <strong>{{ teacher.user.full_name }}</strong>.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Teacher Info Card -->
+    <div class="col-lg-4">
+        <div class="premium-card p-4 bg-white text-center shadow-sm">
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white mx-auto mb-3" style="width:90px; height:90px; background:#1e40af; font-size:2.2rem; box-shadow: 0 10px 20px rgba(30, 64, 175, 0.2);">
+                {{ teacher.user.first_name|slice:":1" }}{{ teacher.user.last_name|slice:":1" }}
+            </div>
+            <h3 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ teacher.user.full_name }}</h3>
+            <p class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold mb-3" style="font-size:0.8rem;">{{ teacher.designation }}</p>
+            
+            <div class="text-start border-top pt-3 mt-3">
+                <p class="mb-2 text-sm"><strong><i class="fa-solid fa-id-card me-2 text-muted"></i>Employee ID:</strong> <span class="text-muted">{{ teacher.employee_id|default:"—" }}</span></p>
+                <p class="mb-2 text-sm"><strong><i class="fa-solid fa-envelope me-2 text-muted"></i>Email:</strong> <span class="text-muted text-break">{{ teacher.user.email }}</span></p>
+                <p class="mb-2 text-sm"><strong><i class="fa-solid fa-phone me-2 text-muted"></i>Mobile:</strong> <span class="text-muted">{{ teacher.user.phone|default:"—" }}</span></p>
+                <p class="mb-0 text-sm"><strong><i class="fa-solid fa-graduation-cap me-2 text-muted"></i>Specialization:</strong> <span class="text-muted">{{ teacher.specialization|default:"—" }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Form -->
+    <div class="col-lg-8">
+        <form method="post" class="d-flex flex-column gap-4">
+            {% csrf_token %}
+            
+            <!-- Class Teacher Section -->
+            <div class="premium-card p-4 bg-white shadow-sm">
+                <h4 class="fw-bold mb-3" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                    <i class="fa-solid fa-user-tie me-2 text-accent"></i> Class Teacher Roles
+                </h4>
+                <p class="text-muted text-sm mb-4">Select the classrooms where this teacher will act as the primary Class Teacher.</p>
+                
+                <div class="row g-3">
+                    {% for cls in classrooms %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-check card-checkbox p-3 border rounded-4 d-flex align-items-center">
+                            <input class="form-check-input me-3 ms-1" type="checkbox" name="classrooms" value="{{ cls.id }}" id="class_{{ cls.id }}" {% if cls.id in assigned_classroom_ids %}checked{% endif %}>
+                            <label class="form-check-label flex-grow-1" for="class_{{ cls.id }}">
+                                <strong class="d-block" style="color:var(--primary-color);">{{ cls.name }}-{{ cls.section }}</strong>
+                                <span class="text-muted text-xs">{{ cls.academic_year }}</span>
+                                {% if cls.class_teacher and cls.class_teacher != teacher %}
+                                    <span class="d-block text-xs text-warning mt-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Assigned to {{ cls.class_teacher.user.full_name }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-muted py-3 text-center">No classrooms registered in the system.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Subject Load Section -->
+            <div class="premium-card p-4 bg-white shadow-sm">
+                <h4 class="fw-bold mb-3" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
+                    <i class="fa-solid fa-book-open me-2 text-accent"></i> Assigned Subjects (Teaching Workload)
+                </h4>
+                <p class="text-muted text-sm mb-4">Check the specific subjects this teacher will teach in each classroom.</p>
+                
+                {% regroup subjects by classroom as classroom_subjects %}
+                
+                <div class="d-flex flex-column gap-4">
+                    {% for group in classroom_subjects %}
+                    <div class="border rounded-4 p-3 bg-light bg-opacity-50">
+                        <h5 class="fw-bold mb-3 text-primary" style="font-size:0.95rem;">
+                            <i class="fa-solid fa-school me-2 text-muted"></i>{{ group.grouper.name }}-{{ group.grouper.section }}
+                        </h5>
+                        <div class="row g-3">
+                            {% for sub in group.list %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="form-check card-checkbox p-3 border bg-white rounded-4 d-flex align-items-center">
+                                    <input class="form-check-input me-3 ms-1" type="checkbox" name="subjects" value="{{ sub.id }}" id="subject_{{ sub.id }}" {% if sub.id in assigned_subject_ids %}checked{% endif %}>
+                                    <label class="form-check-label flex-grow-1" for="subject_{{ sub.id }}">
+                                        <strong class="d-block" style="color:var(--primary-color);">{{ sub.name }}</strong>
+                                        <span class="text-muted text-xs">Code: {{ sub.code }}</span>
+                                        {% if sub.teacher and sub.teacher != teacher %}
+                                            <span class="d-block text-xs text-warning mt-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Taught by {{ sub.teacher.user.full_name }}</span>
+                                        {% endif %}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted py-3 text-center">No subjects registered in the system.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex gap-3 justify-content-end mb-5">
+                <a href="{% url 'admin_teachers' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-premium-accent rounded-pill px-5 py-2 fw-bold shadow">
+                    <i class="fa-solid fa-cloud-arrow-up me-2"></i> Save Assignments
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .card-checkbox {
+        transition: all 0.2s ease-in-out;
+        cursor: pointer;
+    }
+    .card-checkbox:hover {
+        border-color: var(--accent-color) !important;
+        background-color: rgba(220, 168, 56, 0.03) !important;
+    }
+    .card-checkbox input[type="checkbox"]:checked + label strong {
+        color: var(--accent-color) !important;
+    }
+</style>
+{% endblock %}

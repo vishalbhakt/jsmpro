@@ -76,6 +76,13 @@ class Inquiry(models.Model):
         ADMITTED = "admitted", "Admitted"
         CLOSED = "closed", "Closed"
 
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='inquiries'
+    )
     student_name = models.CharField(max_length=140)
     guardian_name = models.CharField(max_length=140)
     email = models.EmailField()

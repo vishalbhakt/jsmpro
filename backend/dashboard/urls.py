@@ -115,6 +115,8 @@ urlpatterns = [
     
     path("register/student/", views.student_register, name="student_register"),
     path("register/teacher/", views.teacher_register, name="teacher_register"),
+    path("register/check-unique/", views.check_unique_field, name="check_unique_field"),
+    path("dashboard/admin/teachers/assign/<int:teacher_id>/", views.admin_teacher_assign, name="admin_teacher_assign"),
     path("dashboard/admin/pending-registrations/", views.admin_pending_registrations, name="admin_pending_registrations"),
     path("dashboard/admin/pending-registrations/approve/<str:role>/<int:user_id>/", views.admin_approve_registration, name="admin_approve_registration"),
     path("dashboard/admin/pending-registrations/reject/<str:role>/<int:user_id>/", views.admin_reject_registration, name="admin_reject_registration"),

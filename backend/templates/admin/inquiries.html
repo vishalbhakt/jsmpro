@@ -70,7 +70,18 @@
                 <tr class="{% if inq.status == 'new' %}table-primary fw-bold{% endif %}">
                     <td class="text-muted" style="font-size:0.83rem;">{{ forloop.counter }}</td>
                     <td style="font-size:0.83rem;">{{ inq.student_name }}</td>
-                    <td style="font-size:0.83rem;">{{ inq.guardian_name }}</td>
+                    <td style="font-size:0.83rem;">
+                        {{ inq.guardian_name }}
+                        {% if inq.user %}
+                            <span class="badge bg-info bg-opacity-10 text-info text-xs d-block mt-1" style="width: fit-content;">
+                                <i class="fa-solid fa-user me-1"></i> {{ inq.user.username }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary text-xs d-block mt-1" style="width: fit-content;">
+                                <i class="fa-solid fa-user-secret me-1"></i> Guest
+                            </span>
+                        {% endif %}
+                    </td>
                     <td class="text-muted" style="font-size:0.8rem;">{{ inq.email }}</td>
                     <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">{{ inq.preferred_class }}</span></td>
                     <td>

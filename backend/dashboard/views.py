@@ -77,11 +77,26 @@ def admission_view(request):
     if request.method == "POST":
         form = AdmissionInquiryForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Thank you! Your admission inquiry has been received. Our team will contact you shortly.")
+            inquiry = form.save(commit=False)
+            if request.user.is_authenticated:
+                inquiry.user = request.user
+            inquiry.save()
+            messages.success(
+                request,
+                "Thank you! Your admission inquiry has been received. Our team will contact you shortly.",
+                extra_tags='inquiry_success'
+            )
             return redirect("admission")
     else:
-        form = AdmissionInquiryForm()
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data['email'] = request.user.email
+            initial_data['phone'] = request.user.phone
+            initial_data['student_name'] = f"{request.user.first_name} {request.user.last_name}".strip()
+            if hasattr(request.user, 'student_profile'):
+                initial_data['guardian_name'] = request.user.student_profile.guardian_name
+                initial_data['phone'] = request.user.student_profile.guardian_phone or request.user.phone
+        form = AdmissionInquiryForm(initial=initial_data)
     return render(request, "home/admission.html", {"form": form})
 
 def facilities_view(request):
@@ -102,7 +117,11 @@ def contact_view(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Your message has been sent successfully. We will get back to you soon.")
+            messages.success(
+                request,
+                "Your message has been sent successfully. We will get back to you soon.",
+                extra_tags='contact_success'
+            )
             return redirect("contact")
     else:
         form = ContactForm()
@@ -126,13 +145,11 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 if user.registration_status == 'pending' or not user.is_active:
-                    from django.utils.safestring import mark_safe
-                    messages.error(request, mark_safe(
-                        "Your registration request has been submitted.<br><br>"
-                        "Our administrator will verify your application.<br><br>"
-                        "You will receive approval shortly.<br><br>"
-                        "After approval you can login and complete your profile."
-                    ))
+                    messages.error(
+                        request,
+                        "Your account registration is under review by our administration team. You will be able to log in as soon as it is approved.",
+                        extra_tags='pending_approval'
+                    )
                 elif user.registration_status == 'rejected':
                     messages.error(request, f"Your registration request was rejected. Reason: {user.rejected_reason or 'No reason provided.'}")
                 else:
@@ -876,6 +893,45 @@ def admin_teachers(request):
     })
 
 @login_required
+def admin_teacher_assign(request, teacher_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    teacher = get_object_or_404(TeacherProfile, id=teacher_id)
+    
+    if request.method == "POST":
+        classroom_ids = request.POST.getlist("classrooms")
+        subject_ids = request.POST.getlist("subjects")
+        
+        # Update ClassRooms (Class Teacher role)
+        ClassRoom.objects.filter(class_teacher=teacher).update(class_teacher=None)
+        if classroom_ids:
+            ClassRoom.objects.filter(id__in=classroom_ids).update(class_teacher=teacher)
+            
+        # Update Subjects (Teaching load)
+        Subject.objects.filter(teacher=teacher).update(teacher=None)
+        if subject_ids:
+            Subject.objects.filter(id__in=subject_ids).update(teacher=teacher)
+            
+        messages.success(request, f"Assignments for '{teacher.user.full_name}' updated successfully.")
+        return redirect("admin_teachers")
+        
+    classrooms = ClassRoom.objects.all().order_by("name", "section")
+    subjects = Subject.objects.all().select_related("classroom").order_by("classroom__name", "name")
+    
+    assigned_classroom_ids = ClassRoom.objects.filter(class_teacher=teacher).values_list("id", flat=True)
+    assigned_subject_ids = Subject.objects.filter(teacher=teacher).values_list("id", flat=True)
+    
+    return render(request, "admin/assign_workload.html", {
+        "teacher": teacher,
+        "classrooms": classrooms,
+        "subjects": subjects,
+        "assigned_classroom_ids": list(assigned_classroom_ids),
+        "assigned_subject_ids": list(assigned_subject_ids),
+        "is_dashboard_view": True
+    })
+
+@login_required
 def admin_classes(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
@@ -1597,7 +1653,7 @@ def admin_inquiries(request):
     q = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "")
     
-    inquiries = Inquiry.objects.all().order_by("-created_at")
+    inquiries = Inquiry.objects.select_related("user").all().order_by("-created_at")
     if q:
         inquiries = inquiries.filter(Q(student_name__icontains=q) | Q(guardian_name__icontains=q) | Q(message__icontains=q))
     if status_filter:
@@ -1609,9 +1665,10 @@ def admin_inquiries(request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="inquiries_export.csv"'
         writer = csv.writer(response)
-        writer.writerow(['Student Name', 'Guardian Name', 'Email', 'Phone', 'Preferred Class', 'Status', 'Date'])
+        writer.writerow(['Student Name', 'Guardian Name', 'Linked User', 'Email', 'Phone', 'Preferred Class', 'Status', 'Date'])
         for inq in inquiries:
-            writer.writerow([inq.student_name, inq.guardian_name, inq.email, inq.phone, inq.preferred_class, inq.get_status_display(), inq.created_at.strftime('%Y-%m-%d')])
+            username = inq.user.username if inq.user else 'Guest'
+            writer.writerow([inq.student_name, inq.guardian_name, username, inq.email, inq.phone, inq.preferred_class, inq.get_status_display(), inq.created_at.strftime('%Y-%m-%d')])
         return response
         
     return render(request, "admin/inquiries.html", {
@@ -2443,32 +2500,44 @@ def student_register(request):
         gender = request.POST.get("gender")
         date_of_birth = request.POST.get("date_of_birth")
         admission_class = request.POST.get("admission_class")
-        
-        guardian_name = request.POST.get("guardian_name")
+        blood_group = request.POST.get("blood_group")
+        previous_school = request.POST.get("previous_school")
+        father_name = request.POST.get("father_name")
+        mother_name = request.POST.get("mother_name")
         parent_phone = request.POST.get("parent_phone")
-        parent_email = request.POST.get("parent_email")
-        
-        username = request.POST.get("username")
+        aadhaar_number = request.POST.get("aadhaar_number")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        pincode = request.POST.get("pincode")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
+        
+        username = request.POST.get("username") or email
         
         # Validation checks
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return render(request, "accounts/student_register.html", {"classrooms": classrooms})
             
+        if not username:
+            messages.error(request, "Username or email is required.")
+            return render(request, "accounts/student_register.html", {"classrooms": classrooms})
+            
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username is already taken.")
+            messages.error(request, "Username/Email is already taken.")
             return render(request, "accounts/student_register.html", {"classrooms": classrooms})
 
-        if User.objects.filter(email=parent_email).exists():
+        if User.objects.filter(email=email).exists():
             messages.error(request, "Email is already registered.")
             return render(request, "accounts/student_register.html", {"classrooms": classrooms})
             
         # Create User
         user = User.objects.create_user(
             username=username,
-            email=parent_email,
+            email=email,
             first_name=first_name,
             last_name=last_name,
             password=password,
@@ -2477,15 +2546,27 @@ def student_register(request):
             date_of_birth=date_of_birth if date_of_birth else None,
             registration_status='pending'
         )
+        user.phone = phone
+        user.address = address
+        user.city = city
+        user.state = state
+        user.pincode = pincode
+        if request.FILES.get("avatar"):
+            user.avatar = request.FILES.get("avatar")
         user.is_active = False
         user.save()
         
         # Update StudentProfile
         profile, created = StudentProfile.objects.get_or_create(user=user)
-        profile.guardian_name = guardian_name
+        profile.guardian_name = father_name or mother_name or ""
         profile.guardian_phone = parent_phone
+        profile.father_name = father_name
+        profile.mother_name = mother_name
         profile.date_of_birth = date_of_birth if date_of_birth else None
         profile.admission_class = admission_class
+        profile.blood_group = blood_group
+        profile.previous_school = previous_school
+        profile.aadhaar_number = aadhaar_number
         profile.status = StudentProfile.Status.INACTIVE
         profile.is_profile_complete = False
         profile.save()
@@ -2507,22 +2588,35 @@ def teacher_register(request):
         last_name = request.POST.get("last_name")
         gender = request.POST.get("gender")
         date_of_birth = request.POST.get("date_of_birth")
+        blood_group = request.POST.get("blood_group")
+        emergency_contact = request.POST.get("emergency_contact")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        state = request.POST.get("state")
+        pincode = request.POST.get("pincode")
         
+        qualification = request.POST.get("qualification")
+        experience_years = request.POST.get("experience_years")
         department = request.POST.get("department")
-        subject = request.POST.get("subject")
+        subjects_taught = request.POST.get("subjects_taught")
         
         email = request.POST.get("email")
-        username = request.POST.get("username")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
+        
+        username = request.POST.get("username") or email
         
         # Validation checks
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return render(request, "accounts/teacher_register.html")
             
+        if not username:
+            messages.error(request, "Username or email is required.")
+            return render(request, "accounts/teacher_register.html")
+            
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username is already taken.")
+            messages.error(request, "Username/Email is already taken.")
             return render(request, "accounts/teacher_register.html")
 
         if User.objects.filter(email=email).exists():
@@ -2541,15 +2635,36 @@ def teacher_register(request):
             date_of_birth=date_of_birth if date_of_birth else None,
             registration_status='pending'
         )
+        user.phone = request.POST.get("phone", "")
+        user.address = address
+        user.city = city
+        user.state = state
+        user.pincode = pincode
+        if request.FILES.get("avatar"):
+            user.avatar = request.FILES.get("avatar")
         user.is_active = False
         user.save()
         
         # Update TeacherProfile
         profile, created = TeacherProfile.objects.get_or_create(user=user)
+        profile.qualification = qualification
+        try:
+            profile.experience_years = int(experience_years) if experience_years else 0
+        except ValueError:
+            profile.experience_years = 0
         profile.department = department
-        profile.subjects_taught = subject
+        profile.subjects_taught = subjects_taught
+        profile.blood_group = blood_group
+        profile.emergency_contact = emergency_contact
         profile.status = TeacherProfile.Status.INACTIVE
         profile.is_profile_complete = False
+        
+        # File uploads
+        if request.FILES.get("resume"):
+            profile.resume = request.FILES.get("resume")
+        if request.FILES.get("certificate"):
+            profile.certificate = request.FILES.get("certificate")
+            
         profile.save()
         
         return render(request, "accounts/register_success.html", {
@@ -2668,6 +2783,21 @@ def admin_reject_registration(request, role, user_id):
     
     messages.warning(request, f"Registration for '{user.full_name}' has been rejected.")
     return redirect("admin_pending_registrations")
+
+
+def check_unique_field(request):
+    email = request.GET.get('email')
+    phone = request.GET.get('phone')
+    exists = False
+    
+    if email:
+        if User.objects.filter(email=email).exists():
+            exists = True
+    elif phone:
+        if User.objects.filter(phone=phone).exists():
+            exists = True
+            
+    return JsonResponse({'exists': exists})
 
 
 

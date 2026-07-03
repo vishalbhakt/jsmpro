@@ -59,9 +59,33 @@
 
                     {% if messages %}
                         {% for msg in messages %}
+                        {% if 'inquiry_success' in msg.tags %}
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function() {
+                                const modalHtml = `
+                                    <div id="inquirySuccessModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(12, 43, 77, 0.4); display: flex; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); animation: fadeIn 0.3s ease-out;">
+                                        <div style="background: white; border-radius: 2rem; width: 90%; max-width: 450px; padding: 2.5rem 2rem; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 3px solid var(--pastel-green); transform: scale(0.9); animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+                                            <div style="width: 80px; height: 80px; background: #D1FAE5; color: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15);">
+                                                <i class="fa-solid fa-circle-check"></i>
+                                            </div>
+                                            <h3 style="color: #0c2b4d; font-weight: 800; margin-bottom: 0.75rem; font-family: 'Outfit', sans-serif;">Inquiry Submitted!</h3>
+                                            <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">{{ msg }}</p>
+                                            <button onclick="document.getElementById('inquirySuccessModal').remove()" class="btn btn-premium-primary w-100" style="padding: 0.8rem; font-size: 0.95rem; background-color: var(--pastel-green); border: none;">Got it!</button>
+                                        </div>
+                                    </div>
+                                    <style>
+                                        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                                        @keyframes scaleIn { to { transform: scale(1); } }
+                                    </style>
+                                `;
+                                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                            });
+                        </script>
+                        {% else %}
                         <div class="alert border-0 rounded-4 py-2 px-3 mb-4 {% if msg.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
                             {{ msg }}
                         </div>
+                        {% endif %}
                         {% endfor %}
                     {% endif %}
 
@@ -70,34 +94,38 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Student Name *</label>
-                                <input type="text" name="student_name" class="form-control" placeholder="Child's full name" required>
+                                <input type="text" name="student_name" class="form-control" placeholder="Child's full name" value="{{ form.student_name.value|default:'' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Guardian Name *</label>
+                                <input type="text" name="guardian_name" class="form-control" placeholder="Parent or Guardian's full name" value="{{ form.guardian_name.value|default:'' }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Email Address *</label>
-                                <input type="email" name="email" class="form-control" placeholder="Parent email" required>
+                                <input type="email" name="email" class="form-control" placeholder="Parent email" value="{{ form.email.value|default:'' }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Phone Number *</label>
-                                <input type="tel" name="phone" class="form-control" placeholder="+91 XXXXXXXXXX" required>
+                                <input type="tel" name="phone" class="form-control" placeholder="+91 XXXXXXXXXX" value="{{ form.phone.value|default:'' }}" required>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Preferred Grade</label>
-                                <select name="grade" class="form-select">
-                                    <option>-- Select Grade --</option>
-                                    <option>UKG</option>
-                                    <option>Grade 1</option>
-                                    <option>Grade 2</option>
-                                    <option>Grade 3</option>
-                                    <option>Grade 4</option>
-                                    <option>Grade 5</option>
-                                    <option>Grade 6</option>
-                                    <option>Grade 7</option>
-                                    <option>Grade 8</option>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Preferred Grade *</label>
+                                <select name="preferred_class" class="form-select" required>
+                                    <option value="">-- Select Grade --</option>
+                                    <option value="UKG" {% if form.preferred_class.value == 'UKG' %}selected{% endif %}>UKG</option>
+                                    <option value="Grade 1" {% if form.preferred_class.value == 'Grade 1' %}selected{% endif %}>Grade 1</option>
+                                    <option value="Grade 2" {% if form.preferred_class.value == 'Grade 2' %}selected{% endif %}>Grade 2</option>
+                                    <option value="Grade 3" {% if form.preferred_class.value == 'Grade 3' %}selected{% endif %}>Grade 3</option>
+                                    <option value="Grade 4" {% if form.preferred_class.value == 'Grade 4' %}selected{% endif %}>Grade 4</option>
+                                    <option value="Grade 5" {% if form.preferred_class.value == 'Grade 5' %}selected{% endif %}>Grade 5</option>
+                                    <option value="Grade 6" {% if form.preferred_class.value == 'Grade 6' %}selected{% endif %}>Grade 6</option>
+                                    <option value="Grade 7" {% if form.preferred_class.value == 'Grade 7' %}selected{% endif %}>Grade 7</option>
+                                    <option value="Grade 8" {% if form.preferred_class.value == 'Grade 8' %}selected{% endif %}>Grade 8</option>
                                 </select>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Message / Additional Notes</label>
-                                <textarea name="message" class="form-control" rows="4" placeholder="Any questions or special notes..."></textarea>
+                                <textarea name="message" class="form-control" rows="4" placeholder="Any questions or special notes...">{{ form.message.value|default:'' }}</textarea>
                             </div>
                         </div>
                         <div class="mt-4">
