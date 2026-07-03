@@ -2755,6 +2755,8 @@ def admin_approve_registration(request, role, user_id):
         
     # Update User Status
     user.registration_status = 'approved'
+    user.is_active = True
+    user.is_verified = True
     user.approved_at = timezone.now()
     user.approved_by = request.user
     user.save()
