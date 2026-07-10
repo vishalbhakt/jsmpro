@@ -35,7 +35,7 @@
             <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by title or code...">
         </div>
         <div class="col-md-4">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="published">🏷️ Status</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="published">🚦 Status</label>
             <select name="published" id="published" class="form-select rounded-pill">
                 <option value="">-- All Statuses --</option>
                 <option value="1" {% if published_filter == '1' %}selected{% endif %}>Published</option>

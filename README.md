@@ -504,6 +504,15 @@ npm run lint
 
 ---
 
+## ✨ Recent Platform Enhancements
+The system has recently been updated with the following portal improvements and bug fixes:
+* **Admin Classroom Management CRUD**: Fully integrated classroom creation (with modal), updating, and deleting directly in the Admin Portal under `Classes` section.
+* **Announcements Fixes**: Resolved `TypeError` in the announcements admin workflow and verified dynamic real data loading on the portal.
+* **Unified Status Indicators**: Standardized visual filter icons for status filters to `🚦` (traffic light status) across all admin modules (Subjects, Courses, Inquiries, Contact Messages, Payments, Fee Plans) for clean and professional consistency.
+* **Subjects Management Improvements**: Verified and updated the subject registry code checking and dashboard components.
+
+---
+
 ## 📋 Production Checklist
 - [ ] Set `DJANGO_DEBUG=False` in production `.env`.
 - [ ] Generate a secure unique string for `DJANGO_SECRET_KEY`.

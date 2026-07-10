@@ -22,9 +22,13 @@
                     <label class="form-label fw-bold text-sm text-primary">Subject Name <span class="text-danger">*</span></label>
                     <input type="text" name="name" value="{{ subject.name }}" class="form-control rounded-3" placeholder="e.g. Mathematics" required>
                 </div>
-                <div class="mb-3">
+                 <div class="mb-3">
                     <label class="form-label fw-bold text-sm text-primary">Subject Code <span class="text-danger">*</span></label>
                     <input type="text" name="code" value="{{ subject.code }}" class="form-control rounded-3" placeholder="e.g. MATH10" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-sm text-primary">Description</label>
+                    <textarea name="description" rows="3" class="form-control rounded-3" placeholder="Optional description...">{% if subject.description %}{{ subject.description }}{% endif %}</textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold text-sm text-primary">Classroom / Grade <span class="text-danger">*</span></label>

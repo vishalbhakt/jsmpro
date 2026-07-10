@@ -953,25 +953,94 @@ def admin_classes(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
         
-    classrooms = ClassRoom.objects.all().order_by("name")
+    classrooms = ClassRoom.objects.all().order_by("name", "section")
     
     if request.method == "POST":
         name = request.POST.get("name")
-        section = request.POST.get("section")
+        section = request.POST.get("section", "").strip()
+        academic_year = request.POST.get("academic_year", "2026-27").strip()
+        capacity = request.POST.get("capacity")
         teacher_id = request.POST.get("class_teacher")
+        is_active = request.POST.get("is_active") != "off" # Default to True
         
+        if ClassRoom.objects.filter(name=name, section=section, academic_year=academic_year).exists():
+            messages.error(request, f"Error: Classroom '{name}-{section}' for year '{academic_year}' already exists.")
+            return redirect("admin_classes")
+            
         teacher = get_object_or_404(TeacherProfile, id=teacher_id) if teacher_id else None
+        capacity_val = int(capacity) if capacity else 40
         
-        ClassRoom.objects.create(name=name, section=section, class_teacher=teacher)
-        messages.success(request, f"Classroom Level '{name}-{section}' created successfully.")
+        ClassRoom.objects.create(
+            name=name,
+            section=section,
+            academic_year=academic_year,
+            capacity=capacity_val,
+            class_teacher=teacher,
+            is_active=is_active
+        )
+        messages.success(request, f"Classroom '{name}-{section}' created successfully.")
         return redirect("admin_classes")
         
-    teachers = TeacherProfile.objects.all()
+    teachers = TeacherProfile.objects.filter(user__is_active=True)
     return render(request, "admin/classes.html", {
         "classrooms": classrooms,
         "teachers": teachers,
         "is_dashboard_view": True
     })
+
+
+@login_required
+def admin_class_edit(request, class_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    classroom = get_object_or_404(ClassRoom, id=class_id)
+    
+    if request.method == "POST":
+        name = request.POST.get("name")
+        section = request.POST.get("section", "").strip()
+        academic_year = request.POST.get("academic_year", "").strip()
+        capacity = request.POST.get("capacity")
+        teacher_id = request.POST.get("class_teacher")
+        is_active = request.POST.get("is_active") == "on"
+        
+        if ClassRoom.objects.filter(name=name, section=section, academic_year=academic_year).exclude(id=class_id).exists():
+            messages.error(request, f"Error: Classroom '{name}-{section}' for year '{academic_year}' already exists.")
+            return redirect("admin_classes")
+            
+        teacher = get_object_or_404(TeacherProfile, id=teacher_id) if teacher_id else None
+        
+        classroom.name = name
+        classroom.section = section
+        classroom.academic_year = academic_year
+        if capacity:
+            classroom.capacity = int(capacity)
+        classroom.class_teacher = teacher
+        classroom.is_active = is_active
+        classroom.save()
+        
+        messages.success(request, f"Classroom '{name}-{section}' updated successfully.")
+        return redirect("admin_classes")
+        
+    teachers = TeacherProfile.objects.filter(user__is_active=True)
+    return render(request, "admin/class_edit.html", {
+        "classroom": classroom,
+        "teachers": teachers,
+        "is_dashboard_view": True
+    })
+
+
+@login_required
+def admin_class_delete(request, class_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    classroom = get_object_or_404(ClassRoom, id=class_id)
+    name = classroom.name
+    section = classroom.section
+    classroom.delete()
+    messages.success(request, f"Classroom '{name}-{section}' deleted successfully.")
+    return redirect("admin_classes")
 
 
 
@@ -1746,18 +1815,19 @@ def admin_subjects(request):
     if request.method == "POST":
         name = request.POST.get("name")
         code = request.POST.get("code")
+        description = request.POST.get("description", "").strip()
         classroom_id = request.POST.get("classroom")
         teacher_id = request.POST.get("teacher")
         is_active = request.POST.get("is_active") == "on"
         
-        if Subject.objects.filter(code=code).exists():
-            messages.error(request, f"Error: Subject code '{code}' already exists.")
+        if Subject.objects.filter(classroom_id=classroom_id, code=code).exists():
+            messages.error(request, f"Error: Subject code '{code}' already exists for this class.")
             return redirect("admin_subjects")
             
         classroom = get_object_or_404(ClassRoom, id=classroom_id)
         teacher = get_object_or_404(TeacherProfile, id=teacher_id) if teacher_id else None
         
-        Subject.objects.create(name=name, code=code, classroom=classroom, teacher=teacher, is_active=is_active)
+        Subject.objects.create(name=name, code=code, description=description, classroom=classroom, teacher=teacher, is_active=is_active)
         messages.success(request, f"Subject '{name}' created successfully.")
         return redirect("admin_subjects")
         
@@ -1785,12 +1855,13 @@ def admin_subject_edit(request, subject_id):
     if request.method == "POST":
         name = request.POST.get("name")
         code = request.POST.get("code")
+        description = request.POST.get("description", "").strip()
         classroom_id = request.POST.get("classroom")
         teacher_id = request.POST.get("teacher")
         is_active = request.POST.get("is_active") == "on"
         
-        if Subject.objects.filter(code=code).exclude(id=subject_id).exists():
-            messages.error(request, f"Error: Subject code '{code}' already exists.")
+        if Subject.objects.filter(classroom_id=classroom_id, code=code).exclude(id=subject_id).exists():
+            messages.error(request, f"Error: Subject code '{code}' already exists for this class.")
             return redirect("admin_subjects")
             
         classroom = get_object_or_404(ClassRoom, id=classroom_id)
@@ -1798,6 +1869,7 @@ def admin_subject_edit(request, subject_id):
         
         subject.name = name
         subject.code = code
+        subject.description = description
         subject.classroom = classroom
         subject.teacher = teacher
         subject.is_active = is_active
@@ -2336,7 +2408,7 @@ def admin_announcements(request):
         title = request.POST.get("title")
         content = request.POST.get("content")
         
-        Announcement.objects.create(title=title, content=content)
+        Announcement.objects.create(title=title, body=content, created_by=request.user)
         messages.success(request, "Announcement published successfully.")
         return redirect("admin_announcements")
         

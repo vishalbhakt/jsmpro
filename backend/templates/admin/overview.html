@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     listHTML += `
                         <div class="p-3 bg-light rounded-4 border-start border-4 border-warning mb-2">
                             <h6 class="fw-bold text-primary mb-1" style="font-size:0.82rem;">${ann.title}</h6>
-                            <p class="text-muted mb-1" style="font-size:0.75rem; line-height:1.4;">${ann.content.substring(0, 100)}...</p>
+                            <p class="text-muted mb-1" style="font-size:0.75rem; line-height:1.4;">${(ann.body || '').substring(0, 100)}...</p>
                             <small class="text-muted" style="font-size:0.68rem;"><i class="fa-regular fa-calendar me-1"></i> ${new Date(ann.created_at).toLocaleDateString()}</small>
                         </div>
                     `;
@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     // 4. Fetch users roster to display recently registered scholars/teachers
-    fetch('/api/verification/?limit=5') // uses active verification roster endpoint
+    fetch('/api/users/?limit=5') // uses active users roster endpoint
         .then(res => res.json())
         .then(data => {
             const list = data.results || data;

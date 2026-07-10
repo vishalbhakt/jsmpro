@@ -36,7 +36,7 @@
             <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by student name, guardian name...">
         </div>
         <div class="col-md-4">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🏷️ Follow-up Status</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🚦 Follow-up Status</label>
             <select name="status" id="status" class="form-select rounded-pill">
                 <option value="">-- All Statuses --</option>
                 {% for code, label in status_choices %}
