@@ -18,6 +18,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("dashboard/redirect/", views.dashboard_redirect, name="dashboard_redirect"),
     path("dashboard/profile/", views.my_profile, name="my_profile"),
+    path("dashboard/profile/complete/", views.profile_complete_wizard, name="profile_complete_wizard"),
 
     # Student Portal Views
     path("dashboard/student/", views.student_overview, name="student_overview"),
@@ -33,6 +34,7 @@ urlpatterns = [
     path("dashboard/teacher/students/", views.teacher_students, name="teacher_students"),
     path("dashboard/teacher/attendance/", views.teacher_attendance, name="teacher_attendance"),
     path("dashboard/teacher/assignments/", views.teacher_assignments, name="teacher_assignments"),
+    path("dashboard/teacher/assignments/delete/<int:assignment_id>/", views.teacher_delete_assignment, name="teacher_delete_assignment"),
     path("dashboard/teacher/learning/", views.teacher_learning, name="teacher_learning"),
     path("dashboard/teacher/results/", views.teacher_results, name="teacher_results"),
 

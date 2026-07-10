@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Complete Your Profile - JSM Shiksha Academy{% endblock %}
+
+{% block extra_css %}
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+}
+.wizard-card {
+    border-radius: 2.5rem;
+    border: none;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.06);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+}
+.wizard-step {
+    display: none;
+}
+.wizard-step.active {
+    display: block;
+}
+.progress-bar-premium {
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    height: 10px;
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: 2px solid transparent;
+}
+.step-number.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+.step-number.completed {
+    background: #10b981;
+    color: white;
+}
+.file-dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.file-dropzone:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Modal/Popup (First Login) -->
+<div class="modal fade" id="welcomeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
+            <div class="modal-body">
+                <div class="display-1 text-success mb-3">🎉</div>
+                <h3 class="fw-bold text-primary mb-2" id="welcomeModalLabel">Welcome to JSM Shiksha Academy</h3>
+                <p class="text-muted mb-4">Your registration has been approved by the administrator! Please complete your profile details before continuing to the dashboard.</p>
+                <button type="button" class="btn btn-premium-primary rounded-pill px-5 py-2.5 fw-bold" data-bs-dismiss="modal">
+                    Complete Profile <i class="fa-solid fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="card wizard-card p-4 p-md-5">
+                
+                <!-- Title -->
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-primary" style="font-family:'Outfit',sans-serif;">📋 Complete Your Profile</h2>
+                    <p class="text-muted">Please provide the remaining registration details to activate your portal access.</p>
+                </div>
+
+                <!-- Dynamic Progress bar -->
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-xs uppercase fw-bold text-muted">Profile Completion Status</span>
+                        <span class="badge bg-success-subtle text-success fw-bold" id="progress-percent-badge">{{ percentage }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; background-color: #e2e8f0; border-radius: 10px;">
+                        <div class="progress-bar-premium" id="progress-bar-fill" role="progressbar" style="width: {{ percentage }}%;"></div>
+                    </div>
+                </div>
+
+                {% if messages %}
+                    {% for msg in messages %}
+                    <div class="alert alert-{{ msg.tags }} border-0 rounded-4 py-2 px-3 mb-4 text-sm">
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Form Wizard -->
+                <form method="post" enctype="multipart/form-data" id="profileWizardForm" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    {% if role == "student" %}
+                        <!-- ================= STUDENT WIZARD STEPS ================= -->
+                        
+                        <!-- Step 1: Personal Extra -->
+                        <div class="wizard-step active" id="step-1">
+                            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-circle-info me-2 text-accent"></i> 1. Personal & Guardian Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Father's Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="father_name" class="form-control rounded-3" value="{{ profile.father_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Mother's Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="mother_name" class="form-control rounded-3" value="{{ profile.mother_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Guardian Occupation <span class="text-danger">*</span></label>
+                                    <input type="text" name="guardian_occupation" class="form-control rounded-3" value="{{ profile.guardian_occupation }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Emergency Contact Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="emergency_contact" class="form-control rounded-3" value="{{ profile.emergency_contact }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Blood Group <span class="text-danger">*</span></label>
+                                    <select name="blood_group" class="form-select rounded-3" required>
+                                        <option value="">-- Select --</option>
+                                        <option value="A+" {% if profile.blood_group == "A+" %}selected{% endif %}>A+</option>
+                                        <option value="A-" {% if profile.blood_group == "A-" %}selected{% endif %}>A-</option>
+                                        <option value="B+" {% if profile.blood_group == "B+" %}selected{% endif %}>B+</option>
+                                        <option value="B-" {% if profile.blood_group == "B-" %}selected{% endif %}>B-</option>
+                                        <option value="O+" {% if profile.blood_group == "O+" %}selected{% endif %}>O+</option>
+                                        <option value="O-" {% if profile.blood_group == "O-" %}selected{% endif %}>O-</option>
+                                        <option value="AB+" {% if profile.blood_group == "AB+" %}selected{% endif %}>AB+</option>
+                                        <option value="AB-" {% if profile.blood_group == "AB-" %}selected{% endif %}>AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Aadhaar Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="aadhaar_number" class="form-control rounded-3" value="{{ profile.aadhaar_number }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Previous School Name</label>
+                                    <input type="text" name="previous_school" class="form-control rounded-3" value="{{ profile.previous_school }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Transport Required? <span class="text-danger">*</span></label>
+                                    <select name="transport" class="form-select rounded-3" required>
+                                        <option value="No" {% if profile.transport == "No" %}selected{% endif %}>No</option>
+                                        <option value="Yes" {% if profile.transport == "Yes" %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Medical History & Notes</label>
+                                    <textarea name="medical_notes" class="form-control rounded-3" rows="2" placeholder="Any medical conditions, allergies, or notes...">{{ profile.medical_notes }}</textarea>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-end">
+                                <button type="button" class="btn btn-premium-primary rounded-pill px-4" onclick="nextStep(2)">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Address -->
+                        <div class="wizard-step" id="step-2">
+                            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-map-location-dot me-2 text-accent"></i> 2. Address Details</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Residential Address <span class="text-danger">*</span></label>
+                                    <input type="text" name="address" class="form-control rounded-3" value="{{ request.user.address }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">City <span class="text-danger">*</span></label>
+                                    <input type="text" name="city" class="form-control rounded-3" value="{{ request.user.city }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">State <span class="text-danger">*</span></label>
+                                    <input type="text" name="state" class="form-control rounded-3" value="{{ request.user.state }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">PIN Code <span class="text-danger">*</span></label>
+                                    <input type="text" name="pincode" class="form-control rounded-3" value="{{ request.user.pincode }}" required>
+                                </div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(1)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
+                                <button type="button" class="btn btn-premium-primary rounded-pill px-4" onclick="nextStep(3)">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Photos & Docs -->
+                        <div class="wizard-step" id="step-3">
+                            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-arrow-up me-2 text-accent"></i> 3. Document Uploads</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Profile Photo <span class="text-danger">*</span></label>
+                                    <input type="file" name="avatar" class="form-control rounded-3" accept="image/*" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Student Signature <span class="text-danger">*</span></label>
+                                    <input type="file" name="student_signature" class="form-control rounded-3" accept="image/*" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Birth Certificate <span class="text-danger">*</span></label>
+                                    <input type="file" name="birth_certificate" class="form-control rounded-3" accept=".pdf,.png,.jpg,.jpeg" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Other Documents (Aadhaar / Report Cards)</label>
+                                    <input type="file" name="documents" class="form-control rounded-3" accept=".pdf,.png,.jpg,.jpeg">
+                                </div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(2)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
+                                <button type="submit" class="btn btn-premium-accent rounded-pill px-5"><i class="fa-solid fa-circle-check me-2"></i> Complete Profile</button>
+                            </div>
+                        </div>
+
+                    {% elif role == "teacher" %}
+                        <!-- ================= TEACHER WIZARD STEPS ================= -->
+                        
+                        <!-- Step 1: Personal Extra -->
+                        <div class="wizard-step active" id="step-1">
+                            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-circle-info me-2 text-accent"></i> 1. Personal & Contact Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Mobile Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="phone" class="form-control rounded-3" value="{{ request.user.phone }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Alternate Mobile Number</label>
+                                    <input type="text" name="alternate_phone" class="form-control rounded-3" value="{{ profile.alternate_phone }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Blood Group <span class="text-danger">*</span></label>
+                                    <select name="blood_group" class="form-select rounded-3" required>
+                                        <option value="">-- Select --</option>
+                                        <option value="A+" {% if profile.blood_group == "A+" %}selected{% endif %}>A+</option>
+                                        <option value="A-" {% if profile.blood_group == "A-" %}selected{% endif %}>A-</option>
+                                        <option value="B+" {% if profile.blood_group == "B+" %}selected{% endif %}>B+</option>
+                                        <option value="B-" {% if profile.blood_group == "B-" %}selected{% endif %}>B-</option>
+                                        <option value="O+" {% if profile.blood_group == "O+" %}selected{% endif %}>O+</option>
+                                        <option value="O-" {% if profile.blood_group == "O-" %}selected{% endif %}>O-</option>
+                                        <option value="AB+" {% if profile.blood_group == "AB+" %}selected{% endif %}>AB+</option>
+                                        <option value="AB-" {% if profile.blood_group == "AB-" %}selected{% endif %}>AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Aadhaar Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="aadhaar_number" class="form-control rounded-3" value="{{ profile.aadhaar_number }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">PAN Card Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="pan_number" class="form-control rounded-3" value="{{ profile.pan_number }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Joining Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="joined_on" class="form-control rounded-3" value="{{ profile.joined_on|date:'Y-m-d' }}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Professional Biography (Bio)</label>
+                                    <textarea name="bio" class="form-control rounded-3" rows="2" placeholder="Write a short summary about your background...">{{ profile.bio }}</textarea>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-end">
+                                <button type="button" class="btn btn-premium-primary rounded-pill px-4" onclick="nextStep(2)">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Address & Bank -->
+                        <div class="wizard-step" id="step-2">
+                            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-building-columns me-2 text-accent"></i> 2. Address & Bank Accounts</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Address <span class="text-danger">*</span></label>
+                                    <input type="text" name="address" class="form-control rounded-3" value="{{ request.user.address }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Bank Account Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="bank_account_no" class="form-control rounded-3" value="{{ profile.bank_account_no }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">IFSC Code <span class="text-danger">*</span></label>
+                                    <input type="text" name="bank_ifsc_code" class="form-control rounded-3" value="{{ profile.bank_ifsc_code }}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Emergency Contact Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="emergency_contact" class="form-control rounded-3" value="{{ profile.emergency_contact }}" required>
+                                </div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(1)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
+                                <button type="button" class="btn btn-premium-primary rounded-pill px-4" onclick="nextStep(3)">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Qualifications & Uploads -->
+                        <div class="wizard-step" id="step-3">
+                            <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-arrow-up me-2 text-accent"></i> 3. Qualifications & Document Uploads</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Qualification <span class="text-danger">*</span></label>
+                                    <input type="text" name="qualification" class="form-control rounded-3" value="{{ profile.qualification }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Experience (Years) <span class="text-danger">*</span></label>
+                                    <input type="number" name="experience_years" class="form-control rounded-3" value="{{ profile.experience_years }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Profile Photo <span class="text-danger">*</span></label>
+                                    <input type="file" name="avatar" class="form-control rounded-3" accept="image/*" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Signature Image <span class="text-danger">*</span></label>
+                                    <input type="file" name="signature" class="form-control rounded-3" accept="image/*" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Resume PDF <span class="text-danger">*</span></label>
+                                    <input type="file" name="resume" class="form-control rounded-3" accept=".pdf" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-xs uppercase text-muted">Certificates PDF <span class="text-danger">*</span></label>
+                                    <input type="file" name="certificate" class="form-control rounded-3" accept=".pdf" required>
+                                </div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(2)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
+                                <button type="submit" class="btn btn-premium-accent rounded-pill px-5"><i class="fa-solid fa-circle-check me-2"></i> Complete Profile</button>
+                            </div>
+                        </div>
+
+                    {% endif %}
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Trigger welcome modal on load if is incomplete and it's first login
+        const myModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+        myModal.show();
+    });
+
+    function nextStep(stepNum) {
+        let valid = true;
+        const currentContainer = document.querySelector(".wizard-step.active");
+        currentContainer.querySelectorAll("[required]").forEach(input => {
+            if (!input.value) {
+                valid = false;
+                input.classList.add("is-invalid");
+            } else {
+                input.classList.remove("is-invalid");
+            }
+        });
+
+        if (!valid) {
+            alert("Please fill in all required fields before proceeding.");
+            return;
+        }
+
+        // Deactivate all steps
+        document.querySelectorAll(".wizard-step").forEach(c => c.classList.remove("active"));
+        document.getElementById(`step-${stepNum}`).classList.add("active");
+        
+        // Update progress bar width
+        const totalSteps = 3;
+        const width = (stepNum / totalSteps) * 100;
+        document.getElementById('progress-bar-fill').style.width = width + '%';
+    }
+
+    function prevStep(stepNum) {
+        document.querySelectorAll(".wizard-step").forEach(c => c.classList.remove("active"));
+        document.getElementById(`step-${stepNum}`).classList.add("active");
+        
+        const totalSteps = 3;
+        const width = (stepNum / totalSteps) * 100;
+        document.getElementById('progress-bar-fill').style.width = width + '%';
+    }
+</script>
+{% endblock %}

@@ -10,17 +10,17 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.STUDENT)
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.TextField(blank=True)
-    bio = models.TextField(blank=True)
+    phone = models.CharField(max_length=20, blank=True, null=True, default="")
+    address = models.TextField(blank=True, null=True, default="")
+    bio = models.TextField(blank=True, null=True, default="")
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     is_verified = models.BooleanField(default=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    gender = models.CharField(max_length=20, blank=True)
-    city = models.CharField(max_length=80, blank=True)
-    state = models.CharField(max_length=80, blank=True)
-    country = models.CharField(max_length=80, blank=True)
-    pincode = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(max_length=20, blank=True, null=True, default="")
+    city = models.CharField(max_length=80, blank=True, null=True, default="")
+    state = models.CharField(max_length=80, blank=True, null=True, default="")
+    country = models.CharField(max_length=80, blank=True, null=True, default="")
+    pincode = models.CharField(max_length=20, blank=True, null=True, default="")
     employee_id = models.CharField(max_length=40, blank=True)
     joining_date = models.DateField(blank=True, null=True)
     profile_visibility = models.BooleanField(default=True)
@@ -48,6 +48,9 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.role = self.Roles.ADMIN
+        if self.is_active and self.registration_status in ['pending', 'rejected']:
+            self.registration_status = 'approved'
+            self.is_verified = True
         super().save(*args, **kwargs)
 
     @property
@@ -65,27 +68,59 @@ class TeacherProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="teacher_profile")
     employee_id = models.CharField(max_length=40, unique=True)
     alternate_phone = models.CharField(max_length=20, blank=True, null=True, default="")
+    aadhaar_number = models.CharField(max_length=20, blank=True, null=True, default="")
     pan_number = models.CharField(max_length=20, blank=True, null=True, default="")
     bank_account_no = models.CharField(max_length=40, blank=True, null=True, default="")
     bank_ifsc_code = models.CharField(max_length=20, blank=True, null=True, default="")
     specialization = models.CharField(max_length=150, blank=True, null=True, default="")
     assigned_class = models.CharField(max_length=50, blank=True, null=True, default="")
     signature = models.ImageField(upload_to="signatures/", blank=True, null=True)
-    qualification = models.CharField(max_length=160, blank=True)
+    qualification = models.CharField(max_length=160, blank=True, null=True, default="")
     designation = models.CharField(max_length=120, default="Teacher")
-    department = models.CharField(max_length=120, blank=True)
-    subjects_taught = models.CharField(max_length=200, blank=True)
+    department = models.CharField(max_length=120, blank=True, null=True, default="")
+    subjects_taught = models.CharField(max_length=200, blank=True, null=True, default="")
     blood_group = models.CharField(max_length=10, blank=True, null=True, default="")
-    emergency_contact = models.CharField(max_length=20, blank=True)
+    emergency_contact = models.CharField(max_length=20, blank=True, null=True, default="")
     experience_years = models.IntegerField(default=0)
     resume = models.FileField(upload_to="resumes/", blank=True, null=True)
     certificate = models.FileField(upload_to="certificates/", blank=True, null=True)
-    bio = models.TextField(blank=True)
+    bio = models.TextField(blank=True, null=True, default="")
     joined_on = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     is_profile_complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def completion_percentage(self):
+        fields = [
+            self.user.avatar,
+            self.user.phone,
+            self.alternate_phone,
+            self.blood_group,
+            self.aadhaar_number,
+            self.pan_number,
+            self.qualification,
+            self.experience_years,
+            self.resume,
+            self.certificate,
+            self.user.address,
+            self.emergency_contact,
+            self.bank_account_no,
+            self.bank_ifsc_code,
+            self.joined_on,
+            self.bio,
+            self.signature,
+        ]
+        filled = sum(1 for field in fields if field)
+        return int((filled / len(fields)) * 100) if fields else 0
+
+    def save(self, *args, **kwargs):
+        if self.completion_percentage == 100:
+            self.is_profile_complete = True
+        else:
+            self.is_profile_complete = False
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.full_name} ({self.employee_id})"
@@ -109,14 +144,14 @@ class StudentProfile(models.Model):
         null=True,
     )
     date_of_birth = models.DateField(blank=True, null=True)
-    guardian_name = models.CharField(max_length=120, blank=True)
-    guardian_phone = models.CharField(max_length=20, blank=True)
-    father_name = models.CharField(max_length=120, blank=True)
-    mother_name = models.CharField(max_length=120, blank=True)
-    emergency_contact = models.CharField(max_length=20, blank=True)
-    house = models.CharField(max_length=80, blank=True)
-    bus_route = models.CharField(max_length=80, blank=True)
-    aadhaar_number = models.CharField(max_length=20, blank=True)
+    guardian_name = models.CharField(max_length=120, blank=True, null=True, default="")
+    guardian_phone = models.CharField(max_length=20, blank=True, null=True, default="")
+    father_name = models.CharField(max_length=120, blank=True, null=True, default="")
+    mother_name = models.CharField(max_length=120, blank=True, null=True, default="")
+    emergency_contact = models.CharField(max_length=20, blank=True, null=True, default="")
+    house = models.CharField(max_length=80, blank=True, null=True, default="")
+    bus_route = models.CharField(max_length=80, blank=True, null=True, default="")
+    aadhaar_number = models.CharField(max_length=20, blank=True, null=True, default="")
     blood_group = models.CharField(max_length=10, blank=True, null=True, default="")
     previous_school = models.CharField(max_length=150, blank=True, null=True, default="")
     admission_class = models.CharField(max_length=50, blank=True, null=True, default="")
@@ -134,6 +169,37 @@ class StudentProfile(models.Model):
     is_profile_complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def completion_percentage(self):
+        fields = [
+            self.user.avatar,
+            self.blood_group,
+            self.aadhaar_number,
+            self.user.address,
+            self.user.city,
+            self.user.state,
+            self.user.pincode,
+            self.previous_school,
+            self.father_name,
+            self.mother_name,
+            self.guardian_occupation,
+            self.emergency_contact,
+            self.medical_notes,
+            self.transport,
+            self.documents,
+            self.birth_certificate,
+            self.student_signature,
+        ]
+        filled = sum(1 for field in fields if field)
+        return int((filled / len(fields)) * 100) if fields else 0
+
+    def save(self, *args, **kwargs):
+        if self.completion_percentage == 100:
+            self.is_profile_complete = True
+        else:
+            self.is_profile_complete = False
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.full_name} ({self.admission_number})"
@@ -155,3 +221,10 @@ def create_user_profile(sender, instance, created, **kwargs):
                 user=instance,
                 defaults={"employee_id": f"TEA{instance.id:05d}"}
             )
+
+
+class PendingRegistration(User):
+    class Meta:
+        proxy = True
+        verbose_name = "Pending Registration"
+        verbose_name_plural = "Pending Registrations"

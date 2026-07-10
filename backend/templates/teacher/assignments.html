@@ -24,7 +24,7 @@
             <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
                 <i class="fa-solid fa-plus me-2" style="color:var(--accent-color);"></i> Post New Assignment
             </h4>
-            <form method="post" action="{% url 'teacher_post_assignment' %}">
+            <form method="post" action="{% url 'teacher_assignments' %}">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Assignment Title</label>
@@ -35,7 +35,7 @@
                     <select name="subject" class="form-select" required>
                         <option value="">-- Select Subject --</option>
                         {% for sub in subjects %}
-                        <option value="{{ sub.id }}">{{ sub.name }}</option>
+                        <option value="{{ sub.id }}">{{ sub.name }} ({{ sub.classroom.name }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -43,14 +43,14 @@
                     <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Classroom</label>
                     <select name="classroom" class="form-select" required>
                         <option value="">-- Select Classroom --</option>
-                        {% for cls in assigned_classes %}
+                        {% for cls in classrooms %}
                         <option value="{{ cls.id }}">{{ cls.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Due Date</label>
-                    <input type="date" name="due_date" class="form-control" required>
+                    <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Due Date & Time</label>
+                    <input type="datetime-local" name="due_at" class="form-control" required>
                 </div>
                 <div class="mb-4">
                     <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Instructions / Description</label>
@@ -76,7 +76,7 @@
                         <span class="badge rounded-pill fw-bold px-3 py-1 me-2" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.7rem;">{{ asgn.subject.name }}</span>
                         <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">{{ asgn.classroom.name }}</span>
                     </div>
-                    <small class="text-muted">Due: {{ asgn.due_date|date:"d M" }}</small>
+                    <small class="text-muted">Due: {{ asgn.due_at|date:"d M" }}</small>
                 </div>
                 <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ asgn.title }}</h6>
                 {% if asgn.description %}

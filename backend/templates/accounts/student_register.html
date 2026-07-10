@@ -12,6 +12,8 @@ body {
     border-radius: 2rem;
     border: none;
     box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
 }
 .step-container {
     display: none;
@@ -39,13 +41,17 @@ body {
     background: #10b981;
     color: white;
 }
+.password-strength {
+    height: 4px;
+    transition: all 0.3s ease;
+}
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card register-card bg-white p-4 p-md-5">
+            <div class="card register-card p-4 p-md-5">
                 
                 <!-- Logo & Heading -->
                 <div class="text-center mb-4">
@@ -57,8 +63,8 @@ body {
                 <!-- Stepper Progress -->
                 <div class="d-flex justify-content-center mb-4 text-xs font-semibold gap-3 flex-wrap">
                     <div><span class="step-dot active" id="dot-1">1</span> Personal Info</div>
-                    <div><span class="step-dot" id="dot-2">2</span> Guardian Details</div>
-                    <div><span class="step-dot" id="dot-3">3</span> Credentials & Uploads</div>
+                    <div><span class="step-dot" id="dot-2">2</span> Guardian Info</div>
+                    <div><span class="step-dot" id="dot-3">3</span> Account Credentials</div>
                 </div>
 
                 {% if messages %}
@@ -69,7 +75,7 @@ body {
                     {% endfor %}
                 {% endif %}
 
-                <form method="post" enctype="multipart/form-data" id="studentRegForm">
+                <form method="post" id="studentRegForm" novalidate>
                     {% csrf_token %}
 
                     <!-- Step 1: Personal Info -->
@@ -78,7 +84,7 @@ body {
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">First Name <span class="text-danger">*</span></label>
-                                <input type="text" name="first_name" class="form-control rounded-3" required>
+                                <input type="text" name="first_name" class="form-control rounded-3" required autofocus>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Last Name <span class="text-danger">*</span></label>
@@ -97,22 +103,14 @@ body {
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Date of Birth <span class="text-danger">*</span></label>
                                 <input type="date" name="date_of_birth" class="form-control rounded-3" required>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Blood Group</label>
-                                <input type="text" name="blood_group" class="form-control rounded-3" placeholder="e.g. O+">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Admission Grade Level <span class="text-danger">*</span></label>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Class Applying For <span class="text-danger">*</span></label>
                                 <select name="admission_class" class="form-select rounded-3" required>
-                                    <option value="">-- Class --</option>
+                                    <option value="">-- Select Class --</option>
                                     {% for cls in classrooms %}
                                     <option value="{{ cls.name }}">{{ cls.name }}</option>
                                     {% endfor %}
                                 </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Previous School Name (If any)</label>
-                                <input type="text" name="previous_school" class="form-control rounded-3">
                             </div>
                         </div>
                         <div class="mt-4 text-end">
@@ -120,41 +118,21 @@ body {
                         </div>
                     </div>
 
-                    <!-- Step 2: Guardian Details -->
+                    <!-- Step 2: Guardian Info -->
                     <div class="step-container" id="step-2">
-                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-users me-2 text-accent"></i> 2. Guardian & Address Details</h5>
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-users me-2 text-accent"></i> 2. Guardian details</h5>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Father's Name <span class="text-danger">*</span></label>
-                                <input type="text" name="father_name" class="form-control rounded-3" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Mother's Name <span class="text-danger">*</span></label>
-                                <input type="text" name="mother_name" class="form-control rounded-3" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Parent / Guardian Contact Mobile <span class="text-danger">*</span></label>
-                                <input type="text" name="parent_phone" class="form-control rounded-3" required onchange="checkUniqueDetail(this, 'phone')">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Aadhaar Card Number (Optional)</label>
-                                <input type="text" name="aadhaar_number" class="form-control rounded-3">
-                            </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Residential Address <span class="text-danger">*</span></label>
-                                <input type="text" name="address" class="form-control rounded-3" required>
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Parent/Guardian Name <span class="text-danger">*</span></label>
+                                <input type="text" name="guardian_name" class="form-control rounded-3" required>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">City <span class="text-danger">*</span></label>
-                                <input type="text" name="city" class="form-control rounded-3" required>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Parent Mobile Number <span class="text-danger">*</span></label>
+                                <input type="text" name="parent_phone" class="form-control rounded-3" required>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">State <span class="text-danger">*</span></label>
-                                <input type="text" name="state" class="form-control rounded-3" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">PIN Code <span class="text-danger">*</span></label>
-                                <input type="text" name="pincode" class="form-control rounded-3" required>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Parent Email <span class="text-danger">*</span></label>
+                                <input type="email" name="parent_email" class="form-control rounded-3" required>
                             </div>
                         </div>
                         <div class="mt-4 d-flex justify-content-between">
@@ -163,52 +141,48 @@ body {
                         </div>
                     </div>
 
-                    <!-- Step 3: Credentials & Uploads -->
+                    <!-- Step 3: Account Credentials -->
                     <div class="step-container" id="step-3">
-                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-lock-open me-2 text-accent"></i> 3. Security Credentials & Profile Photo</h5>
+                        <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-lock-open me-2 text-accent"></i> 3. Security Credentials</h5>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control rounded-3" required onchange="checkUniqueDetail(this, 'email')">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Student Mobile (If any) <span class="text-danger">*</span></label>
-                                <input type="text" name="phone" class="form-control rounded-3" required onchange="checkUniqueDetail(this, 'phone')">
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-xs uppercase text-muted">Username <span class="text-danger">*</span></label>
+                                <input type="text" name="username" class="form-control rounded-3" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Password <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input type="password" name="password" id="id_password" class="form-control rounded-start-3" required style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('id_password', 'eye_pwd_icon')" style="border-top-right-radius: 1.25rem; border-bottom-right-radius: 1.25rem; border-color: rgba(12, 43, 77, 0.08); background-color: #fafbfc;">
+                                    <input type="password" name="password" id="id_password" class="form-control rounded-start-3" required onkeyup="checkPasswordStrength(this.value)">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('id_password', 'eye_pwd_icon')">
                                         <i class="fa-solid fa-eye" id="eye_pwd_icon"></i>
                                     </button>
                                 </div>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                                </div>
+                                <small class="text-muted text-xs" id="password-strength-text">Enter password</small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-xs uppercase text-muted">Confirm Password <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input type="password" name="confirm_password" id="id_confirm_password" class="form-control rounded-start-3" required style="border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important;">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('id_confirm_password', 'eye_confirm_pwd_icon')" style="border-top-right-radius: 1.25rem; border-bottom-right-radius: 1.25rem; border-color: rgba(12, 43, 77, 0.08); background-color: #fafbfc;">
+                                    <input type="password" name="confirm_password" id="id_confirm_password" class="form-control rounded-start-3" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('id_confirm_password', 'eye_confirm_pwd_icon')">
                                         <i class="fa-solid fa-eye" id="eye_confirm_pwd_icon"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="col-12">
-                                <label class="form-label fw-bold text-xs uppercase text-muted">Profile Photo <span class="text-danger">*</span></label>
-                                <input type="file" name="avatar" class="form-control rounded-3" accept="image/*" required>
-                            </div>
                             <div class="col-12 mt-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
                                     <label class="form-check-label text-xs text-muted" for="terms">
-                                        I accept the terms and conditions and certify that all provided student profile facts are correct.
+                                        I agree to the Terms & Conditions
                                     </label>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-4 d-flex justify-content-between">
                             <button type="button" class="btn btn-outline-secondary rounded-pill px-4" onclick="prevStep(2)"><i class="fa-solid fa-arrow-left me-2"></i> Back</button>
-                            <button type="submit" class="btn btn-premium-accent rounded-pill px-5"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Submit Application</button>
+                            <button type="submit" class="btn btn-premium-accent rounded-pill px-5"><i class="fa-solid fa-cloud-arrow-up me-2"></i> Submit Registration</button>
                         </div>
                     </div>
 
@@ -227,7 +201,6 @@ body {
 {% block extra_js %}
 <script>
     function nextStep(stepNum) {
-        // Simple client-side validation check
         let valid = true;
         const currentContainer = document.querySelector(".step-container.active");
         currentContainer.querySelectorAll("[required]").forEach(input => {
@@ -244,11 +217,9 @@ body {
             return;
         }
 
-        // Deactivate all steps
         document.querySelectorAll(".step-container").forEach(c => c.classList.remove("active"));
         document.querySelectorAll(".step-dot").forEach(d => d.classList.remove("active"));
 
-        // Activate step
         document.getElementById(`step-${stepNum}`).classList.add("active");
         for (let i = 1; i <= stepNum; i++) {
             const dot = document.getElementById(`dot-${i}`);
@@ -283,23 +254,28 @@ body {
         }
     }
 
-    function checkUniqueDetail(inputElement, fieldType) {
-        const val = inputElement.value.trim();
-        if (!val) return;
+    function checkPasswordStrength(password) {
+        const bar = document.getElementById('password-strength-bar');
+        const text = document.getElementById('password-strength-text');
         
-        let url = `/register/check-unique/?${fieldType}=` + encodeURIComponent(val);
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.exists) {
-                    alert(`The provided ${fieldType === 'email' ? 'email address' : 'mobile number'} (${val}) is already registered. Please enter alternative details.`);
-                    inputElement.value = '';
-                    inputElement.classList.add('is-invalid');
-                } else {
-                    inputElement.classList.remove('is-invalid');
-                }
-            })
-            .catch(err => console.error("Validation error:", err));
+        let strength = 0;
+        if (password.length >= 6) strength += 20;
+        if (password.length >= 10) strength += 20;
+        if (/[A-Z]/.test(password)) strength += 20;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+
+        bar.style.width = strength + '%';
+        if (strength <= 40) {
+            bar.className = 'progress-bar bg-danger';
+            text.innerText = 'Weak password';
+        } else if (strength <= 80) {
+            bar.className = 'progress-bar bg-warning';
+            text.innerText = 'Medium password';
+        } else {
+            bar.className = 'progress-bar bg-success';
+            text.innerText = 'Strong password';
+        }
     }
 </script>
 {% endblock %}

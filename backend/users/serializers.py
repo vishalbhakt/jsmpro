@@ -355,5 +355,17 @@ class TokenPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+        if self.user.registration_status == 'pending':
+            from rest_framework import exceptions
+            raise exceptions.AuthenticationFailed(
+                "Your account registration is under review by our administration team. You will be able to log in as soon as it is approved.",
+                'pending_approval'
+            )
+        elif self.user.registration_status == 'rejected':
+            from rest_framework import exceptions
+            raise exceptions.AuthenticationFailed(
+                f"Your registration request was rejected. Reason: {self.user.rejected_reason or 'No reason provided.'}",
+                'registration_rejected'
+            )
         data["user"] = UserSerializer(self.user, context=self.context).data
         return data

@@ -6,13 +6,13 @@
 {% block dashboard_css %}
 <style>
     .id-card-container {
-        max-width: 380px;
+        max-width: 300px;
         margin: 0 auto;
         perspective: 1000px;
     }
     .id-card-wrapper {
         width: 100%;
-        height: 480px;
+        height: 440px;
         position: relative;
         transform-style: preserve-3d;
         transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -34,50 +34,188 @@
         display: flex;
         flex-direction: column;
     }
+    
+    /* Border Color Coding */
+    .id-card-student {
+        border-top: 8px solid #3b82f6; /* Blue for Students */
+        border-bottom: 8px solid #3b82f6;
+    }
+    .id-card-teacher {
+        border-top: 8px solid #10b981; /* Emerald Green for Teachers */
+        border-bottom: 8px solid #10b981;
+    }
+    
     .id-card-back {
         transform: rotateY(180deg);
     }
     .id-card-header {
         background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);
         color: #fff;
-        padding: 15px;
+        padding: 12px;
         text-align: center;
-        border-bottom: 4px solid var(--accent-color);
+        position: relative;
+    }
+    .id-card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #f59e0b;
     }
     .id-card-header img {
-        height: 40px;
+        height: 32px;
         object-fit: contain;
     }
     .id-card-body {
-        padding: 24px;
+        padding: 18px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         text-align: center;
+        position: relative;
     }
+    
+    /* Hologram Effect */
+    .security-hologram {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #e0f2fe, #bae6fd, #e0f2fe, #fef08a, #e0f2fe);
+        background-size: 200% 200%;
+        animation: holoGlow 3s ease infinite;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.6rem;
+        color: #0369a1;
+        font-weight: 800;
+    }
+    
+    @keyframes holoGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
     .id-card-avatar {
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         object-fit: cover;
         border: 4px solid #fff;
         box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        margin-bottom: 15px;
+        margin-top: 5px;
+        margin-bottom: 8px;
+    }
+    .id-avatar-student {
+        outline: 3px solid #3b82f6;
+    }
+    .id-avatar-teacher {
+        outline: 3px solid #10b981;
+    }
+    
+    .id-name {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0c2b4d;
+        margin-bottom: 2px;
+    }
+    .id-role {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+        display: inline-block;
+    }
+    .id-role-student {
+        background-color: #eff6ff;
+        color: #1d4ed8;
+    }
+    .id-role-teacher {
+        background-color: #ecfdf5;
+        color: #047857;
     }
     .id-card-meta {
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         color: #475569;
-        margin-bottom: 4px;
         width: 100%;
+        line-height: 1.45;
+        text-align: left;
+        padding: 0 10px;
+    }
+    .id-details-row {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed #e2e8f0;
+        padding: 3px 0;
+    }
+    .id-details-row:last-child {
+        border-bottom: none;
     }
     .id-card-footer {
         background: #f8fafc;
-        padding: 12px 15px;
+        padding: 8px 12px;
         border-top: 1px solid #e2e8f0;
         width: 100%;
         text-align: center;
+        font-size: 0.58rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+    
+    /* Magnetic Strip */
+    .magnetic-strip {
+        width: 100%;
+        height: 30px;
+        background: #1e293b;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .id-back-terms {
+        font-size: 0.58rem;
+        color: #475569;
+        text-align: left;
+        line-height: 1.4;
+        padding: 0 15px;
+        margin-bottom: 8px;
+    }
+    .id-back-qr {
+        width: 80px;
+        height: 80px;
+        margin: 5px 0;
+        padding: 4px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+    }
+    
+    /* Barcode Visual Representation */
+    .barcode-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        height: 20px;
+        margin: 5px 0;
+        padding: 0 20px;
+        width: 100%;
+    }
+    .barcode-line {
+        height: 100%;
+        background-color: #000;
     }
 </style>
 {% endblock %}
@@ -106,67 +244,122 @@
             <div class="id-card-container mb-4">
                 <div class="id-card-wrapper" onclick="this.classList.toggle('flipped')">
                     <!-- Front Side -->
-                    <div class="id-card-side id-card-front">
+                    <div class="id-card-side id-card-front {% if role == 'student' %}id-card-student{% else %}id-card-teacher{% endif %}">
                         <div class="id-card-header">
                             <img src="{% static 'images/logo.png' %}" class="mb-1">
-                            <div class="text-xs fw-bold text-white uppercase tracking-wider">JSM SHIKSHA ACADEMY</div>
-                            <small class="text-white-50 text-[9px] uppercase tracking-widest block">{% if role == 'student' %}STUDENT{% else %}TEACHER{% endif %} ID CARD</small>
+                            <div class="text-xs fw-bold text-white uppercase tracking-wider" style="font-size: 0.65rem; font-family:'Outfit',sans-serif;">JSM SHIKSHA ACADEMY</div>
                         </div>
                         <div class="id-card-body">
+                            <!-- Security Hologram Seal -->
+                            <div class="security-hologram" title="Holographic Security Seal">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            
                             {% if profile.user.avatar %}
-                                <img src="{{ profile.user.avatar.url }}" class="id-card-avatar">
+                                <img src="{{ profile.user.avatar.url }}" class="id-card-avatar {% if role == 'student' %}id-avatar-student{% else %}id-avatar-teacher{% endif %}">
                             {% else %}
-                                <div class="id-card-avatar d-flex align-items-center justify-content-center bg-light">
+                                <div class="id-card-avatar d-flex align-items-center justify-content-center bg-light {% if role == 'student' %}id-avatar-student{% else %}id-avatar-teacher{% endif %}">
                                     <i class="fa-solid fa-user-graduate fa-3x text-muted"></i>
                                 </div>
                             {% endif %}
-                            <h5 class="fw-bold text-primary mb-1">{{ profile.user.full_name }}</h5>
-                            <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1 text-xs mb-3">
-                                {% if role == 'student' %}Adm: {{ profile.admission_number }}{% else %}Emp: {{ profile.employee_id }}{% endif %}
+                            
+                            <div class="id-name">{{ profile.user.full_name }}</div>
+                            <div class="id-role {% if role == 'student' %}id-role-student{% else %}id-role-teacher{% endif %}">
+                                {% if role == 'student' %}Student{% else %}Faculty{% endif %}
                             </div>
                             
                             <div class="id-card-meta">
                                 {% if role == 'student' %}
-                                    <div class="text-xs">Grade: <strong>{{ profile.classroom.name|default:"—" }}</strong></div>
-                                    <div class="text-xs">Roll Number: <strong>{{ profile.roll_number|default:"—" }}</strong></div>
-                                    <div class="text-xs">Academic Year: <strong>2026-27</strong></div>
+                                    <div class="id-details-row">
+                                        <span>Student ID:</span>
+                                        <strong>{{ profile.admission_number }}</strong>
+                                    </div>
+                                    <div class="id-details-row">
+                                        <span>Class/Grade:</span>
+                                        <strong>{{ profile.classroom.name|default:"—" }}</strong>
+                                    </div>
+                                    <div class="id-details-row">
+                                        <span>Date of Birth:</span>
+                                        <strong>{{ profile.date_of_birth|date:"d-M-Y"|default:"—" }}</strong>
+                                    </div>
+                                    <div class="id-details-row">
+                                        <span>Academic Year:</span>
+                                        <strong>2026-27</strong>
+                                    </div>
                                 {% else %}
-                                    <div class="text-xs">Designation: <strong>{{ profile.designation|default:"Teacher" }}</strong></div>
-                                    <div class="text-xs">Department: <strong>{{ profile.department|default:"Academic" }}</strong></div>
+                                    <div class="id-details-row">
+                                        <span>Staff ID:</span>
+                                        <strong>{{ profile.employee_id }}</strong>
+                                    </div>
+                                    <div class="id-details-row">
+                                        <span>Department:</span>
+                                        <strong>{{ profile.department|default:"Academic" }}</strong>
+                                    </div>
+                                    <div class="id-details-row">
+                                        <span>Subject/Title:</span>
+                                        <strong>{{ profile.subjects_taught|default:"Teacher" }}</strong>
+                                    </div>
+                                    <div class="id-details-row">
+                                        <span>Role Type:</span>
+                                        <strong>{{ profile.designation|default:"Faculty" }}</strong>
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="id-card-footer text-xs text-muted">
-                            <i class="fa-solid fa-qrcode me-1"></i> Scan QR on back to verify card authenticity
+                            Issue Date: 01-Jul-2026 • Valid till 30-Jun-2027
                         </div>
                     </div>
 
                     <!-- Back Side -->
-                    <div class="id-card-side id-card-back">
-                        <div class="id-card-header bg-dark">
-                            <div class="text-xs fw-bold text-white uppercase tracking-wider">JSM SHIKSHA ACADEMY</div>
-                            <small class="text-white-50 text-[9px] uppercase tracking-widest block">TERMS & CONDITIONS</small>
-                        </div>
-                        <div class="id-card-body py-3">
-                            <div class="text-[10px] text-muted text-start mb-3">
-                                • This card is property of JSM Shiksha Academy.<br>
-                                • Loss must be reported to school office immediately.<br>
-                                • Emergency Contact: <strong>+91 98765 43210</strong>
+                    <div class="id-card-side id-card-back {% if role == 'student' %}id-card-student{% else %}id-card-teacher{% endif %}">
+                        <!-- Functional Magnetic Strip -->
+                        <div class="magnetic-strip"></div>
+                        
+                        <div class="id-card-body justify-content-between py-2">
+                            <div class="id-back-terms text-start">
+                                • This card is property of JSM Academy.<br>
+                                • Loss must be reported immediately.<br>
+                                • Emergency Phone: <strong>{{ profile.emergency_contact|default:"+91 98765 43210" }}</strong>
                             </div>
                             
                             <!-- QR Code Holder -->
-                            <div class="p-2 border rounded bg-light mb-3" style="width:110px; height:110px; display: flex; align-items: center; justify-content: center;">
+                            <div class="p-2 border rounded bg-light mb-2" style="width:90px; height:90px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                                 <div id="qrCodeContainer"></div>
                             </div>
                             
-                            <div class="id-card-meta text-xs">
-                                <div>Blood Group: <strong>{{ profile.blood_group|default:"O+" }}</strong></div>
-                                <div>Valid Till: <strong>30-Jun-2027</strong></div>
+                            <div class="id-card-meta text-center mt-2">
+                                <div class="id-details-row justify-content-center gap-3">
+                                    <span>Blood Group: <strong>{{ profile.blood_group|default:"O+" }}</strong></span>
+                                    <span>|</span>
+                                    <span>Status: <strong>Active ✓</strong></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Barcode Visual Representation -->
+                            <div class="barcode-container" title="System Barcode (Access Control)">
+                                <div class="barcode-line" style="width: 2px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 4px; margin-right: 2px;"></div>
+                                <div class="barcode-line" style="width: 1px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 3px; margin-right: 2px;"></div>
+                                <div class="barcode-line" style="width: 2px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 5px; margin-right: 3px;"></div>
+                                <div class="barcode-line" style="width: 1px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 4px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 2px; margin-right: 2px;"></div>
+                                <div class="barcode-line" style="width: 3px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 1px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 4px; margin-right: 2px;"></div>
+                                <div class="barcode-line" style="width: 2px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 3px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 5px; margin-right: 2px;"></div>
+                                <div class="barcode-line" style="width: 1px; margin-right: 1px;"></div>
+                                <div class="barcode-line" style="width: 2px; margin-right: 1px;"></div>
                             </div>
                         </div>
-                        <div class="id-card-footer text-xs text-muted border-top d-flex justify-content-between align-items-center">
+                        <div class="id-card-footer d-flex justify-content-between align-items-center">
                             <span>Principal Signature</span>
-                            <span class="fw-bold text-primary">JSM SEAL</span>
+                            <span style="font-weight: 700; color: #f59e0b;">JSM SEAL</span>
                         </div>
                     </div>
                 </div>
@@ -196,8 +389,8 @@
         if (container) {
             new QRCode(container, {
                 text: verifyUrl,
-                width: 90,
-                height: 90,
+                width: 80,
+                height: 80,
                 colorDark: "#0c2b4d",
                 colorLight: "#ffffff"
             });

@@ -24,22 +24,37 @@
             <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
                 <i class="fa-solid fa-pen-to-square me-2" style="color:var(--accent-color);"></i> Mark Today's Attendance
             </h4>
-            <form method="post" action="{% url 'teacher_mark_attendance' %}">
+            <form method="post" action="">
                 {% csrf_token %}
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Select Classroom</label>
-                        <select name="classroom" class="form-select" required>
+                        <select name="classroom" class="form-select" id="classroomSelect" required>
                             <option value="">-- Choose Classroom --</option>
-                            {% for cls in assigned_classes %}
-                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                            {% for cls in classrooms %}
+                            <option value="{{ cls.id }}" {% if cls.id|stringformat:"s" == selected_class_id %}selected{% endif %}>{{ cls.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Date</label>
-                        <input type="date" name="date" class="form-control" required>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Select Subject</label>
+                        <select name="subject" class="form-select" id="subjectSelect" required>
+                            <option value="">-- Choose Subject --</option>
+                            {% for sub in subjects %}
+                            <option value="{{ sub.id }}" {% if sub.id|stringformat:"s" == selected_sub_id %}selected{% endif %}>{{ sub.name }} ({{ sub.classroom.name }})</option>
+                            {% endfor %}
+                        </select>
                     </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Date</label>
+                        <input type="date" name="date" class="form-control" id="dateInput" value="{{ selected_date }}" required>
+                    </div>
+                </div>
+                
+                <div class="mb-4 text-start">
+                    <button type="button" class="btn btn-premium-primary rounded-pill btn-sm py-2 px-4" onclick="loadStudents()">
+                        <i class="fa-solid fa-arrows-rotate me-2"></i> Load Student Roster
+                    </button>
                 </div>
 
                 {% if students %}
@@ -99,14 +114,14 @@
             <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
                 <i class="fa-solid fa-clock-rotate-left me-2" style="color:var(--accent-color);"></i> Recent Sessions
             </h4>
-            {% for session in recent_sessions %}
+            {% for session in sessions %}
             <div class="p-3 rounded-4 bg-light mb-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="fw-bold d-block" style="font-size:0.83rem; color:var(--primary-color);">{{ session.classroom.name }}</span>
+                <div class="text-start">
+                    <span class="fw-bold d-block" style="font-size:0.83rem; color:var(--primary-color);">{{ session.classroom.name }} - {{ session.subject.name }}</span>
                     <span class="text-muted" style="font-size:0.78rem;">{{ session.date|date:"d M, Y" }}</span>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">{{ session.present_count }} Present</span>
+                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">{{ session.records.count }} Records</span>
                 </div>
             </div>
             {% empty %}
@@ -118,4 +133,19 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+    function loadStudents() {
+        const classId = document.getElementById("classroomSelect").value;
+        const subId = document.getElementById("subjectSelect").value;
+        const date = document.getElementById("dateInput").value;
+        if (classId) {
+            window.location.href = `?classroom=${classId}&subject=${subId}&date=${date}`;
+        } else {
+            alert("Please select a classroom first.");
+        }
+    }
+</script>
 {% endblock %}

@@ -550,7 +550,7 @@ def teacher_overview(request):
         return redirect("dashboard_redirect")
         
     tp = request.user.teacher_profile
-    classrooms = tp.classrooms.all()
+    classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
     subjects = Subject.objects.filter(teacher=tp)
     
     # Calculate stats
@@ -576,7 +576,7 @@ def teacher_students(request):
         return redirect("dashboard_redirect")
         
     tp = request.user.teacher_profile
-    classrooms = tp.classrooms.all()
+    classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
     
     # Get students belonging to classrooms
     students = StudentProfile.objects.filter(classroom__in=classrooms).select_related("user", "classroom").order_by("classroom__name", "roll_number")
@@ -603,7 +603,7 @@ def teacher_attendance(request):
         return redirect("dashboard_redirect")
         
     tp = request.user.teacher_profile
-    classrooms = tp.classrooms.all()
+    classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
     subjects = Subject.objects.filter(teacher=tp)
     
     # Handle Attendance marking
@@ -672,7 +672,7 @@ def teacher_assignments(request):
         
     tp = request.user.teacher_profile
     assignments = Assignment.objects.filter(teacher=tp).order_by("-created_at")
-    classrooms = tp.classrooms.all()
+    classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
     subjects = Subject.objects.filter(teacher=tp)
     
     if request.method == "POST":
@@ -689,8 +689,25 @@ def teacher_assignments(request):
     return render(request, "teacher/assignments.html", {
         "assignments": assignments,
         "form": form,
+        "classrooms": classrooms,
+        "subjects": subjects,
         "is_dashboard_view": True
     })
+
+@login_required
+def teacher_delete_assignment(request, assignment_id):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    assignment = get_object_or_404(Assignment, id=assignment_id, teacher=tp)
+    
+    if request.method == "POST":
+        title = assignment.title
+        assignment.delete()
+        messages.success(request, f"Assignment '{title}' deleted successfully.")
+        
+    return redirect("teacher_assignments")
 
 @login_required
 def teacher_learning(request):
@@ -763,7 +780,7 @@ def teacher_results(request):
         messages.success(request, f"Assessment '{title}' created successfully.")
         return redirect("teacher_results")
         
-    classrooms = tp.classrooms.all()
+    classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
     subjects = Subject.objects.filter(teacher=tp)
     
     return render(request, "teacher/results.html", {
@@ -2500,18 +2517,10 @@ def student_register(request):
         gender = request.POST.get("gender")
         date_of_birth = request.POST.get("date_of_birth")
         admission_class = request.POST.get("admission_class")
-        blood_group = request.POST.get("blood_group")
-        previous_school = request.POST.get("previous_school")
-        father_name = request.POST.get("father_name")
-        mother_name = request.POST.get("mother_name")
+        
+        guardian_name = request.POST.get("guardian_name")
         parent_phone = request.POST.get("parent_phone")
-        aadhaar_number = request.POST.get("aadhaar_number")
-        address = request.POST.get("address")
-        city = request.POST.get("city")
-        state = request.POST.get("state")
-        pincode = request.POST.get("pincode")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
+        email = request.POST.get("parent_email")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
         
@@ -2544,29 +2553,18 @@ def student_register(request):
             role=User.Roles.STUDENT,
             gender=gender,
             date_of_birth=date_of_birth if date_of_birth else None,
-            registration_status='pending'
+            registration_status='pending',
+            is_active=False
         )
-        user.phone = phone
-        user.address = address
-        user.city = city
-        user.state = state
-        user.pincode = pincode
-        if request.FILES.get("avatar"):
-            user.avatar = request.FILES.get("avatar")
         user.is_active = False
         user.save()
         
         # Update StudentProfile
         profile, created = StudentProfile.objects.get_or_create(user=user)
-        profile.guardian_name = father_name or mother_name or ""
+        profile.guardian_name = guardian_name
         profile.guardian_phone = parent_phone
-        profile.father_name = father_name
-        profile.mother_name = mother_name
         profile.date_of_birth = date_of_birth if date_of_birth else None
         profile.admission_class = admission_class
-        profile.blood_group = blood_group
-        profile.previous_school = previous_school
-        profile.aadhaar_number = aadhaar_number
         profile.status = StudentProfile.Status.INACTIVE
         profile.is_profile_complete = False
         profile.save()
@@ -2588,17 +2586,8 @@ def teacher_register(request):
         last_name = request.POST.get("last_name")
         gender = request.POST.get("gender")
         date_of_birth = request.POST.get("date_of_birth")
-        blood_group = request.POST.get("blood_group")
-        emergency_contact = request.POST.get("emergency_contact")
-        address = request.POST.get("address")
-        city = request.POST.get("city")
-        state = request.POST.get("state")
-        pincode = request.POST.get("pincode")
-        
-        qualification = request.POST.get("qualification")
-        experience_years = request.POST.get("experience_years")
         department = request.POST.get("department")
-        subjects_taught = request.POST.get("subjects_taught")
+        subject = request.POST.get("subject")
         
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -2633,38 +2622,18 @@ def teacher_register(request):
             role=User.Roles.TEACHER,
             gender=gender,
             date_of_birth=date_of_birth if date_of_birth else None,
-            registration_status='pending'
+            registration_status='pending',
+            is_active=False
         )
-        user.phone = request.POST.get("phone", "")
-        user.address = address
-        user.city = city
-        user.state = state
-        user.pincode = pincode
-        if request.FILES.get("avatar"):
-            user.avatar = request.FILES.get("avatar")
         user.is_active = False
         user.save()
         
         # Update TeacherProfile
         profile, created = TeacherProfile.objects.get_or_create(user=user)
-        profile.qualification = qualification
-        try:
-            profile.experience_years = int(experience_years) if experience_years else 0
-        except ValueError:
-            profile.experience_years = 0
         profile.department = department
-        profile.subjects_taught = subjects_taught
-        profile.blood_group = blood_group
-        profile.emergency_contact = emergency_contact
+        profile.subjects_taught = subject
         profile.status = TeacherProfile.Status.INACTIVE
         profile.is_profile_complete = False
-        
-        # File uploads
-        if request.FILES.get("resume"):
-            profile.resume = request.FILES.get("resume")
-        if request.FILES.get("certificate"):
-            profile.certificate = request.FILES.get("certificate")
-            
         profile.save()
         
         return render(request, "accounts/register_success.html", {
@@ -2800,6 +2769,163 @@ def check_unique_field(request):
             exists = True
             
     return JsonResponse({'exists': exists})
+
+
+@login_required
+def profile_complete_wizard(request):
+    user = request.user
+    if user.role == "admin" or user.is_superuser:
+        return redirect("dashboard_redirect")
+        
+    role = user.role
+    student_profile = None
+    teacher_profile = None
+    
+    if role == "student":
+        student_profile = get_object_or_404(StudentProfile, user=user)
+        profile = student_profile
+    elif role == "teacher":
+        teacher_profile = get_object_or_404(TeacherProfile, user=user)
+        profile = teacher_profile
+    else:
+        return redirect("dashboard_redirect")
+
+    # POST handling
+    if request.method == "POST":
+        if role == "student":
+            # Update user fields
+            if "avatar" in request.FILES:
+                user.avatar = request.FILES["avatar"]
+            user.address = request.POST.get("address", "")
+            user.city = request.POST.get("city", "")
+            user.state = request.POST.get("state", "")
+            user.pincode = request.POST.get("pincode", "")
+            user.save()
+            
+            # Update profile fields
+            profile.blood_group = request.POST.get("blood_group", "")
+            profile.aadhaar_number = request.POST.get("aadhaar_number", "")
+            profile.previous_school = request.POST.get("previous_school", "")
+            profile.father_name = request.POST.get("father_name", "")
+            profile.mother_name = request.POST.get("mother_name", "")
+            profile.guardian_occupation = request.POST.get("guardian_occupation", "")
+            profile.emergency_contact = request.POST.get("emergency_contact", "")
+            profile.medical_notes = request.POST.get("medical_notes", "")
+            profile.transport = request.POST.get("transport", "")
+            
+            if "documents" in request.FILES:
+                profile.documents = request.FILES["documents"]
+            if "birth_certificate" in request.FILES:
+                profile.birth_certificate = request.FILES["birth_certificate"]
+            if "student_signature" in request.FILES:
+                profile.student_signature = request.FILES["student_signature"]
+                
+            # Set profile complete
+            profile.is_profile_complete = True
+            profile.save()
+            
+            messages.success(request, "Your student profile has been completed successfully!")
+            return redirect("student_overview")
+            
+        elif role == "teacher":
+            # Update user fields
+            if "avatar" in request.FILES:
+                user.avatar = request.FILES["avatar"]
+            user.phone = request.POST.get("phone", "")
+            user.address = request.POST.get("address", "")
+            user.bio = request.POST.get("bio", "")
+            user.save()
+            
+            # Update profile fields
+            profile.alternate_phone = request.POST.get("alternate_phone", "")
+            profile.blood_group = request.POST.get("blood_group", "")
+            profile.aadhaar_number = request.POST.get("aadhaar_number", "")
+            profile.pan_number = request.POST.get("pan_number", "")
+            profile.qualification = request.POST.get("qualification", "")
+            
+            exp_yrs = request.POST.get("experience_years", "0")
+            try:
+                profile.experience_years = int(exp_yrs)
+            except ValueError:
+                profile.experience_years = 0
+                
+            profile.emergency_contact = request.POST.get("emergency_contact", "")
+            profile.bank_account_no = request.POST.get("bank_account_no", "")
+            profile.bank_ifsc_code = request.POST.get("bank_ifsc_code", "")
+            
+            joined_date = request.POST.get("joined_on")
+            if joined_date:
+                profile.joined_on = joined_date
+                user.joining_date = joined_date
+                user.save()
+                
+            profile.bio = request.POST.get("bio", "")
+            
+            if "resume" in request.FILES:
+                profile.resume = request.FILES["resume"]
+            if "certificate" in request.FILES:
+                profile.certificate = request.FILES["certificate"]
+            if "signature" in request.FILES:
+                profile.signature = request.FILES["signature"]
+                
+            profile.is_profile_complete = True
+            profile.save()
+            
+            messages.success(request, "Your teacher profile has been completed successfully!")
+            return redirect("teacher_overview")
+
+    # GET handling: calculate completion percentage
+    percentage = 0
+    if role == "student":
+        student_fields = [
+            user.avatar,
+            profile.blood_group,
+            profile.aadhaar_number,
+            user.address,
+            user.city,
+            user.state,
+            user.pincode,
+            profile.previous_school,
+            profile.father_name,
+            profile.mother_name,
+            profile.guardian_occupation,
+            profile.emergency_contact,
+            profile.medical_notes,
+            profile.transport,
+            profile.documents,
+            profile.birth_certificate,
+            profile.student_signature,
+        ]
+        filled = sum(1 for field in student_fields if field)
+        percentage = int((filled / len(student_fields)) * 100) if student_fields else 0
+    elif role == "teacher":
+        teacher_fields = [
+            user.avatar,
+            user.phone,
+            profile.alternate_phone,
+            profile.blood_group,
+            profile.aadhaar_number,
+            profile.pan_number,
+            profile.qualification,
+            profile.experience_years,
+            profile.resume,
+            profile.certificate,
+            user.address,
+            profile.emergency_contact,
+            profile.bank_account_no,
+            profile.bank_ifsc_code,
+            profile.joined_on,
+            profile.bio,
+            profile.signature,
+        ]
+        filled = sum(1 for field in teacher_fields if field)
+        percentage = int((filled / len(teacher_fields)) * 100) if teacher_fields else 0
+
+    return render(request, "accounts/profile_complete_wizard.html", {
+        "role": role,
+        "profile": profile,
+        "percentage": percentage,
+    })
 
 
 

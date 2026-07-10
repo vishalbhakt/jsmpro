@@ -230,6 +230,26 @@
             </a>
         </div>
 
+        {% if user.role == 'student' or user.role == 'teacher' %}
+        <!-- Profile Completion Progress Widget -->
+        <div class="px-4 py-3 border-bottom" style="background-color: rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.05) !important;">
+            <div class="d-flex justify-content-between align-items-center mb-1 text-white-50 uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.05em;">
+                <span>Profile Progress</span>
+                <span class="text-white">
+                    {% if user.role == 'student' %}
+                        {{ user.student_profile.completion_percentage }}%
+                    {% else %}
+                        {{ user.teacher_profile.completion_percentage }}%
+                    {% endif %}
+                </span>
+            </div>
+            <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.15); border-radius: 4px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: {% if user.role == 'student' %}{{ user.student_profile.completion_percentage }}{% else %}{{ user.teacher_profile.completion_percentage }}{% endif %}%; border-radius: 4px;"></div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Sidebar Navigation Menu -->
         <div class="sidebar-scroll">
             <ul class="sidebar-menu">
@@ -283,15 +303,15 @@
                     <li><a href="{% url 'teacher_overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'teacher_overview' %}active{% endif %}"><i class="fa-solid fa-compass"></i> <span>Overview</span></a></li>
 
                     <p class="sidebar-section-header">Management</p>
-                    <li><a href="{% url 'teacher_students' %}" class="sidebar-link {% if 'students' in request.path %}active{% endif %}"><i class="fa-solid fa-users-viewfinder"></i> <span>My Students</span></a></li>
-                    <li><a href="{% url 'teacher_attendance' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}"><i class="fa-solid fa-calendar-check"></i> <span>Attendance</span></a></li>
+                    <li><a href="{% url 'teacher_students' %}" class="sidebar-link {% if 'students' in request.path %}active{% endif %}" {% if not user.teacher_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-users-viewfinder"></i> <span>My Students</span></a></li>
+                    <li><a href="{% url 'teacher_attendance' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}" {% if not user.teacher_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-calendar-check"></i> <span>Attendance</span></a></li>
 
                     <p class="sidebar-section-header">LMS</p>
-                    <li><a href="{% url 'teacher_assignments' %}" class="sidebar-link {% if 'assignments' in request.path or 'submissions' in request.path %}active{% endif %}"><i class="fa-solid fa-file-invoice"></i> <span>Assignments</span></a></li>
-                    <li><a href="{% url 'teacher_learning' %}" class="sidebar-link {% if 'notes' in request.path or 'videos' in request.path %}active{% endif %}"><i class="fa-solid fa-cloud-arrow-up"></i> <span>Learning Hub</span></a></li>
+                    <li><a href="{% url 'teacher_assignments' %}" class="sidebar-link {% if 'assignments' in request.path or 'submissions' in request.path %}active{% endif %}" {% if not user.teacher_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-file-invoice"></i> <span>Assignments</span></a></li>
+                    <li><a href="{% url 'teacher_learning' %}" class="sidebar-link {% if 'notes' in request.path or 'videos' in request.path %}active{% endif %}" {% if not user.teacher_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-cloud-arrow-up"></i> <span>Learning Hub</span></a></li>
 
                     <p class="sidebar-section-header">Evaluation</p>
-                    <li><a href="{% url 'teacher_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}"><i class="fa-solid fa-square-poll-vertical"></i> <span>Exam Results</span></a></li>
+                    <li><a href="{% url 'teacher_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}" {% if not user.teacher_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-square-poll-vertical"></i> <span>Exam Results</span></a></li>
 
                 {% else %}
                     <!-- Student Navigation -->
@@ -299,15 +319,15 @@
                     <li><a href="{% url 'student_overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_overview' %}active{% endif %}"><i class="fa-solid fa-house-chimney-user"></i> <span>Overview</span></a></li>
 
                     <p class="sidebar-section-header">Academics</p>
-                    <li><a href="{% url 'student_attendance' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}"><i class="fa-solid fa-calendar-check"></i> <span>Attendance</span></a></li>
-                    <li><a href="{% url 'student_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}"><i class="fa-solid fa-trophy"></i> <span>Exam Results</span></a></li>
+                    <li><a href="{% url 'student_attendance' %}" class="sidebar-link {% if 'attendance' in request.path %}active{% endif %}" {% if not user.student_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-calendar-check"></i> <span>Attendance</span></a></li>
+                    <li><a href="{% url 'student_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}" {% if not user.student_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-trophy"></i> <span>Exam Results</span></a></li>
 
                     <p class="sidebar-section-header">LMS</p>
-                    <li><a href="{% url 'student_assignments' %}" class="sidebar-link {% if 'assignments' in request.path %}active{% endif %}"><i class="fa-solid fa-file-signature"></i> <span>Assignments</span></a></li>
-                    <li><a href="{% url 'student_learning' %}" class="sidebar-link {% if 'learning' in request.path %}active{% endif %}"><i class="fa-solid fa-graduation-cap"></i> <span>Learning Hub</span></a></li>
+                    <li><a href="{% url 'student_assignments' %}" class="sidebar-link {% if 'assignments' in request.path %}active{% endif %}" {% if not user.student_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-file-signature"></i> <span>Assignments</span></a></li>
+                    <li><a href="{% url 'student_learning' %}" class="sidebar-link {% if 'learning' in request.path %}active{% endif %}" {% if not user.student_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-graduation-cap"></i> <span>Learning Hub</span></a></li>
 
                     <p class="sidebar-section-header">Finance</p>
-                    <li><a href="{% url 'student_payments' %}" class="sidebar-link {% if 'payments' in request.path %}active{% endif %}"><i class="fa-solid fa-credit-card"></i> <span>Pay Dues</span></a></li>
+                    <li><a href="{% url 'student_payments' %}" class="sidebar-link {% if 'payments' in request.path %}active{% endif %}" {% if not user.student_profile.is_profile_complete %}style="opacity: 0.5; pointer-events: none;"{% endif %}><i class="fa-solid fa-credit-card"></i> <span>Pay Dues</span></a></li>
                 {% endif %}
 
                 <!-- Shared Account settings -->
@@ -371,6 +391,24 @@
 
         <!-- Dashboard Content Body -->
         <main class="dashboard-body">
+            {% if user.role == 'student' and not user.student_profile.is_profile_complete %}
+                <div class="alert alert-warning border-0 rounded-4 shadow-sm p-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="text-start">
+                        <h6 class="fw-bold mb-1" style="color: #b45309;"><i class="fa-solid fa-triangle-exclamation me-2"></i> Complete your profile ({{ user.student_profile.completion_percentage }}%)</h6>
+                        <p class="text-xs mb-0 text-muted">Please complete your profile to unlock all features and generate your school ID Card.</p>
+                    </div>
+                    <a href="{% url 'profile_complete_wizard' %}" class="btn btn-premium-primary rounded-pill btn-sm fw-bold">Complete Profile <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                </div>
+            {% elif user.role == 'teacher' and not user.teacher_profile.is_profile_complete %}
+                <div class="alert alert-warning border-0 rounded-4 shadow-sm p-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="text-start">
+                        <h6 class="fw-bold mb-1" style="color: #b45309;"><i class="fa-solid fa-triangle-exclamation me-2"></i> Complete your profile ({{ user.teacher_profile.completion_percentage }}%)</h6>
+                        <p class="text-xs mb-0 text-muted">Please complete your profile to unlock all features and generate your school ID Card.</p>
+                    </div>
+                    <a href="{% url 'profile_complete_wizard' %}" class="btn btn-premium-primary rounded-pill btn-sm fw-bold">Complete Profile <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                </div>
+            {% endif %}
+
             {% block dashboard_content %}{% endblock %}
         </main>
     </div>
