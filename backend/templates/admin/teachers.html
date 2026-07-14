@@ -59,13 +59,145 @@
                         {% endfor %}
                     </td>
                     <td style="text-align:center;">
-                        <a href="{% url 'admin_teacher_assign' teacher.id %}" class="btn btn-sm btn-premium-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;">
-                            <i class="fa-solid fa-sliders me-1"></i> Assign Workload
-                        </a>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button class="btn btn-sm btn-premium-gold rounded-pill px-3 py-1 fw-bold text-white" style="background: linear-gradient(135deg, #b45309 0%, #d97706 100%); border: none; font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#teacherModal{{ teacher.id }}">
+                                <i class="fa-solid fa-eye me-1"></i> View Profile
+                            </button>
+                            <a href="{% url 'admin_teacher_assign' teacher.id %}" class="btn btn-sm btn-premium-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;">
+                                <i class="fa-solid fa-sliders me-1"></i> Assign Workload
+                            </a>
+                        </div>
                     </td>
                 </tr>
+
+                <!-- Modal for teacher details -->
+                <div class="modal fade" id="teacherModal{{ teacher.id }}" tabindex="-1" aria-labelledby="teacherModalLabel{{ teacher.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content rounded-4 border-0 shadow-lg">
+                            <div class="modal-header border-0 bg-light px-4 py-3">
+                                <h5 class="modal-title fw-bold text-primary" id="teacherModalLabel{{ teacher.id }}"><i class="fa-solid fa-chalkboard-user me-2 text-accent"></i> Teacher Profile: {{ teacher.user.full_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4 text-start">
+                                <div class="row g-3">
+                                    <div class="col-md-3 text-center">
+                                        {% if teacher.user.avatar %}
+                                            <img src="{{ teacher.user.avatar.url }}" class="img-thumbnail rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">
+                                                👩‍🏫
+                                            </div>
+                                        {% endif %}
+                                        <span class="badge {% if teacher.status == 'active' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1 fw-bold mb-2">{{ teacher.status|upper }}</span>
+                                        <div><small class="text-muted">Joined: {{ teacher.joined_on|date:"d M Y"|default:"—" }}</small></div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Full Name</label>
+                                                <span class="fw-bold text-secondary">{{ teacher.user.full_name }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Email</label>
+                                                <span class="text-secondary">{{ teacher.user.email }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Employee ID</label>
+                                                <span class="text-secondary">{{ teacher.employee_id|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Department</label>
+                                                <span class="text-secondary">{{ teacher.department|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Subjects Taught (Primary)</label>
+                                                <span class="text-secondary">{{ teacher.subjects_taught|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Qualifications</label>
+                                                <span class="text-secondary">{{ teacher.qualification|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Experience Years</label>
+                                                <span class="text-secondary">{{ teacher.experience_years }} Year(s)</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Aadhaar Number</label>
+                                                <span class="text-secondary">{{ teacher.aadhaar_number|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">PAN Number</label>
+                                                <span class="text-secondary">{{ teacher.pan_number|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Phone Number</label>
+                                                <span class="text-secondary">{{ teacher.user.phone|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Alternate Phone</label>
+                                                <span class="text-secondary">{{ teacher.alternate_phone|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Blood Group</label>
+                                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-bold">{{ teacher.blood_group|default:"—" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr class="my-3">
+                                <h6 class="fw-bold text-accent mb-3"><i class="fa-solid fa-building-columns me-2"></i>Financial & Emergency Information</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="text-xs text-muted uppercase fw-bold d-block">Bank Account No</label>
+                                        <span class="text-secondary">{{ teacher.bank_account_no|default:"—" }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="text-xs text-muted uppercase fw-bold d-block">Bank IFSC Code</label>
+                                        <span class="text-secondary">{{ teacher.bank_ifsc_code|default:"—" }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="text-xs text-muted uppercase fw-bold d-block">Emergency Contact</label>
+                                        <span class="text-secondary">{{ teacher.emergency_contact|default:"—" }}</span>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="text-xs text-muted uppercase fw-bold d-block">Residential Address</label>
+                                        <span class="text-secondary">{{ teacher.user.address|default:"—" }}</span>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="text-xs text-muted uppercase fw-bold d-block">Biography</label>
+                                        <span class="text-secondary">{{ teacher.bio|default:"—" }}</span>
+                                    </div>
+                                </div>
+                                <hr class="my-3">
+                                <h6 class="fw-bold text-accent mb-3"><i class="fa-solid fa-file-signature me-2"></i>Documents & Verification</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="text-xs text-muted uppercase fw-bold mb-2">Uploaded Attachments</label>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            {% if teacher.resume %}
+                                                <a href="{{ teacher.resume.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-file-pdf me-1"></i> Resume / CV</a>
+                                            {% endif %}
+                                            {% if teacher.certificate %}
+                                                <a href="{{ teacher.certificate.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-graduation-cap me-1"></i> Degree Certificate</a>
+                                            {% endif %}
+                                            {% if teacher.signature %}
+                                                <a href="{{ teacher.signature.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-signature me-1"></i> Signature Image</a>
+                                            {% endif %}
+                                            {% if not teacher.resume and not teacher.certificate and not teacher.signature %}
+                                                <span class="text-muted text-xs">No documents uploaded yet.</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 bg-light px-4">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% empty %}
-                <tr><td colspan="6" class="text-center py-5">
+                <tr><td colspan="7" class="text-center py-5">
                     <div style="font-size:3rem;">📂</div>
                     <p class="text-muted mt-2 mb-0">No teachers found.</p>
                 </td></tr>

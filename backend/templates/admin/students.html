@@ -28,6 +28,7 @@
                     <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Admission No</th>
                     <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Class</th>
                     <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Status</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; text-align:center;">Actions</th>
                 </tr>
             </thead>
             <tbody id="studTable">
@@ -53,9 +54,149 @@
                             <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-2 py-1" style="font-size:0.72rem;">❌ Inactive</span>
                         {% endif %}
                     </td>
+                    <td style="text-align:center;">
+                        <button class="btn btn-sm btn-premium-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#studentModal{{ student.id }}">
+                            <i class="fa-solid fa-eye me-1"></i> View Profile
+                        </button>
+                    </td>
                 </tr>
+
+                <!-- Modal for student details -->
+                <div class="modal fade" id="studentModal{{ student.id }}" tabindex="-1" aria-labelledby="studentModalLabel{{ student.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content rounded-4 border-0 shadow-lg">
+                            <div class="modal-header border-0 bg-light px-4 py-3">
+                                <h5 class="modal-title fw-bold text-primary" id="studentModalLabel{{ student.id }}"><i class="fa-solid fa-user-graduate me-2 text-accent"></i> Student Profile: {{ student.user.full_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4 text-start">
+                                <div class="row g-3">
+                                    <div class="col-md-3 text-center">
+                                        {% if student.user.avatar %}
+                                            <img src="{{ student.user.avatar.url }}" class="img-thumbnail rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">
+                                                🎓
+                                            </div>
+                                        {% endif %}
+                                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1 fw-bold mb-2">{{ student.status|upper }}</span>
+                                        <div><small class="text-muted">Joined: {{ student.created_at|date:"d M Y" }}</small></div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Full Name</label>
+                                                <span class="fw-bold text-secondary">{{ student.user.full_name }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Email</label>
+                                                <span class="text-secondary">{{ student.user.email }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Admission Number</label>
+                                                <span class="text-secondary">{{ student.admission_number|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Roll Number</label>
+                                                <span class="text-secondary">{{ student.roll_number|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Classroom / Grade</label>
+                                                <span class="text-secondary">{{ student.classroom.name|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Admission Class</label>
+                                                <span class="text-secondary">{{ student.admission_class|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Date of Birth</label>
+                                                <span class="text-secondary">{{ student.date_of_birth|date:"d M Y"|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Blood Group</label>
+                                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-bold">{{ student.blood_group|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Aadhaar Number</label>
+                                                <span class="text-secondary">{{ student.aadhaar_number|default:"—" }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="text-xs text-muted uppercase fw-bold d-block">Phone Number</label>
+                                                <span class="text-secondary">{{ student.user.phone|default:"—" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <h6 class="fw-bold text-accent mb-3"><i class="fa-solid fa-people-roof me-2"></i>Guardian & Contact Information</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Guardian Name</label>
+                        <span class="text-secondary">{{ student.guardian_name|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Guardian Phone</label>
+                        <span class="text-secondary">{{ student.guardian_phone|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Guardian Occupation</label>
+                        <span class="text-secondary">{{ student.guardian_occupation|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Father's Name</label>
+                        <span class="text-secondary">{{ student.father_name|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Mother's Name</label>
+                        <span class="text-secondary">{{ student.mother_name|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Emergency Contact</label>
+                        <span class="text-secondary">{{ student.emergency_contact|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Residential Address</label>
+                        <span class="text-secondary">{{ student.user.address|default:"—" }} {{ student.user.city|default:"" }} {{ student.user.state|default:"" }} {{ student.user.pincode|default:"" }}</span>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <h6 class="fw-bold text-accent mb-3"><i class="fa-solid fa-file-medical me-2"></i>Other & Documents</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Transport/Bus Route</label>
+                        <span class="text-secondary">{{ student.transport|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="text-xs text-muted uppercase fw-bold d-block">Medical Notes</label>
+                        <span class="text-secondary">{{ student.medical_notes|default:"—" }}</span>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="text-xs text-muted uppercase fw-bold mb-2">Uploaded Attachments</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if student.documents %}
+                                <a href="{{ student.documents.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-file-pdf me-1"></i> Documents</a>
+                            {% endif %}
+                            {% if student.birth_certificate %}
+                                <a href="{{ student.birth_certificate.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-baby me-1"></i> Birth Certificate</a>
+                            {% endif %}
+                            {% if student.student_signature %}
+                                <a href="{{ student.student_signature.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-signature me-1"></i> Signature Image</a>
+                            {% endif %}
+                            {% if not student.documents and not student.birth_certificate and not student.student_signature %}
+                                <span class="text-muted text-xs">No documents uploaded yet.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light px-4">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
                 {% empty %}
-                <tr><td colspan="7" class="text-center py-5">
+                <tr><td colspan="8" class="text-center py-5">
                     <div style="font-size:3rem;">📂</div>
                     <p class="text-muted mt-2 mb-0">No students found.</p>
                 </td></tr>
