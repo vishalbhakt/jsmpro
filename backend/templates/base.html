@@ -326,6 +326,18 @@
             }
         }
 
+        /* Fix Modal, Premium Cards, and Transition Flickering / Hover Boundary Loops */
+        .premium-card, .btn-premium-primary, .btn-premium-accent, .btn-premium-outline, .modal, .modal-dialog, .modal-content {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+
+        .modal-backdrop {
+            pointer-events: none; /* Ignore pointer events on backdrop to prevent hover-out loops */
+        }
+
         {% block extra_css %}{% endblock %}
     </style>
 </head>
