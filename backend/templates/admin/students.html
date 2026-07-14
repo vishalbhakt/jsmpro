@@ -60,69 +60,80 @@
                         </button>
                     </td>
                 </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-5">
+                    <div style="font-size:3rem;">📂</div>
+                    <p class="text-muted mt-2 mb-0">No students found.</p>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-                <!-- Modal for student details -->
-                <div class="modal fade" id="studentModal{{ student.id }}" tabindex="-1" aria-labelledby="studentModalLabel{{ student.id }}" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content rounded-4 border-0 shadow-lg">
-                            <div class="modal-header border-0 bg-light px-4 py-3">
-                                <h5 class="modal-title fw-bold text-primary" id="studentModalLabel{{ student.id }}"><i class="fa-solid fa-user-graduate me-2 text-accent"></i> Student Profile: {{ student.user.full_name }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Modal Definitions for Students -->
+{% for student in students %}
+<div class="modal fade" id="studentModal{{ student.id }}" tabindex="-1" aria-labelledby="studentModalLabel{{ student.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="studentModalLabel{{ student.id }}"><i class="fa-solid fa-user-graduate me-2 text-accent"></i> Student Profile: {{ student.user.full_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-start">
+                <div class="row g-3">
+                    <div class="col-md-3 text-center">
+                        {% if student.user.avatar %}
+                            <img src="{{ student.user.avatar.url }}" class="img-thumbnail rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                        {% else %}
+                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">
+                                🎓
                             </div>
-                            <div class="modal-body p-4 text-start">
-                                <div class="row g-3">
-                                    <div class="col-md-3 text-center">
-                                        {% if student.user.avatar %}
-                                            <img src="{{ student.user.avatar.url }}" class="img-thumbnail rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
-                                        {% else %}
-                                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">
-                                                🎓
-                                            </div>
-                                        {% endif %}
-                                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1 fw-bold mb-2">{{ student.status|upper }}</span>
-                                        <div><small class="text-muted">Joined: {{ student.created_at|date:"d M Y" }}</small></div>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Full Name</label>
-                                                <span class="fw-bold text-secondary">{{ student.user.full_name }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Email</label>
-                                                <span class="text-secondary">{{ student.user.email }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Admission Number</label>
-                                                <span class="text-secondary">{{ student.admission_number|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Roll Number</label>
-                                                <span class="text-secondary">{{ student.roll_number|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Classroom / Grade</label>
-                                                <span class="text-secondary">{{ student.classroom.name|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Admission Class</label>
-                                                <span class="text-secondary">{{ student.admission_class|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Date of Birth</label>
-                                                <span class="text-secondary">{{ student.date_of_birth|date:"d M Y"|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Blood Group</label>
-                                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-bold">{{ student.blood_group|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Aadhaar Number</label>
-                                                <span class="text-secondary">{{ student.aadhaar_number|default:"—" }}</span>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="text-xs text-muted uppercase fw-bold d-block">Phone Number</label>
-                                                <span class="text-secondary">{{ student.user.phone|default:"—" }}</span>
+                        {% endif %}
+                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1 fw-bold mb-2">{{ student.status|upper }}</span>
+                        <div><small class="text-muted">Joined: {{ student.created_at|date:"d M Y" }}</small></div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Full Name</label>
+                                <span class="fw-bold text-secondary">{{ student.user.full_name }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Email</label>
+                                <span class="text-secondary">{{ student.user.email }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Admission Number</label>
+                                <span class="text-secondary">{{ student.admission_number|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Roll Number</label>
+                                <span class="text-secondary">{{ student.roll_number|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Classroom / Grade</label>
+                                <span class="text-secondary">{{ student.classroom.name|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Admission Class</label>
+                                <span class="text-secondary">{{ student.admission_class|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Date of Birth</label>
+                                <span class="text-secondary">{{ student.date_of_birth|date:"d M Y"|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Blood Group</label>
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-bold">{{ student.blood_group|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Aadhaar Number</label>
+                                <span class="text-secondary">{{ student.aadhaar_number|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-xs text-muted uppercase fw-bold d-block">Phone Number</label>
+                                <span class="text-secondary">{{ student.user.phone|default:"—" }}</span>
                             </div>
                         </div>
                     </div>
@@ -195,16 +206,7 @@
         </div>
     </div>
 </div>
-                {% empty %}
-                <tr><td colspan="8" class="text-center py-5">
-                    <div style="font-size:3rem;">📂</div>
-                    <p class="text-muted mt-2 mb-0">No students found.</p>
-                </td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+{% endfor %}
 {% endblock %}
 
 {% block dashboard_js %}
