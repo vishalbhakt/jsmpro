@@ -16,7 +16,14 @@
                     <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Contact Messages</li>
                 </ol>
             </nav>
-            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Inbox: Contact Messages ✉️</h1>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="p-2 rounded-lg d-flex align-items-center justify-content-center" style="background-color: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; border-radius: 0.5rem !important; padding: 0.5rem !important; border: 1px solid rgba(255, 255, 255, 0.2) !important;">
+                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="display-6 fw-bold text-white mb-0" style="font-family:'Outfit',sans-serif; margin-bottom: 0 !important;">Inbox: Contact Messages</h1>
+            </div>
             <p class="text-white-50 mb-0">View and respond to inquiries submitted through the website's Contact Us page.</p>
         </div>
     </div>
@@ -26,11 +33,11 @@
 <div class="premium-card p-4 bg-white mb-4">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-magnifying-glass me-1"></i> Search</label>
             <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by name, subject, or message content...">
         </div>
         <div class="col-md-4">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🚦 Status Filter</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-circle-dot me-1"></i> Status Filter</label>
             <select name="status" id="status" class="form-select rounded-pill">
                 <option value="">-- All Statuses --</option>
                 {% for code, label in status_choices %}
@@ -69,13 +76,33 @@
                     <td class="text-muted" style="font-size:0.8rem;">{{ msg.created_at|date:"d M Y, h:i A" }}</td>
                     <td>
                         {% if msg.status == 'new' %}
-                            <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">New</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60" style="display: inline-flex !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #eff6ff !important; color: #1d4ed8 !important; border: 1px solid rgba(191, 219, 254, 0.6) !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; gap: 0.375rem !important;">
+                                <svg style="width: 14px; height: 14px; color: #2563eb; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                New
+                            </span>
                         {% elif msg.status == 'in_progress' %}
-                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">In Progress</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60" style="display: inline-flex !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; gap: 0.375rem !important;">
+                                <svg style="width: 14px; height: 14px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                In Progress
+                            </span>
                         {% elif msg.status == 'resolved' %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Resolved</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200/60" style="display: inline-flex !important; align-items: center !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; gap: 0.375rem !important;">
+                                <svg style="width: 14px; height: 14px; color: #16a34a; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Resolved
+                            </span>
                         {% else %}
-                            <span class="badge bg-secondary bg-opacity-15 text-secondary rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">Closed</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200/60" style="display: inline-flex !important; align-items: center !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #f9fafb !important; color: #374151 !important; border: 1px solid rgba(229, 231, 235, 0.6) !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; gap: 0.375rem !important;">
+                                <svg style="width: 14px; height: 14px; color: #4b5563; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Closed
+                            </span>
                         {% endif %}
                     </td>
                     <td>
