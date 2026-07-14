@@ -1060,6 +1060,58 @@ def admin_payments(request):
                     academic_year=plan.academic_year
                 )
 
+    if request.method == "POST":
+        action = request.POST.get("action")
+        classroom_id = request.POST.get("classroom_id")
+        plan_id = request.POST.get("plan_id")
+        value_str = request.POST.get("value", "0.00").strip()
+        
+        try:
+            value = float(value_str) if value_str else 0.00
+        except ValueError:
+            value = 0.00
+            
+        classroom = get_object_or_404(ClassRoom, id=classroom_id)
+        plan = get_object_or_404(FeePlan, id=plan_id) if plan_id else None
+        
+        students = StudentProfile.objects.filter(classroom=classroom)
+        
+        if action == "link":
+            if not plan:
+                messages.error(request, "Please select an active Fee Plan to link.")
+                return redirect("admin_payments")
+                
+            count = 0
+            for student in students:
+                sf, created = StudentFee.objects.get_or_create(
+                    student=student,
+                    fee_plan=plan,
+                    academic_year=plan.academic_year
+                )
+                if created:
+                    count += 1
+            messages.success(request, f"Successfully linked {count} new student ledger(s) of class '{classroom.name}' to fee plan '{plan.title}'.")
+            
+        elif action == "discount":
+            if not plan:
+                messages.error(request, "Please select an active Fee Plan to update.")
+                return redirect("admin_payments")
+                
+            fees = StudentFee.objects.filter(student__in=students, fee_plan=plan)
+            count = fees.update(discount=value)
+            messages.success(request, f"Successfully updated standard discount of ₹{value} for {count} student ledger(s) of class '{classroom.name}' on plan '{plan.title}'.")
+            
+        elif action == "scholarship":
+            if not plan:
+                messages.error(request, "Please select an active Fee Plan to update.")
+                return redirect("admin_payments")
+                
+            fees = StudentFee.objects.filter(student__in=students, fee_plan=plan)
+            count = fees.update(scholarship=value)
+            messages.success(request, f"Successfully updated scholarship of ₹{value} for {count} student ledger(s) of class '{classroom.name}' on plan '{plan.title}'.")
+            
+        return redirect("admin_payments")
+
     q = request.GET.get("q", "").strip()
     class_filter = request.GET.get("classroom", "")
     status_filter = request.GET.get("status", "")
@@ -1132,9 +1184,11 @@ def admin_payments(request):
                 overdue_count += 1
                 
     classrooms = ClassRoom.objects.all()
+    active_plans = FeePlan.objects.filter(is_active=True).select_related("classroom")
     return render(request, "admin/payments.html", {
         "ledger_list": ledger_list,
         "classrooms": classrooms,
+        "active_plans": active_plans,
         "todays_collection": todays_collection,
         "weekly_collection": weekly_collection,
         "monthly_collection": monthly_collection,
