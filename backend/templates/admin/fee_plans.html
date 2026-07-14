@@ -16,12 +16,22 @@
                     <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Fee Plans</li>
                 </ol>
             </nav>
-            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Tuition Fee Structures 💰</h1>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="p-2 rounded-lg d-flex align-items-center justify-content-center" style="background-color: rgba(245, 158, 11, 0.15) !important; color: #fbbf24 !important; border-radius: 0.5rem !important; padding: 0.5rem !important; border: 1px solid rgba(245, 158, 11, 0.2) !important;">
+                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="display-6 fw-bold text-white mb-0" style="font-family:'Outfit',sans-serif; margin-bottom: 0 !important;">Tuition Fee Structures</h1>
+            </div>
             <p class="text-white-50 mb-0">Configure master academic fee breakdowns, late rules, installments, waives, and bulk updates.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#createFeePlanModal">
-                <i class="fa-solid fa-plus-circle me-2"></i> Configure New Structure
+            <button class="btn bg-white text-gray-900 font-semibold px-4 py-2.5 rounded-lg shadow-sm hover:bg-gray-100 transition-all d-inline-flex align-items-center gap-2" style="background-color: #ffffff !important; color: #111827 !important; border: 1px solid #e5e7eb !important; border-radius: 0.5rem !important; padding: 0.625rem 1.25rem !important; font-weight: 600 !important; font-size: 0.875rem !important; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;" data-bs-toggle="modal" data-bs-target="#createFeePlanModal">
+                <svg style="width: 16px; height: 16px; color: #111827;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Configure New Structure
             </button>
         </div>
     </div>
@@ -31,12 +41,12 @@
 <div class="premium-card p-4 bg-white mb-4 shadow-sm">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-5">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search Structure Title</label>
-            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search structures...">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-magnifying-glass me-1"></i> Search Structure Title</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control" style="border: 1px solid rgba(229, 231, 235, 0.8) !important; border-radius: 0.5rem !important; height: 42px !important; font-size: 0.85rem !important; padding: 0.5rem 1rem !important;" placeholder="Search structures...">
         </div>
         <div class="col-md-3">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="classroom">Classroom Grade</label>
-            <select name="classroom" id="classroom" class="form-select rounded-pill">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="classroom" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-school me-1"></i> Classroom Grade</label>
+            <select name="classroom" id="classroom" class="form-select" style="border: 1px solid rgba(229, 231, 235, 0.8) !important; border-radius: 0.5rem !important; height: 42px !important; font-size: 0.85rem !important; padding: 0.5rem 1rem !important;">
                 <option value="">-- All Classes --</option>
                 {% for cls in classrooms %}
                 <option value="{{ cls.id }}" {% if cls.id|stringformat:"s" == classroom_filter %}selected{% endif %}>{{ cls.name }}</option>
@@ -44,15 +54,15 @@
             </select>
         </div>
         <div class="col-md-2">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🚦 Status</label>
-            <select name="status" id="status" class="form-select rounded-pill">
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-circle-dot me-1"></i> Status</label>
+            <select name="status" id="status" class="form-select" style="border: 1px solid rgba(229, 231, 235, 0.8) !important; border-radius: 0.5rem !important; height: 42px !important; font-size: 0.85rem !important; padding: 0.5rem 1rem !important;">
                 <option value="">-- Status --</option>
                 <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
                 <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>Archived</option>
             </select>
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+            <button type="submit" class="btn btn-premium-primary w-100 d-inline-flex align-items-center justify-content-center gap-2" style="height: 42px !important; border-radius: 0.5rem !important; font-weight: 600 !important; font-size: 0.875rem !important;"><i class="fa-solid fa-filter"></i> Filter</button>
         </div>
     </form>
 </div>
