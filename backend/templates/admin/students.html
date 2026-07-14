@@ -12,31 +12,35 @@
         right: 0 !important;
         bottom: 0 !important;
         left: 0 !important;
-        z-index: 1060 !important;
-        display: none;
-        background-color: rgba(0, 0, 0, 0.5) !important;
+        z-index: 99999 !important;
+        display: none !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        overflow-y: auto !important;
     }
     .modal.show {
         display: flex !important;
-        align-items: center !important;
+        align-items: flex-start !important;
         justify-content: center !important;
     }
     .modal-dialog {
         position: relative !important;
-        margin: auto !important;
-        max-width: 800px !important;
-        width: calc(100% - 2rem) !important;
-        z-index: 1061 !important;
-        max-height: calc(100vh - 2rem) !important;
+        margin: 2.5rem auto !important;
+        max-width: 42rem !important;
+        width: 100% !important;
+        z-index: 100000 !important;
+        max-height: 90vh !important;
     }
-    .modal-content {
-        max-height: calc(100vh - 4rem) !important;
+    .modal-content-card {
+        max-height: 85vh !important;
         overflow-y: auto !important;
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        background-color: #ffffff !important;
+        border-radius: 0.5rem !important;
+        padding: 1.5rem !important;
     }
 </style>
 {% endblock %}
@@ -93,7 +97,32 @@
                         {% endif %}
                     </td>
                     <td style="text-align:center;">
-                        <button class="btn btn-sm btn-premium-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" data-bs-toggle="modal" data-bs-target="#studentModal{{ student.id }}">
+                        <button class="btn btn-sm btn-premium-primary rounded-pill px-3 py-1 fw-bold view-profile-btn" style="font-size:0.75rem;" onclick="showStudentProfile(this)"
+                                data-fullname="{{ student.user.full_name }}"
+                                data-email="{{ student.user.email }}"
+                                data-avatar="{% if student.user.avatar %}{{ student.user.avatar.url }}{% endif %}"
+                                data-status="{{ student.status }}"
+                                data-joined="{{ student.created_at|date:'d M Y' }}"
+                                data-admission-number="{{ student.admission_number|default:'—' }}"
+                                data-roll-number="{{ student.roll_number|default:'—' }}"
+                                data-classroom="{{ student.classroom.name|default:'—' }}"
+                                data-admission-class="{{ student.admission_class|default:'—' }}"
+                                data-dob="{{ student.date_of_birth|date:'d M Y'|default:'—' }}"
+                                data-blood-group="{{ student.blood_group|default:'—' }}"
+                                data-aadhaar="{{ student.aadhaar_number|default:'—' }}"
+                                data-phone="{{ student.user.phone|default:'—' }}"
+                                data-guardian-name="{{ student.guardian_name|default:'—' }}"
+                                data-guardian-phone="{{ student.guardian_phone|default:'—' }}"
+                                data-guardian-occupation="{{ student.guardian_occupation|default:'—' }}"
+                                data-father-name="{{ student.father_name|default:'—' }}"
+                                data-mother-name="{{ student.mother_name|default:'—' }}"
+                                data-emergency-contact="{{ student.emergency_contact|default:'—' }}"
+                                data-address="{{ student.user.address|default:'—' }} {{ student.user.city|default:'' }} {{ student.user.state|default:'' }} {{ student.user.pincode|default:'' }}"
+                                data-transport="{{ student.transport|default:'—' }}"
+                                data-medical-notes="{{ student.medical_notes|default:'—' }}"
+                                data-documents="{% if student.documents %}{{ student.documents.url }}{% endif %}"
+                                data-birth-certificate="{% if student.birth_certificate %}{{ student.birth_certificate.url }}{% endif %}"
+                                data-signature="{% if student.student_signature %}{{ student.student_signature.url }}{% endif %}">
                             <i class="fa-solid fa-eye me-1"></i> View Profile
                         </button>
                     </td>
@@ -112,69 +141,62 @@
 {% endblock %}
 
 {% block modal_block %}
-<!-- Modal Definitions for Students -->
-{% for student in students %}
-<div class="modal fade fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 overflow-y-auto p-4" id="studentModal{{ student.id }}" tabindex="-1" aria-labelledby="studentModalLabel{{ student.id }}" aria-hidden="true" style="position: fixed !important; z-index: 99999 !important; background-color: rgba(0, 0, 0, 0.6) !important; padding: 1rem !important;">
-    <div class="modal-dialog relative bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-auto my-auto z-[100000] p-6 max-h-[90vh] overflow-y-auto text-left" style="position: relative !important; margin: auto !important; max-width: 42rem !important; width: 100% !important; z-index: 100000 !important; max-height: 90vh !important; overflow-y: auto !important; background-color: #ffffff !important; border-radius: 0.5rem !important; padding: 1.5rem !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;">
+<!-- Single Global Modal for Student Profile Details -->
+<div class="modal fade fixed inset-0 z-[99999] flex items-start justify-center bg-black/60 overflow-y-auto p-4 md:p-6" id="globalStudentModal" tabindex="-1" aria-labelledby="globalStudentModalLabel" aria-hidden="true" style="position: fixed !important; z-index: 99999 !important; background-color: rgba(0, 0, 0, 0.6) !important; padding: 1rem !important; display: none !important;">
+    <div class="modal-dialog relative bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-auto my-auto z-[100000] p-6 max-h-[85vh] overflow-y-auto text-left" style="position: relative !important; margin: 2.5rem auto !important; max-width: 42rem !important; width: 100% !important; z-index: 100000 !important; max-height: 85vh !important; overflow-y: auto !important; background-color: #ffffff !important; border-radius: 0.5rem !important; padding: 1.5rem !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;">
         <div class="modal-content border-0 modal-content-card" style="border: none !important; box-shadow: none !important; background: transparent !important; max-height: none !important; overflow: visible !important;">
             <div class="modal-header border-0 bg-light px-4 py-3 rounded-t-lg">
-                <h5 class="modal-title fw-bold text-primary" id="studentModalLabel{{ student.id }}"><i class="fa-solid fa-user-graduate me-2 text-accent"></i> Student Profile: {{ student.user.full_name }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-bold text-primary" id="globalStudentModalLabel"><i class="fa-solid fa-user-graduate me-2 text-accent"></i> Student Profile: <span id="mFullName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeStudentModal()"></button>
             </div>
             <div class="modal-body p-4 text-start">
                 <div class="row g-3">
                     <div class="col-md-3 text-center">
-                        {% if student.user.avatar %}
-                            <img src="{{ student.user.avatar.url }}" class="img-thumbnail rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
-                        {% else %}
-                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">
-                                🎓
-                            </div>
-                        {% endif %}
-                        <span class="badge {% if student.status == 'active' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1 fw-bold mb-2">{{ student.status|upper }}</span>
-                        <div><small class="text-muted">Joined: {{ student.created_at|date:"d M Y" }}</small></div>
+                        <div id="mAvatarContainer"></div>
+                        <span id="mStatusBadge" class="badge rounded-pill px-3 py-1 fw-bold mb-2"></span>
+                        <div><small class="text-muted">Joined: <span id="mJoined"></span></small></div>
                     </div>
                     <div class="col-md-9">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Full Name</label>
-                                <span class="fw-bold text-secondary">{{ student.user.full_name }}</span>
+                                <span id="mFullNameVal" class="fw-bold text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Email</label>
-                                <span class="text-secondary">{{ student.user.email }}</span>
+                                <span id="mEmail" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Admission Number</label>
-                                <span class="text-secondary">{{ student.admission_number|default:"—" }}</span>
+                                <span id="mAdmissionNo" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Roll Number</label>
-                                <span class="text-secondary">{{ student.roll_number|default:"—" }}</span>
+                                <span id="mRollNo" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Classroom / Grade</label>
-                                <span class="text-secondary">{{ student.classroom.name|default:"—" }}</span>
+                                <span id="mClassroom" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Admission Class</label>
-                                <span class="text-secondary">{{ student.admission_class|default:"—" }}</span>
+                                <span id="mAdmissionClass" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Date of Birth</label>
-                                <span class="text-secondary">{{ student.date_of_birth|date:"d M Y"|default:"—" }}</span>
+                                <span id="mDob" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Blood Group</label>
-                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-bold">{{ student.blood_group|default:"—" }}</span>
+                                <span id="mBloodGroup" class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 fw-bold"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Aadhaar Number</label>
-                                <span class="text-secondary">{{ student.aadhaar_number|default:"—" }}</span>
+                                <span id="mAadhaar" class="text-secondary"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-xs text-muted uppercase fw-bold d-block">Phone Number</label>
-                                <span class="text-secondary">{{ student.user.phone|default:"—" }}</span>
+                                <span id="mPhone" class="text-secondary"></span>
                             </div>
                         </div>
                     </div>
@@ -184,31 +206,31 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Guardian Name</label>
-                        <span class="text-secondary">{{ student.guardian_name|default:"—" }}</span>
+                        <span id="mGuardianName" class="text-secondary"></span>
                     </div>
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Guardian Phone</label>
-                        <span class="text-secondary">{{ student.guardian_phone|default:"—" }}</span>
+                        <span id="mGuardianPhone" class="text-secondary"></span>
                     </div>
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Guardian Occupation</label>
-                        <span class="text-secondary">{{ student.guardian_occupation|default:"—" }}</span>
+                        <span id="mGuardianOccupation" class="text-secondary"></span>
                     </div>
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Father's Name</label>
-                        <span class="text-secondary">{{ student.father_name|default:"—" }}</span>
+                        <span id="mFatherName" class="text-secondary"></span>
                     </div>
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Mother's Name</label>
-                        <span class="text-secondary">{{ student.mother_name|default:"—" }}</span>
+                        <span id="mMotherName" class="text-secondary"></span>
                     </div>
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Emergency Contact</label>
-                        <span class="text-secondary">{{ student.emergency_contact|default:"—" }}</span>
+                        <span id="mEmergencyContact" class="text-secondary"></span>
                     </div>
                     <div class="col-md-12">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Residential Address</label>
-                        <span class="text-secondary">{{ student.user.address|default:"—" }} {{ student.user.city|default:"" }} {{ student.user.state|default:"" }} {{ student.user.pincode|default:"" }}</span>
+                        <span id="mAddress" class="text-secondary"></span>
                     </div>
                 </div>
                 <hr class="my-3">
@@ -216,38 +238,24 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Transport/Bus Route</label>
-                        <span class="text-secondary">{{ student.transport|default:"—" }}</span>
+                        <span id="mTransport" class="text-secondary"></span>
                     </div>
                     <div class="col-md-8">
                         <label class="text-xs text-muted uppercase fw-bold d-block">Medical Notes</label>
-                        <span class="text-secondary">{{ student.medical_notes|default:"—" }}</span>
+                        <span id="mMedicalNotes" class="text-secondary"></span>
                     </div>
                     <div class="col-md-12">
                         <label class="text-xs text-muted uppercase fw-bold mb-2">Uploaded Attachments</label>
-                        <div class="d-flex gap-2 flex-wrap">
-                            {% if student.documents %}
-                                <a href="{{ student.documents.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-file-pdf me-1"></i> Documents</a>
-                            {% endif %}
-                            {% if student.birth_certificate %}
-                                <a href="{{ student.birth_certificate.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-baby me-1"></i> Birth Certificate</a>
-                            {% endif %}
-                            {% if student.student_signature %}
-                                <a href="{{ student.student_signature.url }}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-signature me-1"></i> Signature Image</a>
-                            {% endif %}
-                            {% if not student.documents and not student.birth_certificate and not student.student_signature %}
-                                <span class="text-muted text-xs">No documents uploaded yet.</span>
-                            {% endif %}
-                        </div>
+                        <div id="mAttachmentsContainer" class="d-flex gap-2 flex-wrap"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer border-0 bg-light px-4 rounded-b-lg">
-                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal" onclick="closeStudentModal()">Close</button>
             </div>
         </div>
     </div>
 </div>
-{% endfor %}
 {% endblock %}
 
 {% block dashboard_js %}
@@ -258,5 +266,98 @@ function filterStudents() {
         row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
 }
+
+function showStudentProfile(btn) {
+    const fullname = btn.getAttribute('data-fullname');
+    const email = btn.getAttribute('data-email');
+    const avatar = btn.getAttribute('data-avatar');
+    const status = btn.getAttribute('data-status');
+    const joined = btn.getAttribute('data-joined');
+    const admissionNo = btn.getAttribute('data-admission-number');
+    const rollNo = btn.getAttribute('data-roll-number');
+    const classroom = btn.getAttribute('data-classroom');
+    const admissionClass = btn.getAttribute('data-admission-class');
+    const dob = btn.getAttribute('data-dob');
+    const bloodGroup = btn.getAttribute('data-blood-group');
+    const aadhaar = btn.getAttribute('data-aadhaar');
+    const phone = btn.getAttribute('data-phone');
+    const guardianName = btn.getAttribute('data-guardian-name');
+    const guardianPhone = btn.getAttribute('data-guardian-phone');
+    const guardianOccupation = btn.getAttribute('data-guardian-occupation');
+    const fatherName = btn.getAttribute('data-father-name');
+    const motherName = btn.getAttribute('data-mother-name');
+    const emergencyContact = btn.getAttribute('data-emergency-contact');
+    const address = btn.getAttribute('data-address');
+    const transport = btn.getAttribute('data-transport');
+    const medicalNotes = btn.getAttribute('data-medical-notes');
+    const docs = btn.getAttribute('data-documents');
+    const birthCert = btn.getAttribute('data-birth-certificate');
+    const signature = btn.getAttribute('data-signature');
+
+    document.getElementById('mFullName').textContent = fullname;
+    document.getElementById('mFullNameVal').textContent = fullname;
+    document.getElementById('mEmail').textContent = email;
+    document.getElementById('mJoined').textContent = joined;
+    document.getElementById('mAdmissionNo').textContent = admissionNo;
+    document.getElementById('mRollNo').textContent = rollNo;
+    document.getElementById('mClassroom').textContent = classroom;
+    document.getElementById('mAdmissionClass').textContent = admissionClass;
+    document.getElementById('mDob').textContent = dob;
+    document.getElementById('mBloodGroup').textContent = bloodGroup;
+    document.getElementById('mAadhaar').textContent = aadhaar;
+    document.getElementById('mPhone').textContent = phone;
+    document.getElementById('mGuardianName').textContent = guardianName;
+    document.getElementById('mGuardianPhone').textContent = guardianPhone;
+    document.getElementById('mGuardianOccupation').textContent = guardianOccupation;
+    document.getElementById('mFatherName').textContent = fatherName;
+    document.getElementById('mMotherName').textContent = motherName;
+    document.getElementById('mEmergencyContact').textContent = emergencyContact;
+    document.getElementById('mAddress').textContent = address;
+    document.getElementById('mTransport').textContent = transport;
+    document.getElementById('mMedicalNotes').textContent = medicalNotes;
+
+    const avatarContainer = document.getElementById('mAvatarContainer');
+    if (avatar) {
+        avatarContainer.innerHTML = `<img src="${avatar}" class="img-thumbnail rounded-circle mb-3 shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">`;
+    } else {
+        avatarContainer.innerHTML = `<div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">🎓</div>`;
+    }
+
+    const statusBadge = document.getElementById('mStatusBadge');
+    statusBadge.textContent = status.toUpperCase();
+    statusBadge.className = 'badge rounded-pill px-3 py-1 fw-bold mb-2 ' + (status === 'active' ? 'bg-success' : 'bg-danger');
+
+    const attachContainer = document.getElementById('mAttachmentsContainer');
+    let attachHTML = '';
+    if (docs) {
+        attachHTML += `<a href="${docs}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-file-pdf me-1"></i> Documents</a> `;
+    }
+    if (birthCert) {
+        attachHTML += `<a href="${birthCert}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-baby me-1"></i> Birth Certificate</a> `;
+    }
+    if (signature) {
+        attachHTML += `<a href="${signature}" target="_blank" class="btn btn-xs btn-outline-secondary rounded-pill px-3 py-1"><i class="fa-solid fa-signature me-1"></i> Signature</a>`;
+    }
+    if (!docs && !birthCert && !signature) {
+        attachHTML = '<span class="text-muted text-xs">No documents uploaded yet.</span>';
+    }
+    attachContainer.innerHTML = attachHTML;
+
+    const modalEl = document.getElementById('globalStudentModal');
+    modalEl.style.setProperty('display', 'flex', 'important');
+    modalEl.classList.add('show');
+}
+
+function closeStudentModal() {
+    const modalEl = document.getElementById('globalStudentModal');
+    modalEl.style.setProperty('display', 'none', 'important');
+    modalEl.classList.remove('show');
+}
+
+document.getElementById('globalStudentModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeStudentModal();
+    }
+});
 </script>
 {% endblock %}

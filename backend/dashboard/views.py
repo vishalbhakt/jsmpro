@@ -903,7 +903,7 @@ def admin_teachers(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
         
-    teachers = TeacherProfile.objects.all().select_related("user").order_by("user__first_name")
+    teachers = TeacherProfile.objects.all().select_related("user").prefetch_related("classrooms", "subjects", "subjects__classroom").order_by("user__first_name")
     return render(request, "admin/teachers.html", {
         "teachers": teachers,
         "is_dashboard_view": True
