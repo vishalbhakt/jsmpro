@@ -3,6 +3,44 @@
 
 {% block title %}Student Database - JSM Shiksha Academy{% endblock %}
 
+{% block dashboard_css %}
+<style>
+    /* Overlay position styling override to match fixed inset-0 center alignment */
+    .modal {
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        z-index: 1060 !important;
+        display: none;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+    .modal.show {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .modal-dialog {
+        position: relative !important;
+        margin: auto !important;
+        max-width: 800px !important;
+        width: calc(100% - 2rem) !important;
+        z-index: 1061 !important;
+        max-height: calc(100vh - 2rem) !important;
+    }
+    .modal-content {
+        max-height: calc(100vh - 4rem) !important;
+        overflow-y: auto !important;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 <div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
     <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Student Database 🎒</h1>
