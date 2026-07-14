@@ -267,13 +267,18 @@
                         {% endif %}
                     </td>
                     <td class="text-end" style="white-space: nowrap !important; padding: 1rem !important;">
-                        <div class="d-flex align-items-center justify-content-end gap-2">
-                            <a href="{% url 'admin_payment_history' item.ledger.student.id %}" class="btn btn-sm btn-premium-primary rounded-pill px-3 py-1.5 text-xs font-medium" style="font-size:0.75rem;">
-                                <i class="fa-solid fa-coins me-1"></i> Collect / View
+                        <div class="d-flex align-items-center justify-content-end gap-2" style="display: flex !important; align-items: center !important; justify-content: flex-end !important; gap: 0.5rem !important;">
+                            <a href="{% url 'admin_payment_history' item.ledger.student.id %}" class="btn px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1.5" style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.375rem 0.75rem !important; font-size: 0.75rem !important; font-weight: 600 !important; background-color: #0f172a !important; color: #ffffff !important; border-radius: 0.5rem !important; border: none !important; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; transition: all 0.2s !important; text-decoration: none !important;">
+                                <svg style="width: 14px; height: 14px; color: #ffffff; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Collect / View
                             </a>
                             {% if item.receipt_id %}
-                                <a href="{% url 'admin_receipt_pdf' item.receipt_id %}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-circle" style="width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center;" title="Print Receipt">
-                                    <i class="fa-solid fa-print"></i>
+                                <a href="{% url 'admin_receipt_pdf' item.receipt_id %}" target="_blank" class="btn p-1.5 text-gray-500 hover:text-slate-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm flex items-center justify-center" style="display: flex !important; align-items: center !important; justify-content: center !important; width: 28px !important; height: 28px !important; padding: 0.375rem !important; color: #6b7280 !important; background-color: #ffffff !important; border: 1px solid #e5e7eb !important; border-radius: 0.5rem !important; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; transition: all 0.2s !important;" title="Print Receipt">
+                                    <svg style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.89l-2.072 2.072a2.25 2.25 0 00-.658 1.59V21c0 .621.504 1.125 1.125 1.125h13.766c.621 0 1.125-.504 1.125-1.125v-3.448c0-.621-.247-1.218-.658-1.591l-2.073-2.072m-10.45 0V7.5a2.25 2.25 0 012.25-2.25h5.5c1.24 0 2.25 1.01 2.25 2.25v6.39m-10 0h10M9 9h6m-6 3h6"></path>
+                                    </svg>
                                 </a>
                             {% endif %}
                         </div>
