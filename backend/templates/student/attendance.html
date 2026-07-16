@@ -102,15 +102,22 @@
                     <td class="fw-bold" style="font-size:0.83rem;">{{ record.session.date|date:"d M, Y" }}</td>
                     <td style="font-size:0.83rem;">{{ record.session.classroom.name|default:"—" }}</td>
                     <td>
-                        {% if record.status == 'present' %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">✅ Present</span>
-                        {% elif record.status == 'absent' %}
-                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">❌ Absent</span>
-                        {% elif record.status == 'late' %}
-                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">🕐 Late</span>
-                        {% else %}
-                            <span class="badge bg-info bg-opacity-15 text-info rounded-pill fw-bold px-3 py-1">💙 Excused</span>
-                        {% endif %}
+                        <span class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill fw-bold"
+                              style="font-size:0.75rem; {% if record.status == 'present' %}background:#e6f4ea; color:#137333;{% elif record.status == 'absent' %}background:#fce8e6; color:#c5221f;{% elif record.status == 'late' %}background:#fef7e0; color:#b06000;{% else %}background:#e8f0fe; color:#1a73e8;{% endif %}">
+                            {% if record.status == 'present' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Present</span>
+                            {% elif record.status == 'absent' %}
+                                <i class="fa-solid fa-circle-xmark"></i>
+                                <span>Absent</span>
+                            {% elif record.status == 'late' %}
+                                <i class="fa-solid fa-clock"></i>
+                                <span>Late</span>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>Excused</span>
+                            {% endif %}
+                        </span>
                     </td>
                     <td class="text-muted" style="font-size:0.8rem;">{{ record.remarks|default:"—" }}</td>
                 </tr>
