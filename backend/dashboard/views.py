@@ -1619,20 +1619,37 @@ def admin_facilities(request):
         description = request.POST.get("description")
         icon = request.POST.get("icon", "fa-solid fa-school")
         image = request.FILES.get("image")
-        sort_order = int(request.POST.get("sort_order", 0))
+        
+        try:
+            sort_order = int(request.POST.get("sort_order", 0))
+        except ValueError:
+            sort_order = 0
+            
         is_published = request.POST.get("is_published") == "on"
         
-        Facility.objects.create(
-            title=title, description=description, icon=icon,
-            image=image, sort_order=sort_order, is_published=is_published
-        )
-        messages.success(request, f"Facility '{title}' created successfully.")
-        return redirect("admin_facilities")
+        from django.core.exceptions import ValidationError
+        try:
+            facility = Facility(
+                title=title, description=description, icon=icon,
+                image=image, sort_order=sort_order, is_published=is_published
+            )
+            facility.save()
+            messages.success(request, f"Facility '{title}' created successfully.")
+            return redirect("admin_facilities")
+        except ValidationError as e:
+            if hasattr(e, 'message_dict'):
+                for field, errors in e.message_dict.items():
+                    for error in errors:
+                        messages.error(request, f"{field.capitalize()}: {error}")
+            else:
+                for error in e.messages:
+                    messages.error(request, error)
         
     return render(request, "admin/facilities.html", {
         "facilities": facilities,
         "is_dashboard_view": True
     })
+
 
 @login_required
 def admin_facility_edit(request, facility_id):
@@ -1646,11 +1663,27 @@ def admin_facility_edit(request, facility_id):
         facility.icon = request.POST.get("icon", "fa-solid fa-school")
         if request.FILES.get("image"):
             facility.image = request.FILES.get("image")
-        facility.sort_order = int(request.POST.get("sort_order", 0))
+            
+        try:
+            facility.sort_order = int(request.POST.get("sort_order", 0))
+        except ValueError:
+            facility.sort_order = 0
+            
         facility.is_published = request.POST.get("is_published") == "on"
-        facility.save()
-        messages.success(request, f"Facility '{facility.title}' updated successfully.")
-        return redirect("admin_facilities")
+        
+        from django.core.exceptions import ValidationError
+        try:
+            facility.save()
+            messages.success(request, f"Facility '{facility.title}' updated successfully.")
+            return redirect("admin_facilities")
+        except ValidationError as e:
+            if hasattr(e, 'message_dict'):
+                for field, errors in e.message_dict.items():
+                    for error in errors:
+                        messages.error(request, f"{field.capitalize()}: {error}")
+            else:
+                for error in e.messages:
+                    messages.error(request, error)
         
     return render(request, "admin/facility_edit.html", {
         "facility": facility,

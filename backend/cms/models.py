@@ -49,6 +49,38 @@ class Facility(models.Model):
     class Meta:
         ordering = ["sort_order", "title"]
 
+    def clean(self):
+        super().clean()
+        from django.core.exceptions import ValidationError
+        import re
+
+        # Minimum length validations
+        if self.title and len(self.title.strip()) < 5:
+            raise ValidationError({"title": "Facility title must be at least 5 characters long."})
+        if self.description and len(self.description.strip()) < 10:
+            raise ValidationError({"description": "Description must be at least 10 characters long."})
+
+        # URL validation
+        if self.title:
+            title_stripped = self.title.strip()
+            url_pattern = re.compile(
+                r'^(?:http|ftp)s?://'
+                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
+                r'localhost|'
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+                r'(?::\d+)?'
+                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            if re.search(r'https?://|www\.', title_stripped, re.IGNORECASE) or url_pattern.match(title_stripped):
+                raise ValidationError({"title": "URLs are not allowed in the facility title."})
+
+            # Junk text validation (e.g. no vowels)
+            if not any(char in 'aeiouAEIOU' for char in title_stripped) and len(title_stripped) > 4:
+                raise ValidationError({"title": "Please enter a valid title. Junk text detected."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 

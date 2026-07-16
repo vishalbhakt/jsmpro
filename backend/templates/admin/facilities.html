@@ -5,7 +5,7 @@
 
 {% block dashboard_content %}
 <!-- Page Header -->
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-8">
             <!-- Breadcrumbs -->
@@ -17,10 +17,10 @@
                 </ol>
             </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Campus Facilities 🏫</h1>
-            <p class="text-white-50 mb-0">Publish dynamic lists of sports, library, science and IT facilities on the website.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">Publish dynamic lists of sports, library, science and IT facilities on the website.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#addFacilityModal">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addFacilityModal" style="transition: transform 0.2s ease, box-shadow 0.2s ease !important;" onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 15px -3px rgba(255, 193, 7, 0.3), 0 4px 6px -2px rgba(255, 193, 7, 0.1)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
                 <i class="fa-solid fa-plus-circle me-2"></i> Add New Facility
             </button>
         </div>
@@ -31,44 +31,52 @@
 <div class="row g-4">
     {% for facility in facilities %}
     <div class="col-md-6 col-lg-4">
-        <div class="premium-card p-4 bg-white h-100 d-flex flex-column border border-light shadow-sm">
-            {% if facility.image %}
-                <img src="{{ facility.image.url }}" alt="{{ facility.title }}" class="img-fluid rounded-4 mb-3" style="height:180px; object-fit:cover; width:100%;">
-            {% else %}
-                <div class="rounded-4 d-flex align-items-center justify-content-center mb-3" style="height:180px; background:#f0f7ff;">
-                    <i class="fa-solid fa-building fs-1 text-primary" style="opacity:0.5;"></i>
-                </div>
-            {% endif %}
-            
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;">
-                    <i class="{{ facility.icon|default:'fa-solid fa-school' }} me-1"></i> Icon
-                </span>
-                <div>
-                    {% if facility.is_published %}
-                        <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.65rem;">Published</span>
-                    {% else %}
-                        <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2 py-1" style="font-size:0.65rem;">Draft</span>
-                    {% endif %}
-                    <span class="badge bg-secondary bg-opacity-15 text-secondary rounded-pill fw-bold px-2 py-1 ms-1" style="font-size:0.65rem;">Order: {{ facility.sort_order }}</span>
-                </div>
+        <div class="premium-card p-3 bg-white h-100 d-flex flex-column" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02)';">
+            <div class="position-relative overflow-hidden rounded-4 mb-3" style="height: 200px;">
+                {% if facility.image %}
+                    <img src="{{ facility.image.url }}" alt="{{ facility.title }}" class="img-fluid" style="height:100%; object-fit:cover; width:100%; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                {% else %}
+                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white p-3" style="background: linear-gradient(135deg, #0c2b4d 0%, #1e40af 100%);">
+                        <i class="fa-solid fa-building-columns text-white-50 mb-2" style="font-size: 2.2rem;"></i>
+                        <span class="fw-bold tracking-wider uppercase text-white-50" style="font-size: 0.65rem;">JSM Shiksha Academy</span>
+                    </div>
+                {% endif %}
             </div>
             
-            <h5 class="fw-bold mb-2 text-primary" style="font-family:'Outfit',sans-serif;">{{ facility.title }}</h5>
-            <p class="text-muted mb-3 flex-grow-1" style="font-size:0.82rem; line-height:1.5;">{{ facility.description|truncatechars:120 }}</p>
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1 fw-bold d-flex align-items-center gap-1.5" style="font-size:0.68rem; border: 1px solid rgba(59,130,246,0.12) !important;">
+                    <i class="{{ facility.icon|default:'fa-solid fa-school' }}"></i> Icon
+                </span>
+                {% if facility.is_published %}
+                    <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.15rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
+                        Published
+                    </span>
+                {% else %}
+                    <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.15rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;">
+                        Draft
+                    </span>
+                {% endif %}
+                <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.15rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #f3f4f6 !important; color: #4b5563 !important; border: 1px solid rgba(229, 231, 235, 0.6) !important; white-space: nowrap !important;">
+                    Order: {{ facility.sort_order }}
+                </span>
+            </div>
+            
+            <h5 class="fw-bold mb-2 text-primary text-break" style="font-family:'Outfit',sans-serif; font-size: 1.1rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; height: 1.5rem;">{{ facility.title }}</h5>
+            
+            <p class="text-muted mb-3 flex-grow-1 text-break" style="font-size:0.8rem; line-height:1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.4rem;">{{ facility.description }}</p>
             
             <div class="d-flex gap-2">
-                <a href="{% url 'admin_facility_edit' facility.id %}" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold flex-grow-1" style="font-size:0.75rem;">
+                <a href="{% url 'admin_facility_edit' facility.id %}" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1.5 fw-bold flex-grow-1" style="font-size:0.75rem;">
                     <i class="fa-solid fa-pen"></i> Edit
                 </a>
-                <a href="{% url 'admin_facility_delete' facility.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.75rem;" onclick="return confirm('Are you sure you want to delete facility {{ facility.title }}?')">
+                <a href="{% url 'admin_facility_delete' facility.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5" style="font-size:0.75rem;" onclick="return confirm('Are you sure you want to delete facility {{ facility.title }}?')">
                     <i class="fa-solid fa-trash"></i> Delete
                 </a>
             </div>
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center py-5 premium-card p-5 bg-white">
+    <div class="col-12 text-center py-5 premium-card p-5 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important;">
         <div style="font-size:3rem;">🏫</div>
         <p class="text-muted mt-2 mb-0">No facilities registered. Create one above!</p>
     </div>

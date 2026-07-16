@@ -49,3 +49,59 @@ class ContactMessageTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
+
+
+class FacilityValidationTests(APITestCase):
+    def test_facility_creation_valid(self):
+        from .models import Facility
+        facility = Facility(
+            title="Modern Gymnasium",
+            description="Fully equipped indoor sports arena with basket courts.",
+            icon="fa-solid fa-basketball"
+        )
+        facility.save()
+        self.assertEqual(Facility.objects.count(), 1)
+
+    def test_facility_creation_invalid_title_length(self):
+        from .models import Facility
+        from django.core.exceptions import ValidationError
+        facility = Facility(
+            title="Gym",
+            description="Fully equipped indoor sports arena with basket courts."
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            facility.save()
+        self.assertIn("title", ctx.exception.message_dict)
+
+    def test_facility_creation_invalid_description_length(self):
+        from .models import Facility
+        from django.core.exceptions import ValidationError
+        facility = Facility(
+            title="Modern Gymnasium",
+            description="Short"
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            facility.save()
+        self.assertIn("description", ctx.exception.message_dict)
+
+    def test_facility_creation_url_in_title(self):
+        from .models import Facility
+        from django.core.exceptions import ValidationError
+        facility = Facility(
+            title="Check this: https://google.com",
+            description="Fully equipped indoor sports arena with basket courts."
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            facility.save()
+        self.assertIn("title", ctx.exception.message_dict)
+
+    def test_facility_creation_junk_text(self):
+        from .models import Facility
+        from django.core.exceptions import ValidationError
+        facility = Facility(
+            title="zzzzz",
+            description="Fully equipped indoor sports arena with basket courts."
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            facility.save()
+        self.assertIn("title", ctx.exception.message_dict)
