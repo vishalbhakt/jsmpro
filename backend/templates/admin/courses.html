@@ -5,7 +5,7 @@
 
 {% block dashboard_content %}
 <!-- Page Header -->
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-8">
             <!-- Breadcrumbs -->
@@ -17,10 +17,10 @@
                 </ol>
             </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Courses Manager 🎓</h1>
-            <p class="text-white-50 mb-0">Publish dynamic study courses displayed to prospective students and parents.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">Publish dynamic study courses displayed to prospective students and parents.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addCourseModal" style="transition: transform 0.2s ease, box-shadow 0.2s ease !important;" onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 15px -3px rgba(255, 193, 7, 0.3), 0 4px 6px -2px rgba(255, 193, 7, 0.1)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
                 <i class="fa-solid fa-plus-circle me-2"></i> Add New Course
             </button>
         </div>
@@ -28,22 +28,27 @@
 </div>
 
 <!-- Search & Filters -->
-<div class="premium-card p-4 bg-white mb-4">
+<div class="premium-card p-4 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search Courses</label>
-            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by title or code...">
+            <label class="form-label fw-bold text-xs uppercase text-muted mb-2" for="q" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-magnifying-glass me-1 text-primary"></i> Search Courses</label>
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill px-4" placeholder="Search by title or code..." style="height: 42px !important; font-size: 0.85rem !important; border: 1px solid #d1d5db !important;">
         </div>
         <div class="col-md-4">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="published">🚦 Status</label>
-            <select name="published" id="published" class="form-select rounded-pill">
+            <label class="form-label fw-bold text-xs uppercase text-muted mb-2" for="published" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-circle-dot me-1 text-primary"></i> Status</label>
+            <select name="published" id="published" class="form-select rounded-pill px-4" style="height: 42px !important; font-size: 0.85rem !important; border: 1px solid #d1d5db !important;">
                 <option value="">-- All Statuses --</option>
                 <option value="1" {% if published_filter == '1' %}selected{% endif %}>Published</option>
                 <option value="0" {% if published_filter == '0' %}selected{% endif %}>Draft</option>
             </select>
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2 fw-bold"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 fw-bold d-flex align-items-center justify-content-center gap-2" style="height: 42px !important; font-size: 0.85rem !important; box-shadow: 0 4px 6px -1px rgba(12, 43, 77, 0.2) !important;">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                FILTER
+            </button>
         </div>
     </form>
 </div>
@@ -52,35 +57,45 @@
 <div class="row g-4">
     {% for course in courses %}
     <div class="col-md-6 col-lg-4">
-        <div class="premium-card p-4 bg-white h-100 d-flex flex-column border border-light shadow-sm">
-            {% if course.image %}
-                <img src="{{ course.image.url }}" alt="{{ course.title }}" class="img-fluid rounded-4 mb-3" style="height:180px; object-fit:cover; width:100%;">
-            {% else %}
-                <div class="rounded-4 d-flex align-items-center justify-content-center mb-3" style="height:180px; background:#f0f7ff;">
-                    <i class="fa-solid fa-chalkboard-user fs-1 text-primary" style="opacity:0.5;"></i>
-                </div>
-            {% endif %}
+        <div class="premium-card p-3 bg-white h-100 d-flex flex-column" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02)';">
+            <div class="position-relative overflow-hidden rounded-4 mb-3" style="height: 180px;">
+                {% if course.image %}
+                    <img src="{{ course.image.url }}" alt="{{ course.title }}" class="img-fluid" style="height:100%; object-fit:cover; width:100%; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                {% else %}
+                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white p-3" style="background: linear-gradient(135deg, #0c2b4d 0%, #1e40af 100%);">
+                        <i class="fa-solid fa-graduation-cap text-white-50 mb-2" style="font-size: 2.2rem;"></i>
+                        <span class="fw-bold tracking-wider uppercase text-white-50" style="font-size: 0.65rem;">JSM Shiksha Academy</span>
+                    </div>
+                {% endif %}
+                <!-- Course Code Badge floating at top-right of image -->
+                <span class="position-absolute bg-dark bg-opacity-75 text-white fw-bold px-2.5 py-1.5" style="top: 12px; right: 12px; font-size: 0.68rem; border-radius: 6px; letter-spacing: 0.05em; backdrop-filter: blur(4px); z-index: 10;">{{ course.code }}</span>
+            </div>
             
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge-premium-blue" style="font-size:0.72rem;">{{ course.code }}</span>
-                <div>
+            <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                <h5 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif; font-size: 1.1rem; line-height: 1.3;">{{ course.title }}</h5>
+                <div class="d-flex gap-1 flex-shrink-0">
                     {% if course.is_published %}
-                        <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.65rem;">Published</span>
+                        <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
+                            Published
+                        </span>
                     {% else %}
-                        <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2 py-1" style="font-size:0.65rem;">Draft</span>
+                        <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;">
+                            Draft
+                        </span>
                     {% endif %}
                     {% if course.is_featured %}
-                        <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-2 py-1 ms-1" style="font-size:0.65rem;">★ Featured</span>
+                        <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #eff6ff !important; color: #1d4ed8 !important; border: 1px solid rgba(191, 219, 254, 0.6) !important; white-space: nowrap !important;">
+                            ★ Featured
+                        </span>
                     {% endif %}
                 </div>
             </div>
             
-            <h5 class="fw-bold mb-2 text-primary" style="font-family:'Outfit',sans-serif;">{{ course.title }}</h5>
-            <p class="text-muted mb-3 flex-grow-1" style="font-size:0.82rem; line-height:1.5;">{{ course.description|truncatechars:120 }}</p>
+            <p class="text-muted mb-3 flex-grow-1" style="font-size:0.8rem; line-height:1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 3.6rem;">{{ course.description|default:"No description provided." }}</p>
             
-            <div class="d-flex justify-content-between align-items-center mb-3 text-muted" style="font-size:0.75rem;">
-                <span><i class="fa-solid fa-graduation-cap me-1"></i> Class: {{ course.grade_range }}</span>
-                <span><i class="fa-solid fa-clock me-1"></i> {{ course.duration }}</span>
+            <div class="d-flex justify-content-between align-items-center mb-3 text-muted pt-2" style="font-size:0.75rem; border-top: 1px solid rgba(0,0,0,0.06) !important;">
+                <span class="d-flex align-items-center gap-1"><i class="fa-solid fa-graduation-cap text-primary" style="opacity: 0.7;"></i> <strong>Class:</strong> {{ course.grade_range }}</span>
+                <span class="d-flex align-items-center gap-1"><i class="fa-solid fa-clock text-primary" style="opacity: 0.7;"></i> <strong>Duration:</strong> {{ course.duration }}</span>
             </div>
             
             <div class="d-flex gap-2">
@@ -94,7 +109,7 @@
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center py-5 premium-card p-5 bg-white">
+    <div class="col-12 text-center py-5 premium-card p-5 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important;">
         <div style="font-size:3rem;">📂</div>
         <p class="text-muted mt-2 mb-0">No courses match your query.</p>
     </div>
