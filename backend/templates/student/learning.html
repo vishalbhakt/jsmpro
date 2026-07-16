@@ -109,7 +109,7 @@
                         <div class="modal-body p-4">
                             <div class="ratio ratio-16x9 rounded-3 overflow-hidden">
                                 {% if "youtube.com" in video.video_url or "youtu.be" in video.video_url %}
-                                    <iframe src="{{ video.video_url }}" title="{{ video.title }}" allowfullscreen></iframe>
+                                    <iframe src="{{ video.embed_video_url }}" title="{{ video.title }}" allowfullscreen></iframe>
                                 {% else %}
                                     <video controls src="{{ video.video_url }}" class="w-100"></video>
                                 {% endif %}

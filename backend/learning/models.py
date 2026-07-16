@@ -41,6 +41,40 @@ class VideoLecture(LearningResource):
     thumbnail = models.ImageField(upload_to="video-thumbnails/", blank=True, null=True)
     duration_minutes = models.PositiveIntegerField(default=0)
 
+    @property
+    def embed_video_url(self):
+        url = self.video_url
+        if not url:
+            return ""
+        
+        from urllib.parse import urlparse, parse_qs
+        parsed_url = urlparse(url)
+        
+        # Check if it's youtube.com
+        if "youtube.com" in parsed_url.netloc:
+            # check for watch?v=
+            if parsed_url.path == "/watch":
+                queries = parse_qs(parsed_url.query)
+                video_id = queries.get("v", [None])[0]
+                if video_id:
+                    return f"https://www.youtube.com/embed/{video_id}"
+            # check for embed/
+            elif parsed_url.path.startswith("/embed/"):
+                return url
+            # check for v/
+            elif parsed_url.path.startswith("/v/"):
+                video_id_parts = parsed_url.path.split("/")
+                if len(video_id_parts) > 2:
+                    return f"https://www.youtube.com/embed/{video_id_parts[2]}"
+        # Check if it's youtu.be
+        elif "youtu.be" in parsed_url.netloc:
+            video_id = parsed_url.path.strip("/")
+            if video_id:
+                return f"https://www.youtube.com/embed/{video_id}"
+                
+        return url
+
+
 
 class Assignment(LearningResource):
     class Status(models.TextChoices):
