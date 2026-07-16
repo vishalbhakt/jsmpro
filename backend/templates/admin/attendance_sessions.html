@@ -5,7 +5,7 @@
 
 {% block dashboard_content %}
 <!-- Page Header -->
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-12">
             <!-- Breadcrumbs -->
@@ -17,13 +17,13 @@
                 </ol>
             </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Attendance Sessions 📅</h1>
-            <p class="text-white-50 mb-0">Monitor recorded roll call sessions across grade levels.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">Monitor recorded roll call sessions across grade levels.</p>
         </div>
     </div>
 </div>
 
 <!-- Search & Filters -->
-<div class="premium-card p-4 bg-white mb-4">
+<div class="premium-card p-4 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-10">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
@@ -36,32 +36,76 @@
 </div>
 
 <!-- Sessions Table -->
-<div class="premium-card p-4 bg-white">
-    <div class="table-responsive">
+<div class="premium-card p-4 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
+    <div class="overflow-x-auto w-full">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>#</th>
+                    <th style="width: 60px;">#</th>
                     <th>Class</th>
                     <th>Subject</th>
                     <th>Date</th>
                     <th>Academic Session</th>
+                    <th style="width: 100px; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for session in sessions %}
                 <tr>
-                    <td class="text-muted">{{ forloop.counter }}</td>
+                    <td class="text-muted">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
                     <td class="fw-bold">{{ session.classroom.name }}</td>
                     <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold">{{ session.subject.name }}</span></td>
-                    <td class="fw-bold">{{ session.date|date:"d M Y" }}</td>
-                    <td class="text-muted">{{ session.created_at|date:"Y-d" }}</td>
+                    <td class="fw-bold text-nowrap">{{ session.date|date:"d M Y" }}</td>
+                    <td class="text-muted text-nowrap">{{ session.created_at|date:"Y" }}-{{ session.created_at|date:"y"|add:"1" }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Details" onclick="alert('Audit Mode: Attendance log is read-only.')">
+                            <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
+                        </button>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-center py-5 text-muted">No attendance sessions recorded.</td></tr>
+                <tr><td colspan="6" class="text-center py-5 text-muted">No attendance sessions recorded.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+        <div class="text-muted" style="font-size: 0.85rem;">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+        </div>
+        <ul class="pagination mb-0" style="gap: 4px;">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                    <i class="fa-solid fa-chevron-left me-1"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link rounded-pill border-0 px-3 fw-bold" style="background-color: var(--primary-color) !important; color: white !important;">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 px-3" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color);">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                    Next <i class="fa-solid fa-chevron-right ms-1"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

@@ -5,7 +5,7 @@
 
 {% block dashboard_content %}
 <!-- Page Header -->
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-12">
             <!-- Breadcrumbs -->
@@ -17,13 +17,13 @@
                 </ol>
             </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Attendance Records 📋</h1>
-            <p class="text-white-50 mb-0">Detailed individual student attendance history.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">Detailed individual student attendance history.</p>
         </div>
     </div>
 </div>
 
 <!-- Search & Filters -->
-<div class="premium-card p-4 bg-white mb-4">
+<div class="premium-card p-4 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-10">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
@@ -36,42 +36,94 @@
 </div>
 
 <!-- Records Table -->
-<div class="premium-card p-4 bg-white">
-    <div class="table-responsive">
+<div class="premium-card p-4 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
+    <div class="overflow-x-auto w-full">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>#</th>
+                    <th style="width: 60px;">#</th>
                     <th>Student</th>
                     <th>Date / Session</th>
-                    <th>Status</th>
-                    <th>Recorded Date</th>
+                    <th style="width: 140px; text-align: center;">Status</th>
+                    <th style="width: 150px;">Recorded Date</th>
+                    <th style="width: 90px; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for rec in records %}
                 <tr>
-                    <td class="text-muted">{{ forloop.counter }}</td>
-                    <td class="fw-bold">{{ rec.student.user.full_name }}</td>
+                    <td class="text-muted">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                    <td class="fw-bold text-nowrap">{{ rec.student.user.full_name }}</td>
                     <td>Session on {{ rec.session.date|date:"d M Y" }} ({{ rec.session.subject.name }})</td>
-                    <td>
+                    <td class="text-center">
                         {% if rec.status == 'present' %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">✅ Present</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
+                                <i class="fa-solid fa-circle-check" style="font-size: 0.6rem;"></i> Present
+                            </span>
                         {% elif rec.status == 'absent' %}
-                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">❌ Absent</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #fef2f2 !important; color: #b91c1c !important; border: 1px solid rgba(254, 202, 202, 0.6) !important; white-space: nowrap !important;">
+                                <i class="fa-solid fa-circle-xmark" style="font-size: 0.6rem;"></i> Absent
+                            </span>
                         {% elif rec.status == 'late' %}
-                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">⏳ Late</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;">
+                                <i class="fa-solid fa-circle-exclamation" style="font-size: 0.6rem;"></i> Late
+                            </span>
                         {% else %}
-                            <span class="badge bg-info bg-opacity-15 text-info rounded-pill fw-bold px-3 py-1">excused</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #f0f9ff !important; color: #0369a1 !important; border: 1px solid rgba(186, 230, 253, 0.6) !important; white-space: nowrap !important;">
+                                <i class="fa-solid fa-circle-question" style="font-size: 0.6rem;"></i> Excused
+                            </span>
                         {% endif %}
                     </td>
-                    <td class="text-muted" style="font-size:0.8rem;">{{ rec.created_at|date:"d M Y" }}</td>
+                    <td class="text-muted text-nowrap" style="font-size:0.8rem;">{{ rec.created_at|date:"d M Y" }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Details" onclick="alert('Attendance record details are read-only.')">
+                            <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
+                        </button>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-center py-5 text-muted">No attendance records found.</td></tr>
+                <tr><td colspan="6" class="text-center py-5 text-muted">No attendance records found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+        <div class="text-muted" style="font-size: 0.85rem;">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+        </div>
+        <ul class="pagination mb-0" style="gap: 4px;">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                    <i class="fa-solid fa-chevron-left me-1"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link rounded-pill border-0 px-3 fw-bold" style="background-color: var(--primary-color) !important; color: white !important;">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 px-3" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color);">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                    Next <i class="fa-solid fa-chevron-right ms-1"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

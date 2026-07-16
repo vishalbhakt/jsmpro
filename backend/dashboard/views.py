@@ -2061,8 +2061,14 @@ def admin_attendance_sessions(request):
     if q:
         sessions = sessions.filter(Q(classroom__name__icontains=q) | Q(subject__name__icontains=q))
         
+    from django.core.paginator import Paginator
+    paginator = Paginator(sessions, 15)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, "admin/attendance_sessions.html", {
-        "sessions": sessions,
+        "sessions": page_obj,
+        "page_obj": page_obj,
         "is_dashboard_view": True,
         "q": q
     })
@@ -2077,8 +2083,14 @@ def admin_attendance_records(request):
     if q:
         records = records.filter(Q(student__user__first_name__icontains=q) | Q(student__user__last_name__icontains=q))
         
+    from django.core.paginator import Paginator
+    paginator = Paginator(records, 15)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, "admin/attendance_records.html", {
-        "records": records,
+        "records": page_obj,
+        "page_obj": page_obj,
         "is_dashboard_view": True,
         "q": q
     })
@@ -2112,8 +2124,15 @@ def admin_assignments(request):
         
     classrooms = ClassRoom.objects.all()
     subjects = Subject.objects.all()
+    
+    from django.core.paginator import Paginator
+    paginator = Paginator(assignments, 15)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, "admin/assignments.html", {
-        "assignments": assignments,
+        "assignments": page_obj,
+        "page_obj": page_obj,
         "classrooms": classrooms,
         "subjects": subjects,
         "is_dashboard_view": True,
