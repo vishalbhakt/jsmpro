@@ -4,15 +4,15 @@
 {% block title %}Classroom Management - JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-8">
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Classroom Management 🏫</h1>
-            <p class="text-white-50 mb-0">Manage all grade levels, sections, and class teacher allocations.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">Manage all grade levels, sections, and class teacher allocations.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
             <!-- Add Classroom Button -->
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addClassroomModal">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addClassroomModal" style="transition: transform 0.2s ease, box-shadow 0.2s ease !important;" onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 15px -3px rgba(255, 193, 7, 0.3), 0 4px 6px -2px rgba(255, 193, 7, 0.1)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
                 <i class="fa-solid fa-plus-circle me-2"></i> Add New Class
             </button>
         </div>
@@ -22,32 +22,32 @@
 <div class="row g-4">
     {% for cls in classrooms %}
     <div class="col-md-4 col-lg-3 col-sm-6">
-        <div class="premium-card p-4 bg-white text-center h-100 border border-light shadow-sm d-flex flex-column justify-content-between position-relative">
-            <div class="position-absolute top-0 end-0 p-3">
+        <div class="premium-card p-4 bg-white text-center h-100 d-flex flex-column justify-content-between position-relative" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02)';">
+            <div class="position-absolute" style="top: 14px; right: 14px; z-index: 5;">
                 {% if cls.is_active %}
-                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-2 py-0.5" style="font-size:0.65rem;">Active</span>
+                    <span style="display: inline-flex !important; align-items: center !important; padding: 0.15rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">Active</span>
                 {% else %}
-                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill fw-bold px-2 py-0.5" style="font-size:0.65rem;">Inactive</span>
+                    <span style="display: inline-flex !important; align-items: center !important; padding: 0.15rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #fef2f2 !important; color: #b91c1c !important; border: 1px solid rgba(254, 202, 202, 0.6) !important; white-space: nowrap !important;">Inactive</span>
                 {% endif %}
             </div>
             
-            <div class="mt-2">
-                <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width:60px; height:60px;">
+            <div class="mt-2 flex-grow-1 d-flex flex-column justify-content-center">
+                <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mx-auto" style="width:60px; height:60px;">
                     <i class="fa-solid fa-school fa-2x"></i>
                 </div>
-                <h5 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ cls.name }}</h5>
+                <h5 class="fw-bold mb-1" style="color:var(--primary-color); font-family:'Outfit',sans-serif; font-size: 1.15rem;">{{ cls.name }}</h5>
                 
                 {% if cls.section %}
-                    <span class="badge-premium-blue mb-2 d-inline-block" style="font-size:0.72rem;">Section {{ cls.section }}</span>
+                    <div class="mb-2"><span class="badge-premium-blue d-inline-block" style="font-size:0.72rem;">Section {{ cls.section }}</span></div>
                 {% else %}
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary mb-2 d-inline-block" style="font-size:0.72rem;">No Section</span>
+                    <div class="mb-2"><span class="badge bg-secondary bg-opacity-10 text-secondary d-inline-block" style="font-size:0.72rem;">No Section</span></div>
                 {% endif %}
                 
-                <div class="text-xs text-muted mb-3">
-                    <div class="mb-1"><i class="fa-regular fa-calendar-days me-1"></i> Year: <strong>{{ cls.academic_year|default:"N/A" }}</strong></div>
-                    <div class="mb-1"><i class="fa-solid fa-users me-1"></i> Capacity: <strong>{{ cls.capacity }} students</strong></div>
+                <div class="text-xs text-muted mb-3" style="font-size: 0.78rem;">
+                    <div class="mb-1"><i class="fa-regular fa-calendar-days me-1 text-primary"></i> Year: <strong>{{ cls.academic_year|default:"N/A" }}</strong></div>
+                    <div class="mb-1"><i class="fa-solid fa-users me-1 text-primary"></i> Capacity: <strong>{{ cls.capacity }} students</strong></div>
                     <div>
-                        <i class="fa-solid fa-chalkboard-teacher me-1"></i> Teacher: 
+                        <i class="fa-solid fa-chalkboard-teacher me-1 text-primary"></i> Teacher: 
                         {% if cls.class_teacher %}
                             <strong class="text-primary">{{ cls.class_teacher.user.full_name }}</strong>
                         {% else %}
@@ -56,19 +56,19 @@
                     </div>
                 </div>
             </div>
-
+ 
             <div class="d-flex gap-2 justify-content-center mt-3 pt-3 border-top border-light">
-                <a href="{% url 'admin_class_edit' cls.id %}" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1.5 fw-bold" style="font-size:0.75rem;">
-                    <i class="fa-solid fa-pen me-1"></i> Edit
+                <a href="{% url 'admin_class_edit' cls.id %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Edit Class">
+                    <i class="fa-solid fa-pen"></i>
                 </a>
-                <a href="{% url 'admin_class_delete' cls.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5 fw-bold" style="font-size:0.75rem;" onclick="return confirm('Are you sure you want to delete classroom {{ cls.name }} - {{ cls.section }}?')">
-                    <i class="fa-solid fa-trash me-1"></i> Delete
+                <a href="{% url 'admin_class_delete' cls.id %}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Delete Class" onclick="return confirm('Are you sure you want to delete classroom {{ cls.name }} - {{ cls.section }}?')">
+                    <i class="fa-solid fa-trash-can"></i>
                 </a>
             </div>
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center py-5 premium-card p-5 bg-white">
+    <div class="col-12 text-center py-5 premium-card p-5 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important;">
         <div style="font-size:3rem; margin-bottom:1rem;">🏫</div>
         <h5 class="fw-bold text-primary">No Classrooms Found</h5>
         <p class="text-muted mt-2 mb-0">Get started by creating your first classroom using the button above.</p>

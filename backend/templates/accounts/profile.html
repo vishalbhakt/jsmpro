@@ -217,17 +217,49 @@
         height: 100%;
         background-color: #000;
     }
+    
+    /* Responsive Avatar and Logo overrides */
+    .profile-avatar-responsive {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-color: var(--accent-color) !important;
+    }
+    .profile-logo-wrapper {
+        width: 100px;
+        height: 100px;
+        border-color: var(--accent-color) !important;
+    }
+    .profile-logo-responsive {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+    }
+    @media (min-width: 768px) {
+        .profile-avatar-responsive {
+            width: 130px;
+            height: 130px;
+        }
+        .profile-logo-wrapper {
+            width: 130px;
+            height: 130px;
+        }
+        .profile-logo-responsive {
+            width: 85px;
+            height: 85px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block dashboard_content %}
 <!-- Hero Banner -->
-<div class="premium-card p-5 mb-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #082d54 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #082d54 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
-        <div class="col-md-8">
-            <span class="badge-premium-gold mb-3"><i class="fa-solid fa-user-gear me-1"></i> Profile Settings</span>
-            <h1 class="display-6 text-white mb-2 fw-bold">My Academy Profile 🎓</h1>
-            <p class="text-white-50 mb-0">Update your personal details, profile picture, and view your digital ID card.</p>
+        <div class="col-md-8 d-flex flex-column align-items-start gap-2">
+            <span class="badge-premium-gold mb-1"><i class="fa-solid fa-user-gear me-1"></i> Profile Settings</span>
+            <h1 class="display-6 text-white mb-2 fw-bold" style="font-family:'Outfit',sans-serif;">My Academy Profile 🎓</h1>
+            <p class="text-white-50 mb-0" style="font-size: 0.95rem;">Update your personal details, profile picture, and view your digital ID card.</p>
         </div>
         <div class="col-md-4 text-end d-none d-md-block">
             <i class="fa-solid fa-id-card text-white opacity-10" style="font-size: 7rem;"></i>
@@ -238,13 +270,13 @@
 <div class="row g-4">
     <!-- Left Column: Avatar and Info -->
     <div class="col-lg-4">
-        <div class="premium-card p-4 bg-white text-center mb-4 shadow-sm border border-light">
-            <div class="mb-3">
+        <div class="premium-card p-4 bg-white text-center mb-4 shadow-sm border border-light" style="border-radius: 16px !important;">
+            <div class="mb-3 d-flex justify-content-center">
                 {% if user.avatar %}
-                    <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle border border-4 shadow" style="width: 120px; height: 120px; object-fit: cover; border-color: var(--accent-color) !important;">
+                    <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle border border-4 shadow profile-avatar-responsive">
                 {% else %}
-                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border border-4 shadow" style="width: 120px; height: 120px; border-color: var(--accent-color) !important;">
-                        <img src="{% static 'images/logo.png' %}" alt="Logo" style="width: 80px; height: 80px; object-fit: contain;">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border border-4 shadow profile-logo-wrapper">
+                        <img src="{% static 'images/logo.png' %}" alt="Logo" class="profile-logo-responsive">
                     </div>
                 {% endif %}
             </div>
@@ -427,7 +459,7 @@
     <!-- Right Column: Edit Forms -->
     <div class="col-lg-8">
         <!-- Personal Info Form -->
-        <div class="premium-card p-5 bg-white mb-4 shadow-sm border border-light">
+        <div class="premium-card p-3 p-md-5 bg-white mb-4 shadow-sm border border-light" style="border-radius: 16px !important;">
             <h4 class="fw-bold mb-4 text-primary" style="font-family: 'Outfit', sans-serif;">
                 <i class="fa-solid fa-pen-to-square me-2 text-accent"></i> Update Personal Info
             </h4>
@@ -558,15 +590,15 @@
                 </div>
                 
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3">
+                    <button type="submit" class="btn btn-premium-primary rounded-pill w-100 w-md-auto px-5 py-3">
                         <i class="fa-solid fa-save me-2"></i> Save Changes & Update ID Card
                     </button>
                 </div>
             </form>
         </div>
-
+ 
         <!-- Change Password Form -->
-        <div class="premium-card p-5 bg-white shadow-sm border border-light">
+        <div class="premium-card p-3 p-md-5 bg-white shadow-sm border border-light" style="border-radius: 16px !important;">
             <h4 class="fw-bold mb-4 text-primary" style="font-family: 'Outfit', sans-serif;">
                 <i class="fa-solid fa-lock me-2 text-sky-blue"></i> Change Password
             </h4>
@@ -588,7 +620,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-premium-accent rounded-pill px-5 py-3">
+                    <button type="submit" class="btn btn-premium-accent rounded-pill w-100 w-md-auto px-5 py-3">
                         <i class="fa-solid fa-key me-2"></i> Update Password
                     </button>
                 </div>

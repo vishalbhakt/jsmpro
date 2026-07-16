@@ -111,6 +111,13 @@ class AssignmentForm(forms.ModelForm):
             "status": forms.Select(attrs={"class": "form-select rounded-xl p-3"}),
         }
 
+    def clean_title(self):
+        title = self.cleaned_data.get("title")
+        import re
+        if title and re.search(r'https?://|www\.', title, re.IGNORECASE):
+            raise forms.ValidationError("Title cannot contain raw URLs.")
+        return title
+
 class NoteForm(forms.ModelForm):
     class Meta:
         model = Note

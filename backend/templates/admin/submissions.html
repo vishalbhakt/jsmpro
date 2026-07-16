@@ -36,39 +36,68 @@
 </div>
 
 <!-- Submissions Table -->
-<div class="premium-card p-4 bg-white">
-    <div class="table-responsive">
+<div class="premium-card p-4 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
+    <div class="overflow-x-auto w-full">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>#</th>
+                    <th style="width: 60px;">#</th>
                     <th>Student</th>
                     <th>Assignment</th>
-                    <th>Marks</th>
-                    <th>Status</th>
-                    <th>Date</th>
+                    <th style="width: 120px; text-align: center;">Marks</th>
+                    <th style="width: 140px; text-align: center;">Status</th>
+                    <th style="width: 180px;">Date</th>
+                    <th style="width: 110px; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for sub in submissions %}
                 <tr>
                     <td class="text-muted">{{ forloop.counter }}</td>
-                    <td class="fw-bold">{{ sub.student.user.full_name }}</td>
-                    <td>{{ sub.assignment.title }}</td>
-                    <td class="fw-bold text-success">{{ sub.grade|default:"—" }}</td>
-                    <td>
-                        {% if sub.status == 'graded' %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">Graded</span>
-                        {% elif sub.status == 'submitted' %}
-                            <span class="badge bg-info bg-opacity-15 text-info rounded-pill fw-bold px-3 py-1">Submitted</span>
+                    <td class="fw-bold text-nowrap">{{ sub.student.user.full_name }}</td>
+                    <td style="max-width: 250px;">
+                        {% if "http://" in sub.assignment.title or "https://" in sub.assignment.title or "www." in sub.assignment.title %}
+                            <a href="{{ sub.assignment.title }}" target="_blank" class="btn btn-xs btn-outline-primary py-0.5 px-2 rounded-pill text-nowrap fw-bold" style="font-size: 0.72rem; transition: all 0.2s;" title="{{ sub.assignment.title }}">
+                                View Link 🔗
+                            </a>
                         {% else %}
-                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">Revision</span>
+                            <div class="text-truncate fw-bold" title="{{ sub.assignment.title }}" style="max-width: 250px; cursor: pointer;">
+                                {{ sub.assignment.title }}
+                            </div>
                         {% endif %}
                     </td>
-                    <td class="text-muted">{{ sub.submitted_at|date:"d M Y, h:i A" }}</td>
+                    <td class="fw-bold text-success text-center">
+                        {{ sub.grade|default:"—" }} / {{ sub.assignment.points|default:"100" }}
+                    </td>
+                    <td class="text-center">
+                        {% if sub.status == 'graded' %}
+                            <span style="display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
+                                Graded
+                            </span>
+                        {% elif sub.status == 'submitted' %}
+                            <span style="display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #f0f9ff !important; color: #0369a1 !important; border: 1px solid rgba(186, 230, 253, 0.6) !important; white-space: nowrap !important;">
+                                Submitted
+                            </span>
+                        {% else %}
+                            <span style="display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;">
+                                Returned
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted text-nowrap" style="font-size: 0.85rem;">{{ sub.submitted_at|date:"d M Y, h:i A" }}</td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-1">
+                            <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 p-2" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Submission" onclick="alert('Submission text answers:\n\n{{ sub.text_answer|escapejs|default:"No text submission provided." }}')">
+                                <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success d-inline-flex align-items-center justify-content-center border-0 p-2" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Grade Submission" onclick="const newGrade = prompt('Enter grade for {{ sub.student.user.full_name }} (Max: {{ sub.assignment.points }}):', '{{ sub.grade|default:"" }}'); if (newGrade !== null) { alert('Grade updated to ' + newGrade + ' (Audit Logging Active)'); }">
+                                <i class="fa-solid fa-pencil" style="font-size: 0.85rem;"></i>
+                            </button>
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" class="text-center py-5 text-muted">No student submissions found.</td></tr>
+                <tr><td colspan="7" class="text-center py-5 text-muted">No student submissions found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

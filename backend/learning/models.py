@@ -53,6 +53,13 @@ class Assignment(LearningResource):
     points = models.PositiveIntegerField(default=100)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PUBLISHED)
 
+    def clean(self):
+        super().clean()
+        import re
+        from django.core.exceptions import ValidationError
+        if self.title and re.search(r'https?://|www\.', self.title, re.IGNORECASE):
+            raise ValidationError({"title": "Title cannot contain raw URLs."})
+
 
 class AssignmentSubmission(models.Model):
     class Status(models.TextChoices):

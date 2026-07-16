@@ -4,15 +4,24 @@
 {% block title %}Subjects Catalog - JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<!-- Page Header -->
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-8">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2" style="font-size: 0.8rem;">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item text-white-50" aria-current="page">Academics</li>
+                    <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Subjects Catalog</li>
+                </ol>
+            </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Subjects Catalog 📖</h1>
-            <p class="text-white-50 mb-0">All academic subjects offered across grade levels.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">All academic subjects offered across grade levels.</p>
         </div>
-        <div class="col-md-4 text-end">
+        <div class="col-md-4 text-end mt-3 mt-md-0">
             <!-- Add Subject Button -->
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addSubjectModal" style="transition: transform 0.2s ease, box-shadow 0.2s ease !important;" onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 15px -3px rgba(255, 193, 7, 0.3), 0 4px 6px -2px rgba(255, 193, 7, 0.1)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
                 <i class="fa-solid fa-plus-circle me-2"></i> Add New Subject
             </button>
         </div>
@@ -20,7 +29,7 @@
 </div>
 
 <!-- Filters & Search -->
-<div class="premium-card p-4 bg-white mb-4">
+<div class="premium-card p-4 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-3">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
@@ -59,53 +68,59 @@
 </div>
 
 <!-- Subjects Table -->
-<div class="premium-card p-4 bg-white">
-    <div class="table-responsive">
+<div class="premium-card p-4 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
+    <div class="overflow-x-auto w-full">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">#</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; width: 60px;">#</th>
                     <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Subject Name</th>
-                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Code</th>
-                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Class</th>
-                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Assigned Teacher</th>
-                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Status</th>
-                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Actions</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; width: 120px;">Code</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; width: 140px;">Class</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; width: 220px;">Assigned Teacher</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; width: 120px; text-align: center;">Status</th>
+                    <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800; width: 100px; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for subject in subjects %}
                 <tr>
-                    <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
-                    <td class="fw-bold" style="font-size:0.85rem; color:var(--primary-color);">
-                        📚 {{ subject.name }}
+                    <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                    <td class="fw-bold" style="font-size:0.85rem; color:var(--primary-color); max-width: 280px;">
+                        <div class="text-truncate" title="{{ subject.name }}" style="cursor: pointer;">
+                            📚 {{ subject.name }}
+                        </div>
                         {% if subject.description %}
-                        <div class="text-muted fw-normal mt-1" style="font-size: 0.78rem;">{{ subject.description }}</div>
+                        <div class="text-muted fw-normal mt-1 text-truncate" title="{{ subject.description }}" style="font-size: 0.78rem;">{{ subject.description }}</div>
                         {% endif %}
                     </td>
                     <td><span class="badge-premium-blue" style="font-size:0.72rem;">{{ subject.code }}</span></td>
-                    <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.72rem;">{{ subject.classroom.name }}</span></td>
-                    <td class="fw-bold" style="font-size:0.83rem;">
+                    <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-2.5 py-1" style="font-size:0.68rem; border: 1px solid rgba(16,185,129,0.12) !important;">{{ subject.classroom.name }}</span></td>
+                    <td class="fw-bold text-nowrap" style="font-size:0.83rem;">
                         {% if subject.teacher %}
                         👩‍🏫 {{ subject.teacher.user.full_name }}
                         {% else %}
-                        <span class="text-muted">Unassigned</span>
+                        <span class="text-muted italic">Unassigned</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td class="text-center">
                         {% if subject.is_active %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.72rem;">Active</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
+                                Active
+                            </span>
                         {% else %}
-                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-2 py-1" style="font-size:0.72rem;">Inactive</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.5rem !important; border-radius: 9999px !important; font-size: 0.62rem !important; font-weight: 700 !important; background-color: #fef2f2 !important; color: #b91c1c !important; border: 1px solid rgba(254, 202, 202, 0.6) !important; white-space: nowrap !important;">
+                                Inactive
+                            </span>
                         {% endif %}
                     </td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            <a href="{% url 'admin_subject_edit' subject.id %}" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;">
-                                <i class="fa-solid fa-pen"></i> Edit
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="{% url 'admin_subject_edit' subject.id %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Edit Subject">
+                                <i class="fa-solid fa-pen"></i>
                             </a>
-                            <a href="{% url 'admin_subject_delete' subject.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.75rem;" onclick="return confirm('Are you sure you want to delete subject {{ subject.name }}?')">
-                                <i class="fa-solid fa-trash"></i> Delete
+                            <a href="{% url 'admin_subject_delete' subject.id %}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Delete Subject" onclick="return confirm('Are you sure you want to delete subject {{ subject.name }}?')">
+                                <i class="fa-solid fa-trash-can"></i>
                             </a>
                         </div>
                     </td>
@@ -119,6 +134,44 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+        <div class="text-muted" style="font-size: 0.85rem;">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+        </div>
+        <ul class="pagination mb-0" style="gap: 4px;">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if classroom_filter %}&classroom={{ classroom_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                    <i class="fa-solid fa-chevron-left me-1"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link rounded-pill border-0 px-3 fw-bold" style="background-color: var(--primary-color) !important; color: white !important;">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 px-3" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if classroom_filter %}&classroom={{ classroom_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color);">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if classroom_filter %}&classroom={{ classroom_filter }}{% endif %}{% if teacher_filter %}&teacher={{ teacher_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                    Next <i class="fa-solid fa-chevron-right ms-1"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 
 <!-- Modal: Add Subject -->

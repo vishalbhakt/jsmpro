@@ -1921,8 +1921,14 @@ def admin_subjects(request):
     classrooms = ClassRoom.objects.all()
     teachers = TeacherProfile.objects.filter(user__is_active=True)
     
+    from django.core.paginator import Paginator
+    paginator = Paginator(subjects, 25)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, "admin/subjects.html", {
-        "subjects": subjects,
+        "subjects": page_obj,
+        "page_obj": page_obj,
         "classrooms": classrooms,
         "teachers": teachers,
         "is_dashboard_view": True,
@@ -2027,8 +2033,15 @@ def admin_assessments(request):
         
     classrooms = ClassRoom.objects.all()
     subjects = Subject.objects.all()
+    
+    from django.core.paginator import Paginator
+    paginator = Paginator(assessments, 25)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, "admin/assessments.html", {
-        "assessments": assessments,
+        "assessments": page_obj,
+        "page_obj": page_obj,
         "classrooms": classrooms,
         "subjects": subjects,
         "is_dashboard_view": True,
@@ -2045,8 +2058,14 @@ def admin_results(request):
     if q:
         results = results.filter(Q(student__user__first_name__icontains=q) | Q(student__user__last_name__icontains=q) | Q(assessment__title__icontains=q))
         
+    from django.core.paginator import Paginator
+    paginator = Paginator(results, 25)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, "admin/results.html", {
-        "results": results,
+        "results": page_obj,
+        "page_obj": page_obj,
         "is_dashboard_view": True,
         "q": q
     })
@@ -2116,10 +2135,19 @@ def admin_assignments(request):
         subject = get_object_or_404(Subject, id=subject_id)
         classroom = get_object_or_404(ClassRoom, id=classroom_id)
         
-        Assignment.objects.create(
-            title=title, description=description, subject=subject, classroom=classroom, points=points, due_at=due_at
-        )
-        messages.success(request, f"Assignment '{title}' created successfully.")
+        from django.core.exceptions import ValidationError
+        try:
+            assignment = Assignment(
+                title=title, description=description, subject=subject, classroom=classroom, points=points, due_at=due_at
+            )
+            assignment.full_clean()
+            assignment.save()
+            messages.success(request, f"Assignment '{title}' created successfully.")
+        except ValidationError as e:
+            for field, errors in e.message_dict.items():
+                for error in errors:
+                    messages.error(request, f"Error: {error}")
+            return redirect("admin_assignments")
         return redirect("admin_assignments")
         
     classrooms = ClassRoom.objects.all()

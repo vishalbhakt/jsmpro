@@ -27,15 +27,22 @@
     </div>
 </div>
 
-<!-- Search & Filters -->
-<div class="premium-card p-4 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
-    <form method="get" class="row g-3 align-items-end">
-        <div class="col-md-10">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
-            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by title or subject name...">
+<!-- Search & Filters Toolbar -->
+<div class="premium-card p-3 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
+    <form method="get" class="d-flex flex-wrap align-items-center gap-3 w-100">
+        <div class="flex-grow-1" style="min-width: 250px;">
+            <div class="position-relative">
+                <span class="position-absolute top-50 translate-middle-y start-0 ps-3 text-muted">🔍</span>
+                <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill ps-5" placeholder="Search assignments by title or subject name..." style="height: 42px;">
+            </div>
         </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+        <div class="d-flex align-items-center gap-2">
+            <button type="submit" class="btn btn-premium-primary rounded-pill px-4 d-inline-flex align-items-center justify-content-center" style="height: 42px;">
+                <i class="fa-solid fa-filter me-2"></i> Filter
+            </button>
+            {% if q %}
+            <a href="{% url 'admin_assignments' %}" class="btn btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center justify-content-center" style="height: 42px;" title="Clear Search Filters">Clear</a>
+            {% endif %}
         </div>
     </form>
 </div>
@@ -52,7 +59,7 @@
                     <th>Title</th>
                     <th>Points</th>
                     <th>Due Date</th>
-                    <th style="width: 100px; text-align: center;">Actions</th>
+                    <th style="width: 110px; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,20 +68,20 @@
                     <td class="text-muted">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
                     <td class="fw-bold text-nowrap">{{ ass.classroom.name }}</td>
                     <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold">{{ ass.subject.name }}</span></td>
-                    <td class="fw-bold" style="max-width: 250px;">
-                        <div class="text-truncate" title="{{ ass.title }}" style="cursor: pointer;">
+                    <td class="fw-bold" style="max-width: 200px;">
+                        <div class="text-truncate" title="{{ ass.title }}" style="cursor: pointer; max-width: 200px;">
                             {{ ass.title }}
                         </div>
                     </td>
                     <td>{{ ass.points }}</td>
                     <td class="text-muted text-nowrap">{{ ass.due_at|date:"d M Y, h:i A" }}</td>
                     <td class="text-center">
-                        <div class="d-flex justify-content-center gap-1">
-                            <a href="{% url 'admin_submissions' %}?q={{ ass.title|urlencode }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Submissions">
-                                <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="{% url 'admin_submissions' %}?q={{ ass.title|urlencode }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 p-2" style="width: 34px; height: 34px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Submissions Detail">
+                                <i class="fa-solid fa-eye" style="font-size: 0.9rem;"></i>
                             </a>
-                            <a href="{% url 'admin_assignments_delete' ass.id %}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Delete Assignment" onclick="return confirm('Delete this assignment?')" >
-                                <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+                            <a href="{% url 'admin_assignments_delete' ass.id %}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center border-0 p-2" style="width: 34px; height: 34px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Delete Assignment" onclick="return confirm('Delete this assignment?')" onmouseover="this.style.color='#ef4444'; this.style.backgroundColor='rgba(239, 68, 68, 0.08)';" onmouseout="this.style.color=''; this.style.backgroundColor='';">
+                                <i class="fa-solid fa-trash-can" style="font-size: 0.9rem;"></i>
                             </a>
                         </div>
                     </td>

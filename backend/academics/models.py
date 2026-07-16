@@ -109,6 +109,18 @@ class Result(models.Model):
         ]
         ordering = ["-created_at"]
 
+    @property
+    def total_marks(self):
+        return self.assessment.max_marks if self.assessment else 100.0
+
+    @property
+    def percentage(self):
+        max_m = float(self.total_marks)
+        obtained = float(self.marks_obtained)
+        if max_m > 0:
+            return round((obtained / max_m) * 100, 2)
+        return 0.0
+
     def save(self, *args, **kwargs):
         if not self.grade:
             max_marks = float(self.assessment.max_marks) if self.assessment and self.assessment.max_marks else 100.0

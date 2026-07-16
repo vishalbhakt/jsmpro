@@ -105,3 +105,25 @@ class FacilityValidationTests(APITestCase):
         with self.assertRaises(ValidationError) as ctx:
             facility.save()
         self.assertIn("title", ctx.exception.message_dict)
+
+
+class AssignmentValidationTests(APITestCase):
+    def test_assignment_creation_url_in_title(self):
+        from learning.models import Assignment
+        from django.core.exceptions import ValidationError
+        from academics.models import ClassRoom, Subject
+        from django.utils import timezone
+        
+        classroom = ClassRoom.objects.create(name="Class 10", academic_year="2026-27")
+        subject = Subject.objects.create(name="Mathematics", code="MATH10", classroom=classroom)
+        
+        assignment = Assignment(
+            title="Read: https://google.com",
+            description="Homework assignments",
+            subject=subject,
+            classroom=classroom,
+            due_at=timezone.now() + timezone.timedelta(days=2)
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            assignment.full_clean()
+        self.assertIn("title", ctx.exception.message_dict)
