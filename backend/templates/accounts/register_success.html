@@ -151,22 +151,24 @@ body {
 .action-group {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 .btn-premium {
     background: #0B2C53;
     border: none;
     color: white;
-    font-weight: 600;
-    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    padding: 0.85rem 1.5rem;
     border-radius: 60px;
-    font-size: 1rem;
-    transition: all 0.2s;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
     box-shadow: 0 6px 20px rgba(11, 44, 83, 0.15);
     width: 100%;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .btn-premium:hover {
     background: #1a4a7a;
@@ -177,25 +179,28 @@ body {
 }
 .btn-outline-premium {
     background: transparent;
-    border: 1.5px solid #0B2C53;
-    color: #0B2C53;
-    font-weight: 600;
-    padding: 0.9rem 1.5rem;
+    border: 2px solid #cbd5e1;
+    color: #64748b;
+    font-weight: 700;
+    padding: 0.85rem 1.5rem;
     border-radius: 60px;
-    font-size: 1rem;
-    transition: all 0.2s;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
     width: 100%;
     text-align: center;
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 0.65;
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .btn-outline-premium[disabled] {
     pointer-events: none;
 }
 .btn-outline-premium .tooltip-text {
     visibility: hidden;
-    width: 200px;
+    width: 220px;
     background: #0B2C53;
     color: #fff;
     text-align: center;
@@ -203,7 +208,7 @@ body {
     padding: 0.5rem 0.75rem;
     position: absolute;
     z-index: 1;
-    bottom: 120%;
+    bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.75rem;
@@ -225,6 +230,29 @@ body {
 .btn-outline-premium:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
+}
+.btn-secondary-premium {
+    background: #F8FAFC;
+    border: 2px solid #cbd5e1;
+    color: #0B2C53;
+    font-weight: 700;
+    padding: 0.85rem 1.5rem;
+    border-radius: 60px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-secondary-premium:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0B2C53;
+    transform: translateY(-2px);
+    text-decoration: none;
 }
 @keyframes popIn {
     0% { transform: scale(0.7); opacity: 0.3; }
@@ -254,17 +282,17 @@ body {
         <div class="success-body">
             <!-- Timeline -->
             <div class="status-timeline">
-                <div class="step"><i class="fa-regular fa-circle-check"></i> Registration Submitted</div>
-                <div class="step pending"><i class="fa-regular fa-clock"></i> Admin Verification <span class="badge">In Progress</span></div>
-                <div class="step"><i class="fa-regular fa-circle"></i> Approval &amp; Access</div>
-                <div class="step"><i class="fa-regular fa-circle"></i> Profile Completion</div>
+                <div class="step"><i class="fa-solid fa-circle-check"></i> Registration Submitted</div>
+                <div class="step pending"><i class="fa-solid fa-circle-notch fa-spin"></i> Admin Verification <span class="badge">In Progress</span></div>
+                <div class="step text-muted"><i class="fa-regular fa-circle"></i> Approval &amp; Access</div>
+                <div class="step text-muted"><i class="fa-regular fa-circle"></i> Profile Completion</div>
             </div>
 
             <!-- Status Card -->
             <div class="status-card">
-                <span class="label"><i class="fa-regular fa-flag me-1"></i> Current Status:</span>
+                <span class="label"><i class="fa-solid fa-flag me-1"></i> Current Status:</span>
                 <span class="badge-status">Pending Approval</span>
-                <span class="sub"><i class="fa-regular fa-hourglass-half me-1"></i> Under review</span>
+                <span class="sub"><i class="fa-solid fa-hourglass-half me-1"></i> Under review</span>
             </div>
 
             <div class="info-text">
@@ -274,12 +302,12 @@ body {
             </div>
 
             <div class="action-group">
-                <a href="{% url 'login' %}" class="btn-premium"><i class="fa-regular fa-arrow-right me-2"></i> Go to Login</a>
+                <a href="{% url 'login' %}" class="btn-premium"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Go to Login</a>
                 <button class="btn-outline-premium" disabled>
-                    <i class="fa-regular fa-lock me-2"></i> Login (disabled)
+                    <i class="fa-solid fa-lock me-2"></i> Login (disabled)
                     <span class="tooltip-text">Available after account approval</span>
                 </button>
-                <a href="{% url 'home' %}" class="btn-premium" style="background:#F8FAFC;color:#0B2C53;box-shadow:none;border:1px solid #e2e8f0;">Return Home</a>
+                <a href="{% url 'home' %}" class="btn-secondary-premium"><i class="fa-solid fa-house me-2"></i> Return Home</a>
             </div>
         </div>
     </div>

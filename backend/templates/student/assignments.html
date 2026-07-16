@@ -26,31 +26,31 @@
 
 {% if assignments %}
 <div class="row g-4" id="assignmentsGrid">
-    {% for item in assignments %}
-    <div class="col-md-6 col-lg-4 assignment-card-wrapper" data-title="{{ item.assignment.title|lower }}" data-subject="{{ item.assignment.subject.name|lower }}">
+    {% for assignment in assignments %}
+    <div class="col-md-6 col-lg-4 assignment-card-wrapper" data-title="{{ assignment.title|lower }}" data-subject="{{ assignment.subject.name|lower }}">
         <div class="premium-card p-4 bg-white h-100 d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <span class="badge rounded-pill fw-bold px-3 py-2" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.7rem;">{{ item.assignment.subject.name }}</span>
-                {% if item.submission %}
+                <span class="badge rounded-pill fw-bold px-3 py-2" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.7rem;">{{ assignment.subject.name }}</span>
+                {% if assignment.submission %}
                     <span class="badge bg-success rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-check me-1"></i> Submitted</span>
-                {% elif item.assignment.due_at < today %}
+                {% elif assignment.due_at < today %}
                     <span class="badge bg-danger rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-clock me-1"></i> Overdue</span>
                 {% else %}
                     <span class="badge bg-warning text-dark rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-regular fa-clock me-1"></i> Pending</span>
                 {% endif %}
             </div>
-            <h5 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ item.assignment.title }}</h5>
-            <p class="text-muted mb-3" style="font-size:0.83rem; line-height:1.6;">{{ item.assignment.description|truncatechars:100 }}</p>
+            <h5 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ assignment.title }}</h5>
+            <p class="text-muted mb-3" style="font-size:0.83rem; line-height:1.6;">{{ assignment.description|truncatechars:100 }}</p>
             <div class="d-flex align-items-center gap-2 mb-3 mt-auto">
                 <i class="fa-regular fa-calendar text-muted" style="font-size:0.8rem;"></i>
-                <span class="text-muted" style="font-size:0.8rem; font-weight:600;">Due: {{ item.assignment.due_at|date:"d M, Y" }}</span>
+                <span class="text-muted" style="font-size:0.8rem; font-weight:600;">Due: {{ assignment.due_at|date:"d M, Y" }}</span>
             </div>
-            {% if item.submission %}
+            {% if assignment.submission %}
                 <div class="p-2 rounded-3 bg-success bg-opacity-10 text-success text-center fw-bold" style="font-size:0.8rem;">
-                    <i class="fa-solid fa-circle-check me-1"></i> Work submitted on {{ item.submission.submitted_at|date:"d M" }}
+                    <i class="fa-solid fa-circle-check me-1"></i> Work submitted on {{ assignment.submission.submitted_at|date:"d M" }}
                 </div>
             {% else %}
-                <button type="button" class="btn btn-premium-primary rounded-pill py-2 w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#submitModal{{ item.assignment.id }}">
+                <button type="button" class="btn btn-premium-primary rounded-pill py-2 w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#submitModal{{ assignment.id }}">
                     <i class="fa-solid fa-upload me-1"></i> Submit Assignment
                 </button>
             {% endif %}
@@ -58,8 +58,8 @@
     </div>
 
     <!-- Submit Modal -->
-    {% if not item.submission %}
-    <div class="modal fade" id="submitModal{{ item.assignment.id }}" tabindex="-1">
+    {% if not assignment.submission %}
+    <div class="modal fade" id="submitModal{{ assignment.id }}" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg">
                 <div class="modal-header border-0 pb-0 px-4 pt-4">
@@ -67,10 +67,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body px-4 pb-4">
-                    <p class="text-muted mb-3" style="font-size:0.85rem;"><strong>{{ item.assignment.title }}</strong> — {{ item.assignment.subject.name }}</p>
+                    <p class="text-muted mb-3" style="font-size:0.85rem;"><strong>{{ assignment.title }}</strong> — {{ assignment.subject.name }}</p>
                     <form method="post" action="{% url 'student_assignments' %}" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <input type="hidden" name="assignment_id" value="{{ item.assignment.id }}">
+                        <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
                         <div class="mb-3">
                             <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Upload Your Work (PDF or Document)</label>
                             <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.txt,.jpg,.png" required>

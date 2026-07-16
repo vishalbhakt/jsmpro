@@ -202,6 +202,13 @@
             color: var(--sky-blue);
         }
 
+        @media (min-width: 1200px) and (max-width: 1399.98px) {
+            .public-navbar .nav-link {
+                margin: 0 0.25rem !important;
+                font-size: 0.8rem !important;
+            }
+        }
+
         .badge-premium-gold {
             background-color: rgba(255, 193, 7, 0.12);
             color: #d97706;
@@ -363,7 +370,7 @@
 
     <!-- Public Site Header -->
     {% if not is_dashboard_view %}
-    <nav class="navbar navbar-expand-lg public-navbar sticky-top">
+    <nav class="navbar navbar-expand-xl public-navbar sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-3" href="{% url 'home' %}">
                 <img src="{% static 'images/logo.png' %}" alt="JSM Logo" style="width: 48px; height: 48px; object-fit: contain;">

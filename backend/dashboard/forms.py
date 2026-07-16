@@ -119,11 +119,11 @@ class AssignmentForm(forms.ModelForm):
         return title
 
 class NoteForm(forms.ModelForm):
+    classroom = forms.ModelChoiceField(queryset=ClassRoom.objects.all(), required=False, widget=forms.Select(attrs={"class": "form-select rounded-xl p-3"}))
     class Meta:
         model = Note
         fields = ["classroom", "subject", "title", "description", "file", "is_published"]
         widgets = {
-            "classroom": forms.Select(attrs={"class": "form-select rounded-xl p-3"}),
             "subject": forms.Select(attrs={"class": "form-select rounded-xl p-3"}),
             "title": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "description": forms.Textarea(attrs={"class": "form-control rounded-xl p-3", "rows": 3}),
@@ -132,18 +132,18 @@ class NoteForm(forms.ModelForm):
         }
 
 class VideoLectureForm(forms.ModelForm):
+    classroom = forms.ModelChoiceField(queryset=ClassRoom.objects.all(), required=False, widget=forms.Select(attrs={"class": "form-select rounded-xl p-3"}))
+    duration_minutes = forms.IntegerField(required=False, initial=0, widget=forms.NumberInput(attrs={"class": "form-control rounded-xl p-3"}))
     class Meta:
         model = VideoLecture
         fields = ["classroom", "subject", "title", "description", "video_url", "video_file", "thumbnail", "duration_minutes", "is_published"]
         widgets = {
-            "classroom": forms.Select(attrs={"class": "form-select rounded-xl p-3"}),
             "subject": forms.Select(attrs={"class": "form-select rounded-xl p-3"}),
             "title": forms.TextInput(attrs={"class": "form-control rounded-xl p-3"}),
             "description": forms.Textarea(attrs={"class": "form-control rounded-xl p-3", "rows": 3}),
             "video_url": forms.URLInput(attrs={"class": "form-control rounded-xl p-3"}),
             "video_file": forms.FileInput(attrs={"class": "form-control rounded-xl p-3"}),
             "thumbnail": forms.FileInput(attrs={"class": "form-control rounded-xl p-3"}),
-            "duration_minutes": forms.NumberInput(attrs={"class": "form-control rounded-xl p-3"}),
             "is_published": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 

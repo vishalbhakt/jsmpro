@@ -382,7 +382,7 @@ def student_assignments(request):
     # Handle Submission upload
     if request.method == "POST":
         assignment_id = request.POST.get("assignment_id")
-        text_answer = request.POST.get("text_answer", "")
+        text_answer = request.POST.get("notes", "") or request.POST.get("text_answer", "")
         file_attachment = request.FILES.get("file")
         
         assignment = get_object_or_404(Assignment, id=assignment_id, classroom=sp.classroom)
@@ -408,17 +408,17 @@ def student_assignments(request):
             messages.success(request, f"Assignment submitted successfully on {timezone.now().strftime('%d %b, %Y')} at {timezone.now().strftime('%H:%M')}.")
         return redirect("student_assignments")
 
-    # Map assignments to their submission if any
-    assignments_with_subs = []
+    # Map submission directly onto the assignment objects
     for ass in assignments:
-        sub = submissions.filter(assignment=ass).first()
-        assignments_with_subs.append({
-            "assignment": ass,
-            "submission": sub
-        })
+        ass.submission = submissions.filter(assignment=ass).first()
         
+    today = timezone.now()
+    
+    print(f"DEBUG: Found {assignments.count()} assignments for user {request.user} (username: {request.user.username}) in classroom {sp.classroom}")
+    
     return render(request, "student/assignments.html", {
-        "assignments": assignments_with_subs,
+        "assignments": assignments,
+        "today": today,
         "is_dashboard_view": True
     })
 
@@ -449,6 +449,8 @@ def student_learning(request):
     return render(request, "student/learning.html", {
         "notes": notes,
         "videos": videos,
+        "notes_count": notes.count(),
+        "videos_count": videos.count(),
         "subjects": subjects,
         "search_query": search_query,
         "subject_filter": subject_filter,
@@ -717,36 +719,81 @@ def teacher_learning(request):
     tp = request.user.teacher_profile
     notes = Note.objects.filter(teacher=tp).order_by("-created_at")
     videos = VideoLecture.objects.filter(teacher=tp).order_by("-created_at")
+    subjects = Subject.objects.filter(teacher=tp)
     
     note_form = NoteForm()
     video_form = VideoLectureForm()
     
-    if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "publish_note":
-            form = NoteForm(request.POST, request.FILES)
-            if form.is_valid():
-                note = form.save(commit=False)
-                note.teacher = tp
-                note.save()
-                messages.success(request, f"Note handout '{note.title}' uploaded successfully.")
-                return redirect("teacher_learning")
-        elif action == "publish_video":
-            form = VideoLectureForm(request.POST, request.FILES)
-            if form.is_valid():
-                video = form.save(commit=False)
-                video.teacher = tp
-                video.save()
-                messages.success(request, f"Video lesson '{video.title}' published successfully.")
-                return redirect("teacher_learning")
-                
     return render(request, "teacher/learning.html", {
         "notes": notes,
         "videos": videos,
+        "subjects": subjects,
         "note_form": note_form,
         "video_form": video_form,
         "is_dashboard_view": True
     })
+
+@login_required
+def teacher_upload_note(request):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    if request.method == "POST":
+        form = NoteForm(request.POST, request.FILES)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.teacher = tp
+            note.is_published = True
+            note.save()
+            messages.success(request, f"Note handout '{note.title}' uploaded successfully.")
+        else:
+            messages.error(request, "Failed to upload note. Please check form data.")
+    return redirect("teacher_learning")
+
+@login_required
+def teacher_upload_video(request):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    if request.method == "POST":
+        form = VideoLectureForm(request.POST, request.FILES)
+        if form.is_valid():
+            video = form.save(commit=False)
+            video.teacher = tp
+            video.is_published = True
+            video.save()
+            messages.success(request, f"Video lesson '{video.title}' published successfully.")
+        else:
+            messages.error(request, "Failed to add video. Please check form data.")
+    return redirect("teacher_learning")
+
+@login_required
+def teacher_delete_note(request, note_id):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    note = get_object_or_404(Note, id=note_id, teacher=tp)
+    if request.method == "POST":
+        title = note.title
+        note.delete()
+        messages.success(request, f"Note '{title}' deleted successfully.")
+    return redirect("teacher_learning")
+
+@login_required
+def teacher_delete_video(request, video_id):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    video = get_object_or_404(VideoLecture, id=video_id, teacher=tp)
+    if request.method == "POST":
+        title = video.title
+        video.delete()
+        messages.success(request, f"Video lecture '{title}' deleted successfully.")
+    return redirect("teacher_learning")
 
 @login_required
 def teacher_results(request):

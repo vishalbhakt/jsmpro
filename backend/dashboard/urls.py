@@ -36,6 +36,10 @@ urlpatterns = [
     path("dashboard/teacher/assignments/", views.teacher_assignments, name="teacher_assignments"),
     path("dashboard/teacher/assignments/delete/<int:assignment_id>/", views.teacher_delete_assignment, name="teacher_delete_assignment"),
     path("dashboard/teacher/learning/", views.teacher_learning, name="teacher_learning"),
+    path("dashboard/teacher/learning/upload-note/", views.teacher_upload_note, name="teacher_upload_note"),
+    path("dashboard/teacher/learning/upload-video/", views.teacher_upload_video, name="teacher_upload_video"),
+    path("dashboard/teacher/learning/delete-note/<int:note_id>/", views.teacher_delete_note, name="teacher_delete_note"),
+    path("dashboard/teacher/learning/delete-video/<int:video_id>/", views.teacher_delete_video, name="teacher_delete_video"),
     path("dashboard/teacher/results/", views.teacher_results, name="teacher_results"),
 
     # Admin Portal Views
