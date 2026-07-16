@@ -2,9 +2,28 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlparse
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def load_env():
+    env_file = BASE_DIR / ".env"
+    if env_file.exists():
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    key, val = line.split("=", 1)
+                    key = key.strip()
+                    val = val.strip().strip("'\"")
+                    os.environ.setdefault(key, val)
+
+
+load_env()
 
 
 def env(name, default=None):
@@ -18,8 +37,11 @@ def env_bool(name, default=False):
     return value.lower() in {"1", "true", "yes", "on"}
 
 
-SECRET_KEY = env("DJANGO_SECRET_KEY", "django-insecure-local-jsm-shiksha-academy")
-DEBUG = env_bool("DJANGO_DEBUG", True)
+SECRET_KEY = env("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise ImproperlyConfigured("The DJANGO_SECRET_KEY environment variable is not set.")
+
+DEBUG = env_bool("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = [
     host.strip()

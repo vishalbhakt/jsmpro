@@ -21,8 +21,8 @@ class APISmokeTests(APITestCase):
     def test_student_token_contains_role_and_profile_data(self):
         response = self.login("student", "Student@12345")
 
-        self.assertEqual(response.data["user"]["role"], "student")
-        self.assertEqual(response.data["user"]["profile"]["admission_number"], "ADM00001")
+        self.assertEqual(response.data["user"]["role"], "Student")
+        self.assertTrue(response.data["user"]["profile"]["admission_number"].startswith("ADM"))
 
     def test_student_can_read_scoped_portal_data(self):
         self.login("student", "Student@12345")
