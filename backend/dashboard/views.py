@@ -376,7 +376,7 @@ def student_assignments(request):
         return redirect("dashboard_redirect")
     
     sp = request.user.student_profile
-    assignments = Assignment.objects.filter(classroom=sp.classroom, is_published=True).order_by("-due_at")
+    assignments = Assignment.objects.filter(classroom=sp.classroom, status=Assignment.Status.PUBLISHED).order_by("-due_at")
     submissions = AssignmentSubmission.objects.filter(student=sp)
     
     # Handle Submission upload
@@ -414,15 +414,13 @@ def student_assignments(request):
         
     today = timezone.now()
     
-    print(f"DEBUG: Found {assignments.count()} assignments for user {request.user} (username: {request.user.username}) in classroom {sp.classroom}")
+    print(f"DEBUG: Found {assignments.count()} assignments for student {request.user}")
     
     return render(request, "student/assignments.html", {
         "assignments": assignments,
         "today": today,
         "is_dashboard_view": True
     })
-
-@login_required
 def student_learning(request):
     if request.user.role != "student":
         return redirect("dashboard_redirect")
@@ -698,6 +696,7 @@ def teacher_assignments(request):
         if form.is_valid():
             assignment = form.save(commit=False)
             assignment.teacher = tp
+            assignment.is_published = (assignment.status == "published")
             assignment.save()
             messages.success(request, f"Assignment '{assignment.title}' published successfully.")
             return redirect("teacher_assignments")
