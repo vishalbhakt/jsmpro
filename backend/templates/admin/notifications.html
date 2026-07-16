@@ -5,7 +5,7 @@
 
 {% block dashboard_content %}
 <!-- Page Header -->
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
+<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 16px !important;">
     <div class="row align-items-center">
         <div class="col-md-8">
             <!-- Breadcrumbs -->
@@ -17,10 +17,10 @@
                 </ol>
             </nav>
             <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Notifications Log 🔔</h1>
-            <p class="text-white-50 mb-0">Push real-time system alerts to specific user accounts.</p>
+            <p class="mb-0" style="color: rgba(255, 255, 255, 0.85) !important; font-size: 0.95rem;">Push real-time system alerts to specific user accounts.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
-            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#pushNotificationModal">
+            <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#pushNotificationModal" style="transition: transform 0.2s ease, box-shadow 0.2s ease !important;" onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 15px -3px rgba(255, 193, 7, 0.3), 0 4px 6px -2px rgba(255, 193, 7, 0.1)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
                 <i class="fa-solid fa-bell me-2"></i> Push Notification
             </button>
         </div>
@@ -28,43 +28,57 @@
 </div>
 
 <!-- Notifications Table -->
-<div class="premium-card p-4 bg-white">
+<div class="premium-card p-4 bg-white" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
     <div class="table-responsive">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>#</th>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" class="form-check-input select-all-checkbox"></th>
+                    <th style="width: 60px;">#</th>
                     <th>Recipient</th>
                     <th>Notification Title</th>
                     <th>Message</th>
-                    <th>Read Status</th>
-                    <th>Sent Date</th>
-                    <th>Actions</th>
+                    <th style="width: 130px; text-align: center;">Read Status</th>
+                    <th style="width: 165px;">Sent Date</th>
+                    <th style="width: 80px; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for notif in notifications %}
                 <tr>
+                    <td style="text-align: center;"><input type="checkbox" name="notification_ids" value="{{ notif.id }}" class="form-check-input row-checkbox"></td>
                     <td class="text-muted">{{ forloop.counter }}</td>
-                    <td class="fw-bold">{{ notif.recipient.full_name }} ({{ notif.recipient.role|title }})</td>
-                    <td class="fw-bold text-primary">{{ notif.title }}</td>
-                    <td class="text-muted" style="font-size:0.8rem;">{{ notif.message }}</td>
-                    <td>
+                    <td class="fw-bold text-nowrap">{{ notif.recipient.full_name }} ({{ notif.recipient.role|title }})</td>
+                    <td class="fw-bold text-primary" style="max-width: 200px;">
+                        <div class="text-truncate" title="{{ notif.title }}" style="cursor: pointer;">
+                            {{ notif.title }}
+                        </div>
+                    </td>
+                    <td class="text-muted" style="max-width: 320px;">
+                        <div class="text-truncate" title="{{ notif.message }}" style="font-size:0.8rem; cursor: pointer;">
+                            {{ notif.message }}
+                        </div>
+                    </td>
+                    <td class="text-center">
                         {% if notif.read_at %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold">Read</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
+                                <i class="fa-solid fa-circle-check" style="font-size: 0.6rem;"></i> Read
+                            </span>
                         {% else %}
-                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold">Unread</span>
+                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.25rem !important; padding: 0.2rem 0.6rem !important; border-radius: 9999px !important; font-size: 0.68rem !important; font-weight: 700 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;">
+                                <i class="fa-solid fa-circle-exclamation" style="font-size: 0.6rem;"></i> Unread
+                            </span>
                         {% endif %}
                     </td>
-                    <td class="text-muted" style="font-size:0.8rem;">{{ notif.created_at|date:"d M Y, h:i A" }}</td>
-                    <td>
-                        <a href="{% url 'admin_notifications_delete' notif.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1" onclick="return confirm('Delete this notification log?')">
-                            <i class="fa-solid fa-trash"></i> Delete
+                    <td class="text-muted text-nowrap" style="font-size:0.8rem;">{{ notif.created_at|date:"d M Y, h:i A" }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'admin_notifications_delete' notif.id %}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="Delete log" onclick="return confirm('Delete this notification log?')">
+                            <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
                         </a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-center py-5 text-muted">No system alerts sent.</td></tr>
+                <tr><td colspan="8" class="text-center py-5 text-muted">No system alerts sent.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -108,4 +122,21 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const selectAllCheckbox = document.getElementById("selectAll");
+        const rowCheckboxes = document.querySelectorAll(".row-checkbox");
+        
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener("change", function() {
+                rowCheckboxes.forEach(cb => {
+                    cb.checked = selectAllCheckbox.checked;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}
