@@ -464,8 +464,24 @@ def student_attendance(request):
         
     sp = request.user.student_profile
     records = AttendanceRecord.objects.filter(student=sp).order_by("-session__date")
+    
+    # Calculate stats
+    present_count = records.filter(status="present").count()
+    absent_count = records.filter(status="absent").count()
+    late_count = records.filter(status="late").count()
+    total_days = records.count()
+    
+    if total_days > 0:
+        att_percentage = round(((present_count + late_count) / total_days) * 100, 1)
+    else:
+        att_percentage = 0.0
+        
     return render(request, "student/attendance.html", {
-        "records": records,
+        "attendance_records": records,
+        "present_count": present_count,
+        "absent_count": absent_count,
+        "late_count": late_count,
+        "att_percentage": att_percentage,
         "is_dashboard_view": True
     })
 
