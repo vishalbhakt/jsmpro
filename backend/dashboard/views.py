@@ -686,23 +686,34 @@ def teacher_assignments(request):
     if request.user.role != "teacher":
         return redirect("dashboard_redirect")
         
+    assignments = Assignment.objects.filter(teacher=request.user.teacher_profile).order_by('-created_at')
     tp = request.user.teacher_profile
-    assignments = Assignment.objects.filter(teacher=tp).order_by("-created_at")
     classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
     subjects = Subject.objects.filter(teacher=tp)
     
     if request.method == "POST":
-        form = AssignmentForm(request.POST, request.FILES)
+        data = request.POST.copy()
+        if "points" not in data or not data.get("points"):
+            data["points"] = 100
+        if "status" not in data or not data.get("status"):
+            data["status"] = "published"
+            
+        form = AssignmentForm(data, request.FILES)
         if form.is_valid():
             assignment = form.save(commit=False)
-            assignment.teacher = tp
+            assignment.teacher = request.user.teacher_profile
             assignment.is_published = (assignment.status == "published")
             assignment.save()
             messages.success(request, f"Assignment '{assignment.title}' published successfully.")
             return redirect("teacher_assignments")
+        else:
+            print(f"FORM ERRORS: {form.errors}")
+            messages.error(request, f"Failed to post assignment. Errors: {form.errors}")
     else:
         form = AssignmentForm()
         
+    print(f"DEBUG: Found {assignments.count()} assignments for teacher {request.user}")
+    
     return render(request, "teacher/assignments.html", {
         "assignments": assignments,
         "form": form,
