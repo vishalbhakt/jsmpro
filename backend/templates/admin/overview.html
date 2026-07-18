@@ -31,7 +31,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #eff6ff !important; font-size: 1.5rem;">👨‍🎓</div>
-            <h4 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">{{ student_count }}</h4>
+            <h4 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">{{ total_students }}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Total Students</span>
         </div>
     </div>
@@ -39,7 +39,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #f5f3ff !important; font-size: 1.5rem;">👩‍🏫</div>
-            <h4 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">{{ teacher_count }}</h4>
+            <h4 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">{{ total_teachers }}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Total Teachers</span>
         </div>
     </div>
@@ -47,7 +47,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #f0fdf4 !important; font-size: 1.5rem;">🏫</div>
-            <h4 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">{{ total_classrooms }}</h4>
+            <h4 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">{{ total_classes }}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Total Classes</span>
         </div>
     </div>
@@ -63,7 +63,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #ecfdf5 !important; font-size: 1.5rem;">💰</div>
-            <h4 class="fw-bold mb-1 text-success" id="revenueVal" style="font-family:'Outfit',sans-serif;">Loading...</h4>
+            <h4 class="fw-bold mb-1 text-success" id="revenueVal" style="font-family:'Outfit',sans-serif;">₹{{ total_revenue|floatformat:2 }}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Total Revenue</span>
         </div>
     </div>
@@ -71,7 +71,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #fff1f2 !important; font-size: 1.5rem;">⏳</div>
-            <h4 class="fw-bold mb-1 text-danger" id="pendingVal" style="font-family:'Outfit',sans-serif;">Loading...</h4>
+            <h4 class="fw-bold mb-1 text-danger" id="pendingVal" style="font-family:'Outfit',sans-serif;">₹{{ pending_fees|floatformat:2 }}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Pending Fees</span>
         </div>
     </div>
@@ -79,7 +79,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #ecfeff !important; font-size: 1.5rem;">📅</div>
-            <h4 class="fw-bold mb-1 text-primary" id="attendanceVal" style="font-family:'Outfit',sans-serif;">Loading...</h4>
+            <h4 class="fw-bold mb-1 text-primary" id="attendanceVal" style="font-family:'Outfit',sans-serif;">{% if today_attendance_pct == "Not Marked" %}Not Marked{% else %}{{ today_attendance_pct }}%{% endif %}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Today's Attendance</span>
         </div>
     </div>
@@ -87,10 +87,11 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="premium-card p-3 bg-white text-center h-100 shadow-sm" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.04)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.02)';">
             <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 52px; height: 52px; background-color: #fffbeb !important; font-size: 1.5rem;">📢</div>
-            <h4 class="fw-bold mb-1 text-primary" id="announcementsVal" style="font-family:'Outfit',sans-serif;">Loading...</h4>
+            <h4 class="fw-bold mb-1 text-primary" id="announcementsVal" style="font-family:'Outfit',sans-serif;">{{ total_announcements }}</h4>
             <span class="text-muted fw-bold" style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;">Announcements</span>
         </div>
     </div>
+
 </div>
 
 <!-- Professional Analytics Section (Responsive Charts Row) -->
@@ -148,7 +149,21 @@
                                 </tr>
                             </thead>
                             <tbody id="ajaxPaymentsList">
-                                <tr><td colspan="5" class="text-center text-muted py-3">Loading transactions...</td></tr>
+                                {% for p in recent_payments %}
+                                <tr>
+                                    <td class="fw-bold">{{ p.student.user.full_name|default:p.student.user.username }}</td>
+                                    <td class="text-success fw-bold">₹{{ p.amount|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if p.status == 'paid' %}success{% else %}warning{% endif %} bg-opacity-10 text-{% if p.status == 'paid' %}success{% else %}warning{% endif %} rounded-pill px-2 py-1">
+                                            {{ p.get_payment_type_display|default:p.payment_type }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted font-monospace" style="font-size:0.75rem;">{{ p.receipt_number|default:"—" }}</td>
+                                    <td class="text-muted">{{ p.paid_at|default:p.created_at|date:"d M Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-3 text-muted">No transactions.</td></tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -227,7 +242,22 @@
                 <i class="fa-solid fa-user-plus me-2 text-success"></i> Recently Enrolled
             </h5>
             <div id="ajaxUsersList" class="d-flex flex-column gap-2" style="font-size:0.83rem;">
-                <div class="text-center text-muted py-3">Loading users...</div>
+                {% for usr in recent_users %}
+                <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:30px; height:30px; font-size:0.75rem;">
+                            {{ usr.username|slice:":2"|upper }}
+                        </div>
+                        <div>
+                            <span class="d-block fw-bold text-primary" style="font-size:0.8rem;">{{ usr.full_name|default:usr.username }}</span>
+                            <small class="text-muted" style="font-size:0.68rem; text-transform:uppercase;">{{ usr.role }}</small>
+                        </div>
+                     </div>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size:0.68rem;">{% if usr.is_active %}Active{% else %}Inactive{% endif %}</span>
+                </div>
+                {% empty %}
+                <div class="text-center py-3 text-muted">No users found.</div>
+                {% endfor %}
             </div>
         </div>
 
@@ -237,7 +267,21 @@
                 <i class="fa-solid fa-bullhorn me-2 text-warning"></i> Latest Announcements
             </h5>
             <div id="ajaxAnnouncementsList" class="d-flex flex-column gap-2" style="font-size:0.8rem;">
-                <div class="text-center text-muted py-3">Loading announcements...</div>
+                {% for ann in recent_announcements %}
+                <div class="p-3 bg-light rounded-4 border-start border-4 border-warning mb-2">
+                    <h6 class="fw-bold text-primary mb-1" style="font-size:0.82rem;">
+                        {% if ann.title|slice:":4" == "http" %}
+                            <a href="{{ ann.title }}" target="_blank" class="text-accent text-decoration-underline" style="word-break: break-all; text-overflow: ellipsis; display: inline-block; max-width: 100%; font-weight: 600;"><i class="fa-solid fa-link me-1"></i> Link</a>
+                        {% else %}
+                            {{ ann.title }}
+                        {% endif %}
+                    </h6>
+                    <p class="text-muted mb-1" style="font-size:0.75rem; line-height:1.4;">{{ ann.body|truncatechars:100 }}</p>
+                    <small class="text-muted" style="font-size:0.68rem;"><i class="fa-regular fa-calendar me-1"></i> {{ ann.created_at|date:"d M Y" }}</small>
+                </div>
+                {% empty %}
+                <div class="text-center py-3 text-muted">No announcements.</div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -262,191 +306,42 @@
 {% block dashboard_js %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Helper function to format dates to DD MMM YYYY safely
-    function formatDate(dateString) {
-        if (!dateString) return '—';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return '—';
-        const day = String(date.getDate()).padStart(2, '0');
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const month = months[date.getMonth()];
-        const year = date.getFullYear();
-        return `${day} ${month} ${year}`;
-    }
-
-    // Helper function to format raw URL titles in announcements
-    function formatAnnouncementTitle(title) {
-        if (!title) return '—';
-        const urlPattern = /^(https?:\/\/[^\s]+)/i;
-        if (urlPattern.test(title.trim())) {
-            const url = title.trim();
-            let displayUrl = url;
-            try {
-                const parsedUrl = new URL(url);
-                displayUrl = parsedUrl.hostname + (parsedUrl.pathname.length > 15 ? parsedUrl.pathname.substring(0, 15) + '...' : parsedUrl.pathname);
-            } catch (e) {
-                if (displayUrl.length > 30) {
-                    displayUrl = displayUrl.substring(0, 30) + '...';
-                }
+    // Render Revenue Chart using server-rendered total_revenue variable
+    const revenue = parseFloat("{{ total_revenue|default:0 }}") || 0;
+    const ctxRev = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctxRev, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+            datasets: [{
+                label: 'Collected Fees (INR)',
+                data: [revenue * 0.4, revenue * 0.5, revenue * 0.6, revenue * 0.7, revenue * 0.85, revenue * 0.95, revenue],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
             }
-            return `<a href="${url}" target="_blank" class="text-accent text-decoration-underline" style="word-break: break-all; text-overflow: ellipsis; display: inline-block; max-width: 100%; font-weight: 600;" title="${url}"><i class="fa-solid fa-link me-1"></i> ${displayUrl}</a>`;
         }
-        return title;
-    }
+    });
 
-    // 1. Fetch payments and populate stats & transactions
-    fetch('/api/payments/')
-        .then(res => res.json())
-        .then(data => {
-            const payments = data.results || data;
-            let revenue = 0;
-            let pending = 0;
-            
-            let paymentsHTML = '';
-            const recentPayments = payments.slice(0, 5);
-            
-            payments.forEach(p => {
-                const amt = parseFloat(p.amount) || 0;
-                if (p.status === 'paid') {
-                    revenue += amt;
-                } else if (p.status === 'pending') {
-                    pending += amt;
-                }
-            });
-            
-            document.getElementById('revenueVal').textContent = '₹' + revenue.toLocaleString('en-IN');
-            document.getElementById('pendingVal').textContent = '₹' + pending.toLocaleString('en-IN');
-            
-            if (recentPayments.length > 0) {
-                recentPayments.forEach(p => {
-                    const statusClass = p.status === 'paid' ? 'success' : 'warning';
-                    paymentsHTML += `
-                        <tr>
-                            <td class="fw-bold">${p.student_name || 'Student'}</td>
-                            <td class="text-success fw-bold">₹${parseFloat(p.amount).toLocaleString('en-IN')}</td>
-                            <td><span class="badge bg-${statusClass} bg-opacity-10 text-${statusClass} rounded-pill px-2 py-1">${p.payment_type || 'Installment'}</span></td>
-                            <td class="text-muted font-monospace" style="font-size:0.75rem;">${p.receipt_number || '—'}</td>
-                            <td class="text-muted">${formatDate(p.paid_at || p.created_at)}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                paymentsHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">No transactions.</td></tr>';
-            }
-            document.getElementById('ajaxPaymentsList').innerHTML = paymentsHTML;
-            
-            // Render Revenue Chart
-            const ctxRev = document.getElementById('revenueChart').getContext('2d');
-            new Chart(ctxRev, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-                    datasets: [{
-                        label: 'Collected Fees (INR)',
-                        data: [revenue * 0.4, revenue * 0.5, revenue * 0.6, revenue * 0.7, revenue * 0.85, revenue * 0.95, revenue],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                    }
-                }
-            });
-        });
-
-    // 2. Fetch announcements & populate stats & lists
-    fetch('/api/announcements/')
-        .then(res => res.json())
-        .then(data => {
-            const list = data.results || data;
-            document.getElementById('announcementsVal').textContent = list.length;
-            
-            let listHTML = '';
-            const recent = list.slice(0, 3);
-            if (recent.length > 0) {
-                recent.forEach(ann => {
-                    listHTML += `
-                        <div class="p-3 bg-light rounded-4 border-start border-4 border-warning mb-2">
-                            <h6 class="fw-bold text-primary mb-1" style="font-size:0.82rem;">${formatAnnouncementTitle(ann.title)}</h6>
-                            <p class="text-muted mb-1" style="font-size:0.75rem; line-height:1.4;">${(ann.body || '').substring(0, 100)}...</p>
-                            <small class="text-muted" style="font-size:0.68rem;"><i class="fa-regular fa-calendar me-1"></i> ${formatDate(ann.created_at)}</small>
-                        </div>
-                    `;
-                });
-            } else {
-                listHTML = '<div class="text-center py-3 text-muted">No announcements.</div>';
-            }
-            document.getElementById('ajaxAnnouncementsList').innerHTML = listHTML;
-        });
-
-    // 3. Fetch today's attendance sessions & records
-    const todayStr = new Date().toISOString().split('T')[0];
-    fetch(`/api/attendance-sessions/?date=${todayStr}`)
-        .then(res => res.json())
-        .then(data => {
-            const sessions = data.results || data;
-            if (sessions.length > 0) {
-                fetch(`/api/attendance-records/`)
-                    .then(res => res.json())
-                    .then(recordsData => {
-                        const records = recordsData.results || recordsData;
-                        const todayRecords = records.filter(r => sessions.some(s => s.id === r.session));
-                        const total = todayRecords.length;
-                        const present = todayRecords.filter(r => r.status === 'present').length;
-                        const rate = total > 0 ? Math.round((present / total) * 100) : 100;
-                        document.getElementById('attendanceVal').textContent = rate + '%';
-                    });
-            } else {
-                document.getElementById('attendanceVal').textContent = '100%';
-            }
-        });
-
-    // 4. Fetch users roster to display recently registered scholars/teachers
-    fetch('/api/users/?limit=5') // uses active users roster endpoint
-        .then(res => res.json())
-        .then(data => {
-            const list = data.results || data;
-            let usersHTML = '';
-            if (list.length > 0) {
-                list.slice(0, 4).forEach(usr => {
-                    usersHTML += `
-                        <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:30px; height:30px; font-size:0.75rem;">
-                                    ${usr.username ? usr.username.substring(0,2).toUpperCase() : 'U'}
-                                </div>
-                                <div>
-                                    <span class="d-block fw-bold text-primary" style="font-size:0.8rem;">${usr.full_name || usr.username}</span>
-                                    <small class="text-muted" style="font-size:0.68rem; text-transform:uppercase;">${usr.role || 'user'}</small>
-                                </div>
-                             </div>
-                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size:0.68rem;">Active</span>
-                        </div>
-                    `;
-                });
-            } else {
-                usersHTML = '<div class="text-center py-3 text-muted">No users found.</div>';
-            }
-            document.getElementById('ajaxUsersList').innerHTML = usersHTML;
-        });
-
-    // 5. Render Distribution Chart
+    // Render Distribution Chart
     const ctxDist = document.getElementById('distributionChart').getContext('2d');
     new Chart(ctxDist, {
         type: 'doughnut',
         data: {
             labels: ['Students', 'Teachers', 'Admins'],
             datasets: [{
-                data: [{{ student_count }}, {{ teacher_count }}, 2],
+                data: [{{ total_students|default:0 }}, {{ total_teachers|default:0 }}, 2],
                 backgroundColor: ['#0c2b4d', '#ffc107', '#38bdf8'],
                 borderWidth: 0
             }]
