@@ -980,12 +980,13 @@ def admin_overview(request):
     else:
         today_attendance_pct = "Not Marked"
         
-    # 5. Recent Feeds (fully optimized with select_related & slicing)
+    # 5. Recent Feeds (fully optimized with select_related, deferring heavy fields, and slicing)
     recent_payments = Payment.objects.filter(status='paid')\
         .select_related('student__user', 'fee_plan')\
         .order_by('-created_at')[:5]
         
-    recent_users = User.objects.filter(is_active=True)\
+    recent_users = User.objects.filter(role__in=['student', 'teacher'], is_active=True)\
+        .defer('bio', 'address', 'rejected_reason')\
         .select_related('student_profile', 'teacher_profile')\
         .order_by('-date_joined')[:4]
         
