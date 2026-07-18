@@ -28,6 +28,9 @@ urlpatterns = [
     path("dashboard/student/results/", views.student_results, name="student_results"),
     path("dashboard/student/payments/", views.student_payments, name="student_payments"),
     path("dashboard/student/pay-fee/<int:plan_id>/", views.student_pay_fee, name="student_pay_fee"),
+    path("dashboard/student/learning/note/access/<int:note_id>/", views.student_note_access, name="student_note_access"),
+    path("dashboard/student/learning/video/access/<int:video_id>/", views.student_video_access, name="student_video_access"),
+
 
     # Teacher Portal Views
     path("dashboard/teacher/", views.teacher_overview, name="teacher_overview"),
@@ -35,12 +38,15 @@ urlpatterns = [
     path("dashboard/teacher/attendance/", views.teacher_attendance, name="teacher_attendance"),
     path("dashboard/teacher/assignments/", views.teacher_assignments, name="teacher_assignments"),
     path("dashboard/teacher/assignments/delete/<int:assignment_id>/", views.teacher_delete_assignment, name="teacher_delete_assignment"),
+    path("dashboard/teacher/assignments/grade/<int:submission_id>/", views.teacher_grade_submission, name="teacher_grade_submission"),
     path("dashboard/teacher/learning/", views.teacher_learning, name="teacher_learning"),
     path("dashboard/teacher/learning/upload-note/", views.teacher_upload_note, name="teacher_upload_note"),
     path("dashboard/teacher/learning/upload-video/", views.teacher_upload_video, name="teacher_upload_video"),
     path("dashboard/teacher/learning/delete-note/<int:note_id>/", views.teacher_delete_note, name="teacher_delete_note"),
     path("dashboard/teacher/learning/delete-video/<int:video_id>/", views.teacher_delete_video, name="teacher_delete_video"),
     path("dashboard/teacher/results/", views.teacher_results, name="teacher_results"),
+    path("dashboard/teacher/results/delete/<int:result_id>/", views.teacher_delete_result, name="teacher_delete_result"),
+
 
     # Admin Portal Views
     path("dashboard/admin/", views.admin_overview, name="admin_overview"),

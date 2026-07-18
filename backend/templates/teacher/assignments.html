@@ -4,6 +4,18 @@
 {% block title %}Assignments Manager - JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
+<style>
+.nav-pills-custom .nav-link {
+    color: #4b5563;
+    background: #f3f4f6;
+    border: none;
+    transition: all 0.2s ease;
+}
+.nav-pills-custom .nav-link.active {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+</style>
 <div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
     <div class="row align-items-center">
         <div class="col-md-8">
@@ -24,38 +36,59 @@
             <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
                 <i class="fa-solid fa-plus me-2" style="color:var(--accent-color);"></i> Post New Assignment
             </h4>
-            <form method="post" action="{% url 'teacher_assignments' %}">
+            <form method="post" action="{% url 'teacher_assignments' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Assignment Title</label>
                     <input type="text" name="title" class="form-control" placeholder="e.g. Chapter 3 Worksheet" required>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Subject</label>
-                    <select name="subject" class="form-select" required>
-                        <option value="">-- Select Subject --</option>
-                        {% for sub in subjects %}
-                        <option value="{{ sub.id }}">{{ sub.name }} ({{ sub.classroom.name }})</option>
-                        {% endfor %}
-                    </select>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Subject</label>
+                        <select name="subject" class="form-select" required>
+                            <option value="">-- Select Subject --</option>
+                            {% for sub in subjects %}
+                            <option value="{{ sub.id }}">{{ sub.name }} ({{ sub.classroom.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Classroom</label>
+                        <select name="classroom" class="form-select" required>
+                            <option value="">-- Select Classroom --</option>
+                            {% for cls in classrooms %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Classroom</label>
-                    <select name="classroom" class="form-select" required>
-                        <option value="">-- Select Classroom --</option>
-                        {% for cls in classrooms %}
-                        <option value="{{ cls.id }}">{{ cls.name }}</option>
-                        {% endfor %}
-                    </select>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Due Date & Time</label>
+                        <input type="datetime-local" name="due_at" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Max Marks / Points</label>
+                        <input type="number" name="points" class="form-control" value="100" min="1" max="1000" required>
+                    </div>
                 </div>
+
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Due Date & Time</label>
-                    <input type="datetime-local" name="due_at" class="form-control" required>
-                </div>
-                <div class="mb-4">
                     <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Instructions / Description</label>
                     <textarea name="description" class="form-control" rows="4" placeholder="Add assignment instructions..."></textarea>
                 </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Reference File / Worksheet (Optional)</label>
+                    <div class="border border-dashed rounded-3 p-3 text-center bg-light" style="border-color: #cbd5e1 !important; border-width: 2px !important;">
+                        <i class="fa-solid fa-cloud-arrow-up text-secondary mb-2" style="font-size: 1.5rem;"></i>
+                        <p class="text-xs text-muted mb-2">Attach worksheets, documents, or images (PDF, DOCX, JPG, PNG)</p>
+                        <input type="file" name="attachment" class="form-control form-control-sm" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip">
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-3 fw-bold">
                     <i class="fa-solid fa-paper-plane me-2"></i> Post Assignment
                 </button>
@@ -82,8 +115,20 @@
                 {% if asgn.description %}
                 <p class="text-muted mb-2" style="font-size:0.8rem;">{{ asgn.description|truncatechars:80 }}</p>
                 {% endif %}
-                <div class="d-flex align-items-center justify-content-between">
-                    <span class="text-muted" style="font-size:0.78rem;"><i class="fa-solid fa-user-check me-1"></i> Submissions: {{ asgn.total_submissions|default:0 }}</span>
+                
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted" style="font-size:0.78rem;">
+                        <i class="fa-solid fa-user-check me-1"></i> Submissions: <strong>{{ asgn.submitted_count }}</strong> / {{ asgn.classroom.students.count }}
+                    </span>
+                    <span class="text-muted" style="font-size:0.78rem;">
+                        <i class="fa-solid fa-clock me-1"></i> Pending: <strong>{{ asgn.pending_count }}</strong>
+                    </span>
+                </div>
+                
+                <div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold" style="font-size:0.78rem;" data-bs-toggle="modal" data-bs-target="#trackModal{{ asgn.id }}">
+                        <i class="fa-solid fa-chart-simple me-1"></i> Track Status
+                    </button>
                     <form method="post" action="{% url 'teacher_delete_assignment' asgn.id %}" onsubmit="return confirm('Delete this assignment?')">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm text-danger fw-bold" style="font-size:0.78rem; background:none; border:none;">
@@ -101,4 +146,148 @@
         </div>
     </div>
 </div>
+
+<!-- Track Modals (Root Level) -->
+{% for asgn in assignments %}
+<div class="modal fade" id="trackModal{{ asgn.id }}" tabindex="-1" aria-labelledby="trackModalLabel{{ asgn.id }}" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 950px; width: 100%;">
+        <div class="modal-content rounded-4 border-0 shadow-2xl bg-white p-3">
+            <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="modal-title fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif; font-size: 1.25rem;">📊 Submission Tracker</h5>
+                    <p class="text-muted mb-0" style="font-size:0.85rem;">{{ asgn.title }} — {{ asgn.classroom.name }}</p>
+                </div>
+                <button type="button" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center" data-bs-dismiss="modal" aria-label="Close" style="width: 38px; height: 38px; border: 1px solid #e5e7eb; transition: background 0.2s;">
+                    <i class="fa-solid fa-xmark text-secondary" style="font-size: 1.1rem;"></i>
+                </button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-pills nav-pills-custom mb-4 gap-2 d-flex border-0" id="trackerTabs{{ asgn.id }}" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-4 py-2 fw-bold" id="submitted-tab-{{ asgn.id }}" data-bs-toggle="tab" data-bs-target="#submitted-pane-{{ asgn.id }}" type="button" role="tab" style="font-size:0.83rem;">
+                            ✅ Submitted <span class="badge bg-success ms-1">{{ asgn.submitted_count }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-4 py-2 fw-bold" id="pending-tab-{{ asgn.id }}" data-bs-toggle="tab" data-bs-target="#pending-pane-{{ asgn.id }}" type="button" role="tab" style="font-size:0.83rem;">
+                            ⏳ Pending <span class="badge bg-secondary ms-1">{{ asgn.pending_count }}</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="trackerTabContent{{ asgn.id }}">
+                    <!-- Submitted Pane -->
+                    <div class="tab-pane fade show active" id="submitted-pane-{{ asgn.id }}" role="tabpanel" aria-labelledby="submitted-tab-{{ asgn.id }}">
+                        {% if asgn.submitted_students %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr style="font-size:0.75rem; text-transform:uppercase; font-weight:800; color:var(--primary-color);">
+                                        <th class="py-3 px-4">Student</th>
+                                        <th class="py-3 px-4">Submitted At</th>
+                                        <th class="py-3 px-4 text-center">Work</th>
+                                        <th class="py-3 px-4">Grade & Feedback</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sub in asgn.submitted_students %}
+                                    <tr style="font-size:0.83rem;">
+                                        <td class="py-3 px-4">
+                                            <div class="fw-bold" style="color: var(--primary-color);">{{ sub.student.user.full_name|title }}</div>
+                                            <small class="text-muted">ID: {{ sub.student.admission_number }}</small>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="fw-bold" style="color: var(--primary-color);">{{ sub.submitted_at|date:"d M, Y" }}</div>
+                                            <small class="text-muted">{{ sub.submitted_at|date:"H:i" }}</small>
+                                        </td>
+                                        <td class="py-3 px-4 text-center">
+                                            {% if sub.file %}
+                                            <div class="mb-2">
+                                                <a href="{{ sub.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5" title="Download work file: {{ sub.file.name }}">
+                                                    <i class="fa-solid fa-file-arrow-down"></i>
+                                                    <span class="fw-bold">View Attachment</span>
+                                                </a>
+                                            </div>
+                                            {% else %}
+                                            <div class="mb-2">
+                                                <span class="text-muted"><i class="fa-solid fa-ban me-1"></i> No file</span>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            {% if sub.text_answer %}
+                                            <div class="p-2 rounded bg-light border-start border-3 border-info text-start mt-2" style="max-width: 260px; margin: 0 auto;">
+                                                <small class="text-secondary d-block" style="font-size: 0.72rem; font-weight: 700;">
+                                                    <i class="fa-regular fa-comment-dots text-info me-1"></i> Student Note:
+                                                </small>
+                                                <span class="text-dark" style="font-size: 0.76rem; font-style: italic;">"{{ sub.text_answer }}"</span>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <form method="post" action="{% url 'teacher_grade_submission' sub.id %}" class="d-flex align-items-center gap-2 flex-wrap">
+                                                {% csrf_token %}
+                                                <div class="d-flex align-items-center gap-1" style="max-width: 150px;">
+                                                    <input type="number" name="grade" class="form-control form-control-sm text-center fw-bold px-2 py-1 w-24" placeholder="Marks" min="0" max="{{ asgn.points }}" value="{{ sub.grade|default:'' }}" style="width: 100px !important;">
+                                                    <span class="text-muted" style="font-size: 0.75rem;">/ {{ asgn.points }}</span>
+                                                </div>
+                                                <input type="text" name="feedback" class="form-control form-control-sm" placeholder="Feedback" value="{{ sub.feedback|default:'' }}" style="min-width: 130px; max-width: 180px; font-size: 0.75rem;">
+                                                <div class="d-flex align-items-center gap-3 ms-2">
+                                                    <button type="submit" class="btn btn-sm btn-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Submit Grade">
+                                                        <i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>
+                                                    </button>
+                                                    {% if sub.status == 'graded' %}
+                                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-2 d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;" title="Score: {{ sub.grade }} / {{ asgn.points }}">
+                                                        <i class="fa-solid fa-circle-check"></i> Graded
+                                                    </span>
+                                                    {% endif %}
+                                                </div>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <div style="font-size:2.5rem;">📥</div>
+                            <p class="mb-0 mt-2">No submissions received yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pending Pane -->
+                    <div class="tab-pane fade" id="pending-pane-{{ asgn.id }}" role="tabpanel" aria-labelledby="pending-tab-{{ asgn.id }}">
+                        {% if asgn.pending_students %}
+                        <div class="list-group list-group-flush">
+                            {% for student in asgn.pending_students %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 rounded-3 mb-2 bg-light">
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:var(--primary-color); font-size:0.88rem;">{{ student.user.full_name|title }}</h6>
+                                    <small class="text-muted">Roll No: {{ student.roll_number|default:"—" }} | ID: {{ student.admission_number }}</small>
+                                </div>
+                                <button type="button" class="btn btn-sm text-white fw-bold px-3 py-1.5 transition d-inline-flex align-items-center gap-1.5"
+                                        style="background: #d97706; border: none; border-radius: 8px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                                        onclick="alert('Reminder sent to {{ student.user.full_name|title }}!')">
+                                    <i class="fa-solid fa-bell"></i> Send Reminder
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <div style="font-size:2.5rem;">🎉</div>
+                            <p class="mb-0 mt-2">All students have submitted their work!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
+

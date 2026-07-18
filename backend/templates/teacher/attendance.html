@@ -29,7 +29,7 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Select Classroom</label>
-                        <select name="classroom" class="form-select" id="classroomSelect" required>
+                        <select name="classroom" class="form-select px-3 py-2.5 bg-light border-0 shadow-sm text-secondary" id="classroomSelect" required style="font-size: 0.83rem; min-height: 45px; border-radius: 8px;">
                             <option value="">-- Choose Classroom --</option>
                             {% for cls in classrooms %}
                             <option value="{{ cls.id }}" {% if cls.id|stringformat:"s" == selected_class_id %}selected{% endif %}>{{ cls.name }}</option>
@@ -38,7 +38,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Select Subject</label>
-                        <select name="subject" class="form-select" id="subjectSelect" required>
+                        <select name="subject" class="form-select px-3 py-2.5 bg-light border-0 shadow-sm text-secondary" id="subjectSelect" required style="font-size: 0.83rem; min-height: 45px; border-radius: 8px;">
                             <option value="">-- Choose Subject --</option>
                             {% for sub in subjects %}
                             <option value="{{ sub.id }}" {% if sub.id|stringformat:"s" == selected_sub_id %}selected{% endif %}>{{ sub.name }} ({{ sub.classroom.name }})</option>
@@ -47,7 +47,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Date</label>
-                        <input type="date" name="date" class="form-control" id="dateInput" value="{{ selected_date }}" required>
+                        <input type="date" name="date" class="form-control px-3 py-2.5 bg-light border-0 shadow-sm text-secondary" id="dateInput" value="{{ selected_date }}" required style="font-size: 0.83rem; min-height: 45px; border-radius: 8px;">
                     </div>
                 </div>
                 
@@ -72,7 +72,7 @@
                             {% for student in students %}
                             <tr>
                                 <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
-                                <td class="fw-bold" style="font-size:0.83rem;">{{ student.user.full_name }}</td>
+                                <td class="fw-bold" style="font-size:0.83rem;">{{ student.user.full_name|title }}</td>
                                 <td><span class="badge-premium-blue" style="font-size:0.72rem;">{{ student.roll_number }}</span></td>
                                 <td>
                                     <div class="d-flex gap-3 flex-wrap">
@@ -99,9 +99,9 @@
                     <i class="fa-solid fa-save me-2"></i> Save Attendance
                 </button>
                 {% else %}
-                <div class="text-center py-4">
-                    <div style="font-size:3rem;">🏫</div>
-                    <p class="text-muted mt-2 mb-3">Select a classroom above to load students.</p>
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-users-slash text-muted mb-3" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                    <p class="text-xs text-center text-muted mt-2 mb-0">Select a classroom and subject to load the student attendance list.</p>
                 </div>
                 {% endif %}
             </form>
@@ -110,7 +110,7 @@
 
     <!-- Recent Sessions -->
     <div class="col-lg-5">
-        <div class="premium-card p-4 bg-white">
+        <div class="premium-card p-4 p-md-5 bg-white">
             <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
                 <i class="fa-solid fa-clock-rotate-left me-2" style="color:var(--accent-color);"></i> Recent Sessions
             </h4>
@@ -121,7 +121,12 @@
                     <span class="text-muted" style="font-size:0.78rem;">{{ session.date|date:"d M, Y" }}</span>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-2 py-1" style="font-size:0.7rem;">{{ session.records.count }} Records</span>
+                    <a href="?classroom={{ session.classroom.id }}&subject={{ session.subject.id }}&date={{ session.date|date:'Y-m-d' }}" 
+                       class="btn btn-sm text-white fw-bold px-3 py-1.5 transition d-inline-flex align-items-center gap-1.5"
+                       style="background: #059669; border: none; border-radius: 8px; font-size: 0.76rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                       title="View and Edit attendance for {{ session.date|date:'d M, Y' }}">
+                        <i class="fa-solid fa-clipboard-user"></i> {{ session.records.count }} Records
+                    </a>
                 </div>
             </div>
             {% empty %}

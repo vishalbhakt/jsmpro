@@ -130,3 +130,38 @@ class Quiz(LearningResource):
     max_marks = models.PositiveIntegerField(default=0)
     starts_at = models.DateTimeField(blank=True, null=True)
     ends_at = models.DateTimeField(blank=True, null=True)
+
+
+class NoteAccessLog(models.Model):
+    student = models.ForeignKey("users.StudentProfile", on_delete=models.CASCADE, related_name="note_access_logs")
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="access_logs")
+    accessed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["student", "note"],
+                name="unique_access_per_student_note",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.student} accessed {self.note} at {self.accessed_at}"
+
+
+class VideoWatchLog(models.Model):
+    student = models.ForeignKey("users.StudentProfile", on_delete=models.CASCADE, related_name="video_watch_logs")
+    video = models.ForeignKey(VideoLecture, on_delete=models.CASCADE, related_name="watch_logs")
+    watched_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["student", "video"],
+                name="unique_watch_per_student_video",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.student} watched {self.video} at {self.watched_at}"
+

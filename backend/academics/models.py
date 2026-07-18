@@ -142,3 +142,47 @@ class Result(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.assessment}"
+
+
+class ExamResult(models.Model):
+    student = models.ForeignKey("users.StudentProfile", on_delete=models.CASCADE, related_name="exam_results")
+    teacher = models.ForeignKey("users.TeacherProfile", on_delete=models.CASCADE, related_name="exam_results")
+    assessment_name = models.CharField(max_length=150)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="exam_results")
+    marks_obtained = models.DecimalField(max_digits=6, decimal_places=2)
+    total_marks = models.DecimalField(max_digits=6, decimal_places=2, default=100.00)
+    percentage = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    grade = models.CharField(max_length=8, blank=True)
+    is_published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        total = float(self.total_marks)
+        obtained = float(self.marks_obtained)
+        if total > 0:
+            self.percentage = round((obtained / total) * 100, 2)
+        else:
+            self.percentage = 0.00
+        
+        pct = self.percentage
+        if pct >= 90:
+            self.grade = "A+"
+        elif pct >= 80:
+            self.grade = "A"
+        elif pct >= 70:
+            self.grade = "B"
+        elif pct >= 60:
+            self.grade = "C"
+        elif pct >= 50:
+            self.grade = "D"
+        else:
+            self.grade = "F"
+            
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.student} - {self.assessment_name} ({self.subject.name})"

@@ -8,10 +8,10 @@ from django.utils import timezone
 from django.http import Http404, HttpResponse
 
 from users.models import User, StudentProfile, TeacherProfile
-from academics.models import ClassRoom, Subject, Assessment, Result
+from academics.models import ClassRoom, Subject, Assessment, Result, ExamResult
 from attendance.models import AttendanceSession, AttendanceRecord
 from finance.models import FeePlan, Payment, StudentFee
-from learning.models import Assignment, AssignmentSubmission, Note, VideoLecture, Quiz
+from learning.models import Assignment, AssignmentSubmission, Note, VideoLecture, Quiz, NoteAccessLog, VideoWatchLog
 from cms.models import Page, Course, Facility, GalleryItem, ContactMessage, Inquiry
 from communication.models import Announcement, Notification
 
@@ -489,9 +489,22 @@ def student_results(request):
         return redirect("dashboard_redirect")
         
     sp = request.user.student_profile
-    results = Result.objects.filter(student=sp).order_by("-assessment__scheduled_for")
+    results = ExamResult.objects.filter(student=sp, is_published=True).order_by("-created_at")
+    
+    # Calculate stats
+    total_taken = results.count()
+    
+    total_pct = sum(float(r.percentage) for r in results) if results else 0.0
+    avg_percentage = round(total_pct / total_taken, 2) if total_taken > 0 else 0.0
+    
+    highest_result = results.order_by('-percentage').first()
+    highest_grade = highest_result.grade if highest_result else "—"
+    
     return render(request, "student/results.html", {
         "results": results,
+        "total_taken": total_taken,
+        "avg_percentage": avg_percentage,
+        "highest_grade": highest_grade,
         "is_dashboard_view": True
     })
 
@@ -712,6 +725,14 @@ def teacher_assignments(request):
     else:
         form = AssignmentForm()
         
+    # Pre-calculate submission tracker data
+    for asgn in assignments:
+        asgn.submitted_students = asgn.submissions.all().select_related("student__user")
+        submitted_student_ids = asgn.submitted_students.values_list("student_id", flat=True)
+        asgn.pending_students = StudentProfile.objects.filter(classroom=asgn.classroom).exclude(id__in=submitted_student_ids).select_related("user")
+        asgn.submitted_count = asgn.submitted_students.count()
+        asgn.pending_count = asgn.pending_students.count()
+        
     print(f"DEBUG: Found {assignments.count()} assignments for teacher {request.user}")
     
     return render(request, "teacher/assignments.html", {
@@ -738,6 +759,44 @@ def teacher_delete_assignment(request, assignment_id):
     return redirect("teacher_assignments")
 
 @login_required
+def teacher_grade_submission(request, submission_id):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    submission = get_object_or_404(AssignmentSubmission, id=submission_id, assignment__teacher=tp)
+    
+    if request.method == "POST":
+        grade_val = request.POST.get("grade")
+        feedback_val = request.POST.get("feedback", "")
+        
+        try:
+            submission.grade = grade_val if grade_val else None
+            submission.feedback = feedback_val
+            submission.status = "graded"
+            submission.save()
+            messages.success(request, f"Submission graded successfully for {submission.student.user.full_name}.")
+        except Exception as e:
+            messages.error(request, f"Error grading submission: {e}")
+            
+    return redirect("teacher_assignments")
+
+@login_required
+def student_note_access(request, note_id):
+    note = get_object_or_404(Note, id=note_id)
+    if request.user.role == "student" and hasattr(request.user, "student_profile"):
+        NoteAccessLog.objects.get_or_create(student=request.user.student_profile, note=note)
+    return redirect(note.file.url)
+
+@login_required
+def student_video_access(request, video_id):
+    from django.http import JsonResponse
+    video = get_object_or_404(VideoLecture, id=video_id)
+    if request.user.role == "student" and hasattr(request.user, "student_profile"):
+        VideoWatchLog.objects.get_or_create(student=request.user.student_profile, video=video)
+    return JsonResponse({"status": "success"})
+
+@login_required
 def teacher_learning(request):
     if request.user.role != "teacher":
         return redirect("dashboard_redirect")
@@ -747,6 +806,24 @@ def teacher_learning(request):
     videos = VideoLecture.objects.filter(teacher=tp).order_by("-created_at")
     subjects = Subject.objects.filter(teacher=tp)
     
+    # Calculate note stats
+    for note in notes:
+        note.total_students_count = note.classroom.students.count()
+        note.accessed_logs = NoteAccessLog.objects.filter(note=note).select_related('student__user').order_by("-accessed_at")
+        note.accessed_count = note.accessed_logs.count()
+        accessed_student_ids = note.accessed_logs.values_list('student_id', flat=True)
+        note.pending_students = note.classroom.students.exclude(id__in=accessed_student_ids).select_related('user')
+        note.pending_count = note.pending_students.count()
+
+    # Calculate video stats
+    for video in videos:
+        video.total_students_count = video.classroom.students.count()
+        video.accessed_logs = VideoWatchLog.objects.filter(video=video).select_related('student__user').order_by("-watched_at")
+        video.accessed_count = video.accessed_logs.count()
+        watched_student_ids = video.accessed_logs.values_list('student_id', flat=True)
+        video.pending_students = video.classroom.students.exclude(id__in=watched_student_ids).select_related('user')
+        video.pending_count = video.pending_students.count()
+        
     note_form = NoteForm()
     video_form = VideoLectureForm()
     
@@ -827,41 +904,57 @@ def teacher_results(request):
         return redirect("dashboard_redirect")
         
     tp = request.user.teacher_profile
-    assessments = Assessment.objects.filter(created_by=tp).order_by("-scheduled_for")
     
-    # Handle creating new assessment
+    # Handle creating new exam result
     if request.method == "POST":
-        title = request.POST.get("title")
-        classroom_id = request.POST.get("classroom")
+        student_id = request.POST.get("student")
+        assessment_name = request.POST.get("assessment_name")
         subject_id = request.POST.get("subject")
-        a_type = request.POST.get("assessment_type", "test")
-        max_marks = request.POST.get("max_marks", 100)
-        date_str = request.POST.get("scheduled_for")
+        marks_obtained = request.POST.get("marks_obtained")
+        total_marks = request.POST.get("total_marks", 100)
         
-        classroom = get_object_or_404(ClassRoom, id=classroom_id)
+        student = get_object_or_404(StudentProfile, id=student_id)
         subject = get_object_or_404(Subject, id=subject_id)
         
-        Assessment.objects.create(
-            title=title,
-            classroom=classroom,
+        ExamResult.objects.create(
+            student=student,
+            teacher=tp,
+            assessment_name=assessment_name,
             subject=subject,
-            assessment_type=a_type,
-            max_marks=max_marks,
-            scheduled_for=date_str,
-            created_by=tp
+            marks_obtained=marks_obtained,
+            total_marks=total_marks,
+            is_published=True
         )
-        messages.success(request, f"Assessment '{title}' created successfully.")
+        messages.success(request, f"Exam result published successfully for {student.user.full_name|title}.")
         return redirect("teacher_results")
         
-    classrooms = ClassRoom.objects.filter(Q(class_teacher=tp) | Q(subjects__teacher=tp)).distinct()
+    # Fetch results published by this teacher
+    results = ExamResult.objects.filter(teacher=tp).order_by("-created_at")
+    
+    # Fetch subjects & students for select fields
     subjects = Subject.objects.filter(teacher=tp)
+    # Students filtered by classrooms where teacher teaches
+    students = StudentProfile.objects.filter(classroom__subjects__teacher=tp).distinct().select_related('user', 'classroom')
     
     return render(request, "teacher/results.html", {
-        "assessments": assessments,
-        "classrooms": classrooms,
+        "results": results,
         "subjects": subjects,
+        "students": students,
         "is_dashboard_view": True
     })
+
+@login_required
+def teacher_delete_result(request, result_id):
+    if request.user.role != "teacher":
+        return redirect("dashboard_redirect")
+        
+    tp = request.user.teacher_profile
+    result = get_object_or_404(ExamResult, id=result_id, teacher=tp)
+    if request.method == "POST":
+        name = result.student.user.full_name
+        result.delete()
+        messages.success(request, f"Result for {name|title} deleted successfully.")
+    return redirect("teacher_results")
 
 # ----------------------------------------------------
 # ADMIN PORTAL VIEWS

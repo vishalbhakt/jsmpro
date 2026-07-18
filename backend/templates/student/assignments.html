@@ -32,7 +32,11 @@
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <span class="badge rounded-pill fw-bold px-3 py-2" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.7rem;">{{ assignment.subject.name }}</span>
                 {% if assignment.submission %}
-                    <span class="badge bg-success rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-check me-1"></i> Submitted</span>
+                    {% if assignment.submission.status == 'graded' %}
+                        <span class="badge bg-primary rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-circle-check me-1"></i> Graded</span>
+                    {% else %}
+                        <span class="badge bg-success rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-check me-1"></i> Submitted</span>
+                    {% endif %}
                 {% elif assignment.due_at < today %}
                     <span class="badge bg-danger rounded-pill fw-bold px-3 py-2" style="font-size:0.7rem;"><i class="fa-solid fa-clock me-1"></i> Overdue</span>
                 {% else %}
@@ -41,14 +45,45 @@
             </div>
             <h5 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ assignment.title }}</h5>
             <p class="text-muted mb-3" style="font-size:0.83rem; line-height:1.6;">{{ assignment.description|truncatechars:100 }}</p>
+            {% if assignment.attachment %}
+            <div class="mb-3">
+                <a href="{{ assignment.attachment.url }}" target="_blank" class="btn btn-sm btn-light rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5" style="border: 1px dashed #cbd5e1; font-size: 0.78rem;">
+                    <i class="fa-solid fa-file-pdf text-danger"></i>
+                    <span class="fw-bold">Reference Worksheet</span>
+                </a>
+            </div>
+            {% endif %}
             <div class="d-flex align-items-center gap-2 mb-3 mt-auto">
                 <i class="fa-regular fa-calendar text-muted" style="font-size:0.8rem;"></i>
                 <span class="text-muted" style="font-size:0.8rem; font-weight:600;">Due: {{ assignment.due_at|date:"d M, Y" }}</span>
             </div>
             {% if assignment.submission %}
-                <div class="p-2 rounded-3 bg-success bg-opacity-10 text-success text-center fw-bold" style="font-size:0.8rem;">
+                <div class="p-2 rounded-3 bg-success bg-opacity-10 text-success text-center fw-bold mb-2" style="font-size:0.8rem;">
                     <i class="fa-solid fa-circle-check me-1"></i> Work submitted on {{ assignment.submission.submitted_at|date:"d M" }}
                 </div>
+                
+                {% if assignment.submission.status == 'graded' %}
+                <!-- Graded Mark Badge -->
+                <div class="p-2 rounded bg-primary bg-opacity-10 text-primary fw-bold text-center mb-2" style="font-size:0.82rem;">
+                    🏆 Marks: <strong>{{ assignment.submission.grade|floatformat:1 }}</strong> / {{ assignment.points }}
+                </div>
+                {% endif %}
+                
+                {% if assignment.submission.text_answer %}
+                <!-- Student's own comment -->
+                <div class="mb-2 text-start">
+                    <small class="text-muted d-block" style="font-size: 0.72rem; font-weight: 700;">Your Note:</small>
+                    <span class="text-secondary" style="font-size: 0.76rem; font-style: italic;">"{{ assignment.submission.text_answer }}"</span>
+                </div>
+                {% endif %}
+
+                {% if assignment.submission.feedback %}
+                <!-- Teacher's feedback box -->
+                <div class="mt-2 p-3 bg-blue-50 border-start border-4 border-primary text-primary rounded-end mb-2" style="background-color: #f0f9ff; border-color: #0284c7 !important; color: #0369a1 !important; font-size: 0.78rem;">
+                    <small class="fw-bold d-block"><i class="fa-solid fa-chalkboard-user me-1"></i> Teacher Feedback:</small>
+                    <span>"{{ assignment.submission.feedback }}"</span>
+                </div>
+                {% endif %}
             {% else %}
                 <button type="button" class="btn btn-premium-primary rounded-pill py-2 w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#submitModal{{ assignment.id }}">
                     <i class="fa-solid fa-upload me-1"></i> Submit Assignment

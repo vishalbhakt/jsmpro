@@ -4,6 +4,22 @@
 {% block title %}Learning Hub Manager - JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
+<style>
+.nav-pills-custom .nav-link {
+    color: #4b5563;
+    background: #f3f4f6;
+    border: none;
+    transition: all 0.2s ease;
+}
+.nav-pills-custom .nav-link.active {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+.modal-backdrop.show {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(4px) !important;
+}
+</style>
 <div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);">
     <div class="row align-items-center">
         <div class="col-md-8">
@@ -81,6 +97,16 @@
                                 <small class="text-muted">{{ note.created_at|date:"d M" }}</small>
                             </div>
                             <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ note.title }}</h6>
+                            
+                            <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
+                                <span class="text-muted" style="font-size:0.78rem;">
+                                    <i class="fa-solid fa-eye me-1"></i> Viewed: <strong>{{ note.accessed_count }}</strong> / {{ note.total_students_count }}
+                                </span>
+                                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size:0.7rem; border-width: 1px;" data-bs-toggle="modal" data-bs-target="#noteTrackModal{{ note.id }}">
+                                    <i class="fa-solid fa-users me-1"></i> Track
+                                </button>
+                            </div>
+
                             <div class="d-flex gap-2 mt-auto">
                                 <a href="{{ note.file.url }}" target="_blank" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold flex-grow-1" style="font-size:0.78rem;">
                                     <i class="fa-solid fa-download me-1"></i> Download
@@ -152,6 +178,16 @@
                                 <small class="text-muted">{{ video.created_at|date:"d M" }}</small>
                             </div>
                             <h6 class="fw-bold mb-2" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">{{ video.title }}</h6>
+                            
+                            <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
+                                <span class="text-muted" style="font-size:0.78rem;">
+                                    <i class="fa-solid fa-eye me-1"></i> Watched: <strong>{{ video.accessed_count }}</strong> / {{ video.total_students_count }}
+                                </span>
+                                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size:0.7rem; border-width: 1px;" data-bs-toggle="modal" data-bs-target="#videoTrackModal{{ video.id }}">
+                                    <i class="fa-solid fa-users me-1"></i> Track
+                                </button>
+                            </div>
+
                             <div class="d-flex gap-2 mt-auto">
                                 <a href="{{ video.video_url }}" target="_blank" class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold flex-grow-1" style="font-size:0.78rem;">
                                     <i class="fa-solid fa-play me-1"></i> Watch
@@ -173,5 +209,202 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Note Track Modals (Root Level) -->
+{% for note in notes %}
+<div class="modal fade" id="noteTrackModal{{ note.id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 900px; width: 100%;">
+        <div class="modal-content rounded-4 border-0 shadow-2xl bg-white p-3">
+            <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="modal-title fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif; font-size: 1.25rem;">📊 Study Note Engagement Tracker</h5>
+                    <p class="text-muted mb-0" style="font-size:0.85rem;">{{ note.title }} — {{ note.classroom.name }}</p>
+                </div>
+                <button type="button" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center" data-bs-dismiss="modal" aria-label="Close" style="width: 38px; height: 38px; border: 1px solid #e5e7eb; transition: background 0.2s;">
+                    <i class="fa-solid fa-xmark text-secondary" style="font-size: 1.1rem;"></i>
+                </button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-pills nav-pills-custom mb-4 gap-2 d-flex border-0" id="noteTrackerTabs{{ note.id }}" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-4 py-2 fw-bold" id="note-viewed-tab-{{ note.id }}" data-bs-toggle="tab" data-bs-target="#note-viewed-pane-{{ note.id }}" type="button" role="tab" style="font-size:0.83rem;">
+                            ✅ Viewed <span class="badge bg-success ms-1">{{ note.accessed_count }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-4 py-2 fw-bold" id="note-pending-tab-{{ note.id }}" data-bs-toggle="tab" data-bs-target="#note-pending-pane-{{ note.id }}" type="button" role="tab" style="font-size:0.83rem;">
+                            ⏳ Pending <span class="badge bg-secondary ms-1">{{ note.pending_count }}</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="noteTrackerTabContent{{ note.id }}">
+                    <!-- Viewed Pane -->
+                    <div class="tab-pane fade show active" id="note-viewed-pane-{{ note.id }}" role="tabpanel" aria-labelledby="note-viewed-tab-{{ note.id }}">
+                        {% if note.accessed_logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr style="font-size:0.75rem; text-transform:uppercase; font-weight:800; color:var(--primary-color);">
+                                        <th class="py-3 px-4">Student</th>
+                                        <th class="py-3 px-4">Viewed At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in note.accessed_logs %}
+                                    <tr style="font-size:0.83rem;">
+                                        <td class="py-3 px-4">
+                                            <div class="fw-bold" style="color: var(--primary-color);">{{ log.student.user.full_name|title }}</div>
+                                            <small class="text-muted">ID: {{ log.student.admission_number }}</small>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="fw-bold" style="color: var(--primary-color);">{{ log.accessed_at|date:"d M, Y" }}</div>
+                                            <small class="text-muted">{{ log.accessed_at|date:"H:i" }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <div style="font-size:2.5rem;">📥</div>
+                            <p class="mb-0 mt-2">No students have viewed this note yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pending Pane -->
+                    <div class="tab-pane fade" id="note-pending-pane-{{ note.id }}" role="tabpanel" aria-labelledby="note-pending-tab-{{ note.id }}">
+                        {% if note.pending_students %}
+                        <div class="list-group list-group-flush">
+                            {% for student in note.pending_students %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 rounded-3 mb-2 bg-light">
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:var(--primary-color); font-size:0.88rem;">{{ student.user.full_name|title }}</h6>
+                                    <small class="text-muted">Roll No: {{ student.roll_number|default:"—" }} | ID: {{ student.admission_number }}</small>
+                                </div>
+                                <button type="button" class="btn btn-sm text-white fw-bold px-3 py-1.5 transition d-inline-flex align-items-center gap-1.5"
+                                        style="background: #d97706; border: none; border-radius: 8px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                                        onclick="alert('Reminder sent to {{ student.user.full_name|title }}!')">
+                                    <i class="fa-solid fa-bell"></i> Send Reminder
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <div style="font-size:2.5rem;">🎉</div>
+                            <p class="mb-0 mt-2">All students have viewed this study note!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Video Track Modals (Root Level) -->
+{% for video in videos %}
+<div class="modal fade" id="videoTrackModal{{ video.id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 900px; width: 100%;">
+        <div class="modal-content rounded-4 border-0 shadow-2xl bg-white p-3">
+            <div class="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="modal-title fw-bold" style="color:var(--primary-color); font-family:'Outfit',sans-serif; font-size: 1.25rem;">🎬 Video Lecture Watch Tracker</h5>
+                    <p class="text-muted mb-0" style="font-size:0.85rem;">{{ video.title }} — {{ video.classroom.name }}</p>
+                </div>
+                <button type="button" class="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center" data-bs-dismiss="modal" aria-label="Close" style="width: 38px; height: 38px; border: 1px solid #e5e7eb; transition: background 0.2s;">
+                    <i class="fa-solid fa-xmark text-secondary" style="font-size: 1.1rem;"></i>
+                </button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-pills nav-pills-custom mb-4 gap-2 d-flex border-0" id="videoTrackerTabs{{ video.id }}" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-4 py-2 fw-bold" id="video-watched-tab-{{ video.id }}" data-bs-toggle="tab" data-bs-target="#video-watched-pane-{{ video.id }}" type="button" role="tab" style="font-size:0.83rem;">
+                            ✅ Watched <span class="badge bg-success ms-1">{{ video.accessed_count }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-4 py-2 fw-bold" id="video-pending-tab-{{ video.id }}" data-bs-toggle="tab" data-bs-target="#video-pending-pane-{{ video.id }}" type="button" role="tab" style="font-size:0.83rem;">
+                            ⏳ Pending <span class="badge bg-secondary ms-1">{{ video.pending_count }}</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="videoTrackerTabContent{{ video.id }}">
+                    <!-- Watched Pane -->
+                    <div class="tab-pane fade show active" id="video-watched-pane-{{ video.id }}" role="tabpanel" aria-labelledby="video-watched-tab-{{ video.id }}">
+                        {% if video.accessed_logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr style="font-size:0.75rem; text-transform:uppercase; font-weight:800; color:var(--primary-color);">
+                                        <th class="py-3 px-4">Student</th>
+                                        <th class="py-3 px-4">Watched At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in video.accessed_logs %}
+                                    <tr style="font-size:0.83rem;">
+                                        <td class="py-3 px-4">
+                                            <div class="fw-bold" style="color: var(--primary-color);">{{ log.student.user.full_name|title }}</div>
+                                            <small class="text-muted">ID: {{ log.student.admission_number }}</small>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="fw-bold" style="color: var(--primary-color);">{{ log.watched_at|date:"d M, Y" }}</div>
+                                            <small class="text-muted">{{ log.watched_at|date:"H:i" }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <div style="font-size:2.5rem;">📥</div>
+                            <p class="mb-0 mt-2">No students have watched this video lecture yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pending Pane -->
+                    <div class="tab-pane fade" id="video-pending-pane-{{ video.id }}" role="tabpanel" aria-labelledby="video-pending-tab-{{ video.id }}">
+                        {% if video.pending_students %}
+                        <div class="list-group list-group-flush">
+                            {% for student in video.pending_students %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 rounded-3 mb-2 bg-light">
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color:var(--primary-color); font-size:0.88rem;">{{ student.user.full_name|title }}</h6>
+                                    <small class="text-muted">Roll No: {{ student.roll_number|default:"—" }} | ID: {{ student.admission_number }}</small>
+                                </div>
+                                <button type="button" class="btn btn-sm text-white fw-bold px-3 py-1.5 transition d-inline-flex align-items-center gap-1.5"
+                                        style="background: #d97706; border: none; border-radius: 8px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                                        onclick="alert('Reminder sent to {{ student.user.full_name|title }}!')">
+                                    <i class="fa-solid fa-bell"></i> Send Reminder
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <div style="font-size:2.5rem;">🎉</div>
+                            <p class="mb-0 mt-2">All students have watched this video lecture!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 </div>
 {% endblock %}

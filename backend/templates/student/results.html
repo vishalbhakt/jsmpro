@@ -21,30 +21,30 @@
 <!-- Summary Row -->
 <div class="row g-4 mb-4">
     <div class="col-md-4">
-        <div class="premium-card p-4 bg-white text-center">
+        <div class="premium-card p-4 bg-white text-center shadow-sm">
             <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
-            <h2 class="fw-bold mb-1" style="color:#6d28d9; font-family:'Outfit',sans-serif;">{{ overall_avg|default:"—" }}%</h2>
+            <h2 class="fw-bold mb-1" style="color:#6d28d9; font-family:'Outfit',sans-serif;">{{ avg_percentage }}%</h2>
             <span class="badge rounded-pill fw-bold px-3 py-1" style="background:rgba(109,40,217,0.1); color:#6d28d9; font-size:0.72rem;">Overall Average</span>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="premium-card p-4 bg-white text-center">
+        <div class="premium-card p-4 bg-white text-center shadow-sm">
             <div style="font-size:2rem; margin-bottom:0.5rem;">🥇</div>
-            <h2 class="fw-bold mb-1" style="color:var(--accent-color); font-family:'Outfit',sans-serif;">{{ best_grade|default:"—" }}</h2>
+            <h2 class="fw-bold mb-1" style="color:var(--accent-color); font-family:'Outfit',sans-serif;">{{ highest_grade }}</h2>
             <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Best Grade</span>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="premium-card p-4 bg-white text-center">
+        <div class="premium-card p-4 bg-white text-center shadow-sm">
             <div style="font-size:2rem; margin-bottom:0.5rem;">📝</div>
-            <h2 class="fw-bold mb-1" style="color:var(--pastel-green); font-family:'Outfit',sans-serif;">{{ results|length }}</h2>
-            <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Assessments</span>
+            <h2 class="fw-bold mb-1" style="color:var(--pastel-green); font-family:'Outfit',sans-serif;">{{ total_taken }}</h2>
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">Assessments Taken</span>
         </div>
     </div>
 </div>
 
 <!-- Results Table -->
-<div class="premium-card p-4 bg-white">
+<div class="premium-card p-4 bg-white shadow-sm">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h4 class="fw-bold mb-0" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
             <i class="fa-solid fa-table-list me-2" style="color:#6d28d9;"></i> Detailed Results
@@ -68,9 +68,9 @@
                 {% for result in results %}
                 <tr class="result-row">
                     <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
-                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.assessment.title }}</td>
-                    <td><span class="badge rounded-pill fw-bold px-3 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.72rem;">{{ result.assessment.subject.name }}</span></td>
-                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.marks_obtained }}/{{ result.total_marks }}</td>
+                    <td class="fw-bold" style="font-size:0.83rem; color:var(--primary-color);">{{ result.assessment_name }}</td>
+                    <td><span class="badge rounded-pill fw-bold px-3 py-1" style="background:rgba(12,43,77,0.08); color:var(--primary-color); font-size:0.72rem;">{{ result.subject.name }}</span></td>
+                    <td class="fw-bold" style="font-size:0.83rem;">{{ result.marks_obtained|floatformat:1 }}/{{ result.total_marks|floatformat:0 }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <div class="progress rounded-pill flex-grow-1" style="height:8px; width:80px;">
@@ -80,14 +80,12 @@
                         </div>
                     </td>
                     <td>
-                        {% if result.grade == 'A+' or result.grade == 'A' %}
-                            <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
-                        {% elif result.grade == 'B' or result.grade == 'B+' %}
-                            <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
-                        {% elif result.grade == 'C' %}
-                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
+                        {% if result.grade == 'A+' or result.grade == 'A' or result.grade == 'B' %}
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.75rem;"><i class="fa-solid fa-circle-check me-1"></i> {{ result.grade }}</span>
+                        {% elif result.grade == 'C' or result.grade == 'D' %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill fw-bold px-3 py-1" style="font-size:0.75rem;"><i class="fa-solid fa-circle-exclamation me-1"></i> {{ result.grade }}</span>
                         {% else %}
-                            <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill fw-bold px-3 py-1">{{ result.grade }}</span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill fw-bold px-3 py-1" style="font-size:0.75rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i> {{ result.grade }}</span>
                         {% endif %}
                     </td>
                     <td class="text-muted" style="font-size:0.8rem;">{{ result.created_at|date:"d M, Y" }}</td>
@@ -98,7 +96,7 @@
     </div>
 </div>
 {% else %}
-<div class="text-center py-5 premium-card p-5 bg-white">
+<div class="text-center py-5 premium-card p-5 bg-white shadow-sm">
     <div style="font-size:4rem; margin-bottom:1rem;">🏆</div>
     <h4 class="fw-bold" style="color:var(--primary-color);">No Results Published Yet</h4>
     <p class="text-muted mb-0">Results will appear here once your teachers evaluate and publish exam scores.</p>
