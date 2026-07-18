@@ -866,7 +866,7 @@ def teacher_results(request):
             total_marks=total_marks,
             is_published=True
         )
-        messages.success(request, f"Exam result published successfully for {student.user.full_name|title}.")
+        messages.success(request, f"Exam result published successfully for {student.user.full_name.title()}.")
         return redirect("teacher_results")
         
     # Fetch results published by this teacher
