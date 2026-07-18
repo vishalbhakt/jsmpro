@@ -395,15 +395,15 @@
                 </ul>
                 <div class="d-flex align-items-center gap-3">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard_redirect' %}" class="btn btn-premium-primary">
-                            <i class="fa-solid fa-rocket me-1"></i> Dashboard
+                        <a href="{% url 'dashboard_redirect' %}" class="btn btn-premium-primary inline-flex items-center justify-center relative z-50 cursor-pointer px-4 py-2">
+                            <i class="fa-solid fa-rocket me-1 pointer-events-none"></i> <span class="pointer-events-none">Dashboard</span>
                         </a>
-                        <a href="{% url 'logout' %}" class="btn btn-premium-outline">
-                            Logout
+                        <a href="{% url 'logout' %}" class="btn btn-premium-outline inline-flex items-center justify-center relative z-50 cursor-pointer px-4 py-2">
+                            <span class="pointer-events-none">Logout</span>
                         </a>
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-premium-primary">
-                            <i class="fa-solid fa-key me-1"></i> Login
+                        <a href="{% url 'login' %}" class="btn btn-premium-primary inline-flex items-center justify-center relative z-50 cursor-pointer px-4 py-2">
+                            <i class="fa-solid fa-key me-1 pointer-events-none"></i> <span class="pointer-events-none">Login</span>
                         </a>
                     {% endif %}
                 </div>

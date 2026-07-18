@@ -213,8 +213,12 @@
 /* Tailwind utility classes mapping for dropdown refactoring */
 .inline-flex { display: inline-flex !important; }
 .items-center { align-items: center !important; }
+.justify-center { justify-content: center !important; }
+.relative { position: relative !important; }
+.select-none { user-select: none !important; }
 .gap-2 { gap: 0.5rem !important; }
 .p-1\.5 { padding: 0.375rem !important; }
+.p-2 { padding: 0.5rem !important; }
 .rounded-full { border-radius: 9999px !important; }
 .hover\:bg-gray-100:hover { background-color: #f3f4f6 !important; }
 .w-full { width: 100% !important; }
@@ -369,8 +373,8 @@
         <header class="dashboard-header z-50" style="position: relative; z-index: 50;">
             <!-- Sidebar toggle control -->
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-premium-outline px-3" onclick="toggleSidebar()" aria-label="Toggle Navigation Sidebar">
-                    <i class="fa-solid fa-bars-staggered"></i>
+                <button class="btn btn-premium-outline px-3 inline-flex items-center justify-center relative z-50 cursor-pointer" onclick="toggleSidebar()" aria-label="Toggle Navigation Sidebar">
+                    <i class="fa-solid fa-bars-staggered pointer-events-none"></i>
                 </button>
                 <div class="d-none d-md-flex align-items-center gap-2">
                     <span class="badge-premium-gold"><i class="fa-regular fa-calendar-days me-1"></i> {% now "l, d F Y" %}</span>
@@ -382,7 +386,7 @@
             <div class="d-flex align-items-center gap-3">
                 <!-- Dropdown profile trigger -->
                 <div class="dropdown">
-                    <button class="inline-flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 w-full md:w-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="relative z-50 inline-flex items-center gap-2 p-2 rounded-full cursor-pointer select-none border-0 bg-transparent" style="min-height: 42px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="text-end d-none d-sm-block text-left pointer-events-none">
                             <span class="d-block font-bold text-sm text-primary mb-0" style="color: var(--primary-color); font-weight: 800;">{{ user.full_name }}</span>
                             <small class="text-muted d-block text-[10px] uppercase fw-bold" style="font-size: 0.65rem;">@{{ user.username }}</small>
