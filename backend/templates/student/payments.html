@@ -37,7 +37,7 @@
             </div>
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Total Annual Payable</small>
-                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.total_fee|default:"0" }}</h4>
+                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ total_fee|default:"0" }}</h4>
             </div>
         </div>
     </div>
@@ -48,7 +48,7 @@
             </div>
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Amount Paid</small>
-                <h4 class="fw-bold mb-0 text-success" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.amount_paid|default:"0" }}</h4>
+                <h4 class="fw-bold mb-0 text-success" style="font-family:'Outfit',sans-serif;">₹{{ paid_fee|default:"0" }}</h4>
             </div>
         </div>
     </div>
@@ -59,7 +59,7 @@
             </div>
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Remaining Balance</small>
-                <h4 class="fw-bold mb-0 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.remaining_balance|default:"0" }}</h4>
+                <h4 class="fw-bold mb-0 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ remaining_fee|default:"0" }}</h4>
             </div>
         </div>
     </div>
@@ -69,53 +69,53 @@
     <!-- Fee Breakdown Details -->
     <div class="col-md-5">
         <div class="premium-card p-4 bg-white shadow-sm mb-4">
-            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Annual Fee Breakdown</h5>
-            {% if fee_ledger %}
-                <div class="p-3 bg-light rounded-3" style="font-size:0.85rem;">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Admission Fee:</span>
-                        <strong class="text-dark">₹{{ fee_ledger.fee_plan.admission_fee }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Tuition Fee:</span>
-                        <strong class="text-dark">₹{{ fee_ledger.fee_plan.tuition_fee }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Exam Fee:</span>
-                        <strong class="text-dark">₹{{ fee_ledger.fee_plan.exam_fee }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Computer Lab Fee:</span>
-                        <strong class="text-dark">₹{{ fee_ledger.fee_plan.computer_fee }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Sports & Library Fee:</span>
-                        <strong class="text-dark">₹{{ fee_ledger.fee_plan.sports_fee }} / ₹{{ fee_ledger.fee_plan.library_fee }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Transport & Misc Fee:</span>
-                        <strong class="text-dark">₹{{ fee_ledger.fee_plan.transport_fee }} / ₹{{ fee_ledger.fee_plan.misc_fee }}</strong>
-                    </div>
-                    
-                    <hr class="my-2 text-muted">
-                    <div class="d-flex justify-content-between text-danger mb-2">
-                        <span>Discounts Applied:</span>
-                        <strong class="text-danger">-₹{{ fee_ledger.discount }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between text-danger mb-2">
-                        <span>Scholarships Applied:</span>
-                        <strong class="text-danger">-₹{{ fee_ledger.scholarship }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between text-danger mb-2">
-                        <span>Waived Amount:</span>
-                        <strong class="text-danger">-₹{{ fee_ledger.waived_amount }}</strong>
-                    </div>
-                    
-                    <hr class="my-2 text-muted">
-                    <div class="d-flex justify-content-between fw-bold text-dark pt-1">
-                        <span>Total Payable:</span>
-                        <span class="text-success">₹{{ fee_ledger.total_fee }}</span>
-                    </div>
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Itemized Fee Breakdown</h5>
+            {% if plans %}
+                <div class="table-responsive rounded-3 overflow-hidden border border-gray-100" style="font-size:0.8rem;">
+                    <table class="table table-sm table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-3 py-2 text-secondary font-bold uppercase" style="font-size:0.7rem;">Plan / Structure</th>
+                                <th class="px-3 py-2 text-secondary font-bold uppercase text-end" style="font-size:0.7rem;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in plans %}
+                            <tr>
+                                <td class="px-3 py-2.5">
+                                    <span class="d-block fw-bold text-dark">{{ item.plan.title }}</span>
+                                    <small class="text-muted d-block text-xs">Added: {{ item.ledger.created_at|date:"d M Y" }}</small>
+                                    {% if "Academic" not in item.plan.title %}
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60 mt-1" style="font-size: 0.65rem !important;">
+                                            ⚽ Extra Structure
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60 mt-1" style="font-size: 0.65rem !important;">
+                                            ✨ Base Plan
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-3 py-2.5 text-end fw-bold text-dark">
+                                    ₹{{ item.ledger.total_fee }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light border-top">
+                            <tr>
+                                <td class="px-3 py-2 fw-bold text-secondary">Subtotal Due:</td>
+                                <td class="px-3 py-2 text-end fw-bold text-dark">₹{{ total_fee }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-3 py-2 fw-bold text-success">Total Paid:</td>
+                                <td class="px-3 py-2 text-end fw-bold text-success">₹{{ paid_fee }}</td>
+                            </tr>
+                            <tr class="table-danger font-bold border-top-2">
+                                <td class="px-3 py-2.5 fw-bold text-danger" style="font-size:0.85rem;">Net Remaining Balance:</td>
+                                <td class="px-3 py-2.5 text-end fw-bold text-danger" style="font-size:0.85rem;">₹{{ remaining_fee }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             {% else %}
                 <p class="text-muted text-center py-4">No active fee plan structure exists.</p>

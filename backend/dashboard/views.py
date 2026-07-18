@@ -10,7 +10,7 @@ from django.http import Http404, HttpResponse
 from users.models import User, StudentProfile, TeacherProfile
 from academics.models import ClassRoom, Subject, Assessment, Result, ExamResult
 from attendance.models import AttendanceSession, AttendanceRecord
-from finance.models import FeePlan, Payment, StudentFee
+from finance.models import FeePlan, Payment, StudentFee, AdditionalFeeItem
 from learning.models import Assignment, AssignmentSubmission, Note, VideoLecture, Quiz, NoteAccessLog, VideoWatchLog
 from cms.models import Page, Course, Facility, GalleryItem, ContactMessage, Inquiry
 from communication.models import Announcement, Notification
@@ -514,22 +514,28 @@ def student_payments(request):
         return redirect("dashboard_redirect")
         
     sp = request.user.student_profile
-    plans = FeePlan.objects.filter(classroom=sp.classroom)
+    
+    # Auto-link active classroom fee plans to student if ledger doesn't exist
+    student_fees = StudentFee.objects.filter(student=sp)
+    if not student_fees.exists() and sp.classroom:
+        plans = FeePlan.objects.filter(classroom=sp.classroom, is_active=True)
+        for plan in plans:
+            StudentFee.objects.get_or_create(student=sp, fee_plan=plan, academic_year=plan.academic_year)
+        student_fees = StudentFee.objects.filter(student=sp)
+        
     payments = Payment.objects.filter(student=sp).order_by("-paid_at")
     
-    # Calculate stats
-    total_fee = plans.aggregate(total=Sum("amount"))["total"] or 0
-    paid_fee = payments.filter(status="paid").aggregate(total=Sum("amount"))["total"] or 0
-    remaining_fee = max(0, total_fee - paid_fee)
+    # Compute totals based on student fees (which now includes base + mandatory items)
+    total_fee = sum(fee.total_fee for fee in student_fees)
+    paid_fee = sum(fee.amount_paid for fee in student_fees)
+    remaining_fee = sum(fee.remaining_balance for fee in student_fees)
     
     plans_with_status = []
-    for plan in plans:
-        # Check if plan is paid in payments list
-        matching_payment = payments.filter(fee_plan=plan, status="paid").first()
+    for fee in student_fees:
         plans_with_status.append({
-            "plan": plan,
-            "payment": matching_payment,
-            "status": "Paid" if matching_payment else "Unpaid"
+            "plan": fee.fee_plan,
+            "status": fee.payment_status.title(),
+            "ledger": fee
         })
 
     return render(request, "student/payments.html", {
@@ -538,6 +544,7 @@ def student_payments(request):
         "total_fee": total_fee,
         "paid_fee": paid_fee,
         "remaining_fee": remaining_fee,
+        "fee_ledger": student_fees.first() if student_fees.exists() else None,
         "is_dashboard_view": True
     })
 
@@ -1214,162 +1221,247 @@ def admin_class_delete(request, class_id):
 def admin_payments(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
-        
-    # Auto link students to active classroom fee plans
-    for student in StudentProfile.objects.all().select_related("classroom"):
+
+    # ── Auto-link students to active classroom fee plans ──────────────────────
+    # Runs on every page load (cheap with get_or_create) to keep ledgers in sync
+    for student in StudentProfile.objects.filter(status=StudentProfile.Status.ACTIVE).select_related("classroom"):
         if student.classroom:
             plans = FeePlan.objects.filter(classroom=student.classroom, is_active=True)
             for plan in plans:
                 StudentFee.objects.get_or_create(
-                    student=student, 
-                    fee_plan=plan, 
-                    academic_year=plan.academic_year
+                    student=student,
+                    fee_plan=plan,
+                    academic_year=plan.academic_year,
                 )
 
+    # ── POST: bulk link / discount / scholarship actions ──────────────────────
     if request.method == "POST":
         action = request.POST.get("action")
         classroom_id = request.POST.get("classroom_id")
         plan_id = request.POST.get("plan_id")
         value_str = request.POST.get("value", "0.00").strip()
-        
+
         try:
             value = float(value_str) if value_str else 0.00
         except ValueError:
             value = 0.00
-            
+
         classroom = get_object_or_404(ClassRoom, id=classroom_id)
         plan = get_object_or_404(FeePlan, id=plan_id) if plan_id else None
-        
         students = StudentProfile.objects.filter(classroom=classroom)
-        
+
         if action == "link":
             if not plan:
                 messages.error(request, "Please select an active Fee Plan to link.")
                 return redirect("admin_payments")
-                
             count = 0
             for student in students:
                 sf, created = StudentFee.objects.get_or_create(
                     student=student,
                     fee_plan=plan,
-                    academic_year=plan.academic_year
+                    academic_year=plan.academic_year,
                 )
                 if created:
                     count += 1
-            messages.success(request, f"Successfully linked {count} new student ledger(s) of class '{classroom.name}' to fee plan '{plan.title}'.")
-            
+            messages.success(
+                request,
+                f"Successfully linked {count} new student ledger(s) of class '{classroom.name}' "
+                f"to fee plan '{plan.title}'.",
+            )
+
         elif action == "discount":
             if not plan:
                 messages.error(request, "Please select an active Fee Plan to update.")
                 return redirect("admin_payments")
-                
             fees = StudentFee.objects.filter(student__in=students, fee_plan=plan)
             count = fees.update(discount=value)
-            messages.success(request, f"Successfully updated standard discount of ₹{value} for {count} student ledger(s) of class '{classroom.name}' on plan '{plan.title}'.")
-            
+            messages.success(
+                request,
+                f"Updated standard discount of ₹{value} for {count} student ledger(s) "
+                f"of class '{classroom.name}' on plan '{plan.title}'.",
+            )
+
         elif action == "scholarship":
             if not plan:
                 messages.error(request, "Please select an active Fee Plan to update.")
                 return redirect("admin_payments")
-                
             fees = StudentFee.objects.filter(student__in=students, fee_plan=plan)
             count = fees.update(scholarship=value)
-            messages.success(request, f"Successfully updated scholarship of ₹{value} for {count} student ledger(s) of class '{classroom.name}' on plan '{plan.title}'.")
-            
+            messages.success(
+                request,
+                f"Updated scholarship of ₹{value} for {count} student ledger(s) "
+                f"of class '{classroom.name}' on plan '{plan.title}'.",
+            )
+
         return redirect("admin_payments")
 
-    q = request.GET.get("q", "").strip()
-    class_filter = request.GET.get("classroom", "")
-    status_filter = request.GET.get("status", "")
-    
-    # Query StudentFee records
-    fee_ledgers = StudentFee.objects.all().select_related(
-        "student__user", "student__classroom", "fee_plan"
-    )
-    
-    if q:
-        fee_ledgers = fee_ledgers.filter(
-            Q(student__user__first_name__icontains=q) | 
-            Q(student__user__last_name__icontains=q) |
-            Q(student__admission_number__icontains=q) |
-            Q(student__roll_number__icontains=q)
-        )
+    # ── GET: filters ──────────────────────────────────────────────────────────
+    q            = request.GET.get("q", "").strip()
+    class_filter = request.GET.get("classroom", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+
+    # ── Resolve classroom filter (supports both numeric ID and name string) ───
+    # URL can be ?classroom=12  (ID from dropdown) or ?classroom=Class+10 (name)
+    target_classroom = None
     if class_filter:
-        fee_ledgers = fee_ledgers.filter(student__classroom_id=class_filter)
-        
-    # Python-side list compilation to dynamically fetch properties and statuses
+        if class_filter.isdigit():
+            target_classroom = ClassRoom.objects.filter(id=int(class_filter)).first()
+        else:
+            target_classroom = ClassRoom.objects.filter(name=class_filter).first()
+            if not target_classroom:
+                # Fuzzy fallback: name contains the filter string
+                target_classroom = ClassRoom.objects.filter(name__icontains=class_filter).first()
+
+    # ── Build student queryset ────────────────────────────────────────────────
+    # Start from ALL active students (not from StudentFee!) so students without
+    # a fee plan still appear with ₹0.00 / 'No Fee Configured'.
+    students_qs = StudentProfile.objects.filter(
+        status=StudentProfile.Status.ACTIVE
+    ).select_related("user", "classroom").order_by("classroom__name", "user__first_name")
+
+    if target_classroom:
+        students_qs = students_qs.filter(classroom=target_classroom)
+
+    if q:
+        students_qs = students_qs.filter(
+            Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) |
+            Q(admission_number__icontains=q) |
+            Q(roll_number__icontains=q)
+        )
+
+    # DEBUG: verify how many students we're working with
+    print(f"DEBUG: Found {students_qs.count()} students for classroom filter '{class_filter}'.")
+
+    # ── Prefetch all StudentFee records for these students in one query ───────
+    student_ids = list(students_qs.values_list("id", flat=True))
+    all_ledgers = StudentFee.objects.filter(
+        student_id__in=student_ids,
+        fee_plan__is_active=True,
+    ).select_related("student", "fee_plan")
+
+    # Group StudentFee records by student id for fast lookup
+    ledgers_by_student = {}
+    for ledger in all_ledgers:
+        ledgers_by_student.setdefault(ledger.student_id, []).append(ledger)
+
+    # ── Build aggregated per-student ledger_list ──────────────────────────────
+    today = timezone.now().date()
     ledger_list = []
-    for ledger in fee_ledgers:
-        status = ledger.payment_status
+
+    for student in students_qs:
+        student_ledger_rows = ledgers_by_student.get(student.id, [])
+
+        # Last successful payment for this student
+        last_payment = Payment.objects.filter(
+            student=student,
+            status=Payment.Status.PAID,
+        ).order_by("-paid_at").first()
+
+        # Aggregate across all active fee plans
+        total_fee       = 0.00
+        amount_paid     = 0.00
+        remaining_bal   = 0.00
+        discount_total  = 0.00
+        scholar_total   = 0.00
+        fee_type_list   = []
+        has_fee_plan    = bool(student_ledger_rows)
+        is_overdue      = False
+        academic_year   = "2026-27"
+
+        for row in student_ledger_rows:
+            total_fee      += float(row.total_fee)
+            amount_paid    += float(row.amount_paid)
+            remaining_bal  += float(row.remaining_balance)
+            discount_total += float(row.discount)
+            scholar_total  += float(row.scholarship)
+            if row.fee_plan and row.fee_plan.fee_type:
+                fee_type_list.append(row.fee_plan.fee_type)
+            if row.remaining_balance > 0 and row.fee_plan and row.fee_plan.due_date:
+                if row.fee_plan.due_date < today:
+                    is_overdue = True
+            if row.academic_year:
+                academic_year = row.academic_year
+
+        # Compute overall payment status
+        if not has_fee_plan:
+            status = "no_plan"
+        elif remaining_bal == 0:
+            status = "paid"
+        elif amount_paid > 0:
+            status = "overdue" if is_overdue else "partial"
+        else:
+            status = "overdue" if is_overdue else "unpaid"
+
+        # Apply status filter (allow 'no_plan' students through when no filter)
         if status_filter and status != status_filter:
             continue
-        
-        # Get last payment
-        last_payment = Payment.objects.filter(
-            student=ledger.student, 
-            status=Payment.Status.PAID
-        ).order_by("-paid_at").first()
-        
+
+        types = list(set(fee_type_list))
+        fee_type_display = ", ".join(types) if types else ("annual" if has_fee_plan else "—")
+
         ledger_list.append({
-            "ledger": ledger,
-            "total_fee": ledger.total_fee,
-            "amount_paid": ledger.amount_paid,
-            "remaining_balance": ledger.remaining_balance,
-            "status": status,
+            "student":          student,
+            "academic_year":    academic_year,
+            "total_fee":        total_fee,
+            "amount_paid":      amount_paid,
+            "remaining_balance": remaining_bal,
+            "discount":         discount_total,
+            "scholarship":      scholar_total,
+            "fee_type_display": fee_type_display,
+            "has_fee_plan":     has_fee_plan,
             "last_payment_date": last_payment.paid_at if last_payment else None,
-            "payment_method": last_payment.method if last_payment else "—",
-            "receipt_id": last_payment.id if last_payment else None
+            "payment_method":   last_payment.method if last_payment else "—",
+            "receipt_id":       last_payment.id if last_payment else None,
+            "ledgers":          student_ledger_rows,
+            "status":           status,
         })
 
-    # Summary Stats
-    all_paid_payments = Payment.objects.filter(status=Payment.Status.PAID)
-    today = timezone.now().date()
-    start_of_week = timezone.now() - timezone.timedelta(days=7)
+    # ── Summary Stats ─────────────────────────────────────────────────────────
+    all_paid_payments  = Payment.objects.filter(status=Payment.Status.PAID)
+    start_of_week  = timezone.now() - timezone.timedelta(days=7)
     start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    start_of_year = timezone.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-    
-    todays_collection = all_paid_payments.filter(paid_at__date=today).aggregate(total=Sum("amount"))["total"] or 0.00
-    weekly_collection = all_paid_payments.filter(paid_at__gte=start_of_week).aggregate(total=Sum("amount"))["total"] or 0.00
+    start_of_year  = timezone.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    todays_collection  = all_paid_payments.filter(paid_at__date=today).aggregate(total=Sum("amount"))["total"] or 0.00
+    weekly_collection  = all_paid_payments.filter(paid_at__gte=start_of_week).aggregate(total=Sum("amount"))["total"] or 0.00
     monthly_collection = all_paid_payments.filter(paid_at__gte=start_of_month).aggregate(total=Sum("amount"))["total"] or 0.00
-    yearly_collection = all_paid_payments.filter(paid_at__gte=start_of_year).aggregate(total=Sum("amount"))["total"] or 0.00
-    total_revenue = all_paid_payments.aggregate(total=Sum("amount"))["total"] or 0.00
-    
+    yearly_collection  = all_paid_payments.filter(paid_at__gte=start_of_year).aggregate(total=Sum("amount"))["total"] or 0.00
+    total_revenue      = all_paid_payments.aggregate(total=Sum("amount"))["total"] or 0.00
+
     paid_payments_count = all_paid_payments.count()
-    average_collection = total_revenue / paid_payments_count if paid_payments_count > 0 else 0.00
-    
-    total_pending = sum(item["remaining_balance"] for item in ledger_list)
-    paid_count = sum(1 for item in ledger_list if item["status"] == StudentFee.Status.PAID)
-    pending_count = sum(1 for item in ledger_list if item["status"] != StudentFee.Status.PAID)
-    
-    # Overdue payments count
-    overdue_count = 0
-    for item in ledger_list:
-        if item["status"] != StudentFee.Status.PAID:
-            due_date = item["ledger"].fee_plan.due_date
-            if due_date and due_date < today:
-                overdue_count += 1
-                
-    classrooms = ClassRoom.objects.all()
-    active_plans = FeePlan.objects.filter(is_active=True).select_related("classroom")
+    average_collection  = total_revenue / paid_payments_count if paid_payments_count > 0 else 0.00
+
+    total_pending  = sum(item["remaining_balance"] for item in ledger_list)
+    paid_count     = sum(1 for item in ledger_list if item["status"] == "paid")
+    pending_count  = sum(1 for item in ledger_list if item["status"] not in ("paid", "no_plan"))
+    overdue_count  = sum(1 for item in ledger_list if item["status"] == "overdue")
+
+    classrooms     = ClassRoom.objects.all().order_by("name", "section")
+    classroom_names = ClassRoom.objects.values_list("name", flat=True).distinct().order_by("name")
+    active_plans   = FeePlan.objects.filter(is_active=True).select_related("classroom")
+
     return render(request, "admin/payments.html", {
-        "ledger_list": ledger_list,
-        "classrooms": classrooms,
-        "active_plans": active_plans,
-        "todays_collection": todays_collection,
-        "weekly_collection": weekly_collection,
-        "monthly_collection": monthly_collection,
-        "yearly_collection": yearly_collection,
-        "total_revenue": total_revenue,
-        "total_pending": total_pending,
-        "paid_count": paid_count,
-        "pending_count": pending_count,
-        "overdue_count": overdue_count,
-        "average_collection": average_collection,
-        "is_dashboard_view": True,
-        "q": q,
-        "class_filter": int(class_filter) if class_filter else "",
-        "status_filter": status_filter
+        "ledger_list":         ledger_list,
+        "classrooms":          classrooms,
+        "classroom_names":     classroom_names,
+        "class_filter":        class_filter,
+        "status_filter":       status_filter,
+        "active_plans":        active_plans,
+        "todays_collection":   todays_collection,
+        "weekly_collection":   weekly_collection,
+        "monthly_collection":  monthly_collection,
+        "yearly_collection":   yearly_collection,
+        "total_revenue":       total_revenue,
+        "total_pending":       total_pending,
+        "paid_count":          paid_count,
+        "pending_count":       pending_count,
+        "overdue_count":       overdue_count,
+        "average_collection":  average_collection,
+        "is_dashboard_view":   True,
+        "q":                   q,
     })
+
 
 @login_required
 def admin_payment_history(request, student_id):
@@ -1378,14 +1470,13 @@ def admin_payment_history(request, student_id):
         
     student = get_object_or_404(StudentProfile, id=student_id)
     
-    # Auto get/create StudentFee
-    fee_ledgers = StudentFee.objects.filter(student=student)
-    if not fee_ledgers.exists() and student.classroom:
-        plans = FeePlan.objects.filter(classroom=student.classroom, is_active=True)
-        for plan in plans:
+    # Auto get/create StudentFee for all active FeePlan structures matching student's Classroom
+    if student.classroom:
+        active_plans = FeePlan.objects.filter(classroom=student.classroom, is_active=True)
+        for plan in active_plans:
             StudentFee.objects.get_or_create(student=student, fee_plan=plan, academic_year=plan.academic_year)
-        fee_ledgers = StudentFee.objects.filter(student=student)
-        
+            
+    fee_ledgers = StudentFee.objects.filter(student=student, fee_plan__is_active=True)
     fee_ledger = fee_ledgers.first()
     
     if request.method == "POST":
@@ -1395,11 +1486,18 @@ def admin_payment_history(request, student_id):
         installment = request.POST.get("installment_period", "Annual")
         transaction_id = request.POST.get("transaction_id", "")
         
+        # Support target StudentFee selection
+        target_fee_id = request.POST.get("target_student_fee")
+        if target_fee_id:
+            target_fee = get_object_or_404(StudentFee, id=target_fee_id, student=student)
+        else:
+            target_fee = fee_ledger
+            
         # Create immutable transaction
         Payment.objects.create(
             student=student,
-            fee_plan=fee_ledger.fee_plan if fee_ledger else None,
-            student_fee=fee_ledger,
+            fee_plan=target_fee.fee_plan if target_fee else None,
+            student_fee=target_fee,
             amount=amount,
             status=Payment.Status.PAID,
             method=method,
@@ -1464,25 +1562,39 @@ def admin_payment_history(request, student_id):
     # Calculate Installment statuses
     paid_installments = list(payments_all.filter(status=Payment.Status.PAID).values_list("installment_period", flat=True))
     
-    # Calculate Overdue state
+    # Calculate Overdue state and cumulative values
+    cumulative_total_fee = sum(f.total_fee for f in fee_ledgers)
+    cumulative_amount_paid = sum(f.amount_paid for f in fee_ledgers)
+    cumulative_remaining_balance = sum(f.remaining_balance for f in fee_ledgers)
+    cumulative_gross_fee = sum(f.gross_fee for f in fee_ledgers)
+    cumulative_discount = sum(f.discount for f in fee_ledgers)
+    cumulative_scholarship = sum(f.scholarship for f in fee_ledgers)
+    
     from django.utils import timezone
     is_overdue = False
-    if fee_ledger and fee_ledger.remaining_balance > 0 and fee_ledger.fee_plan.due_date:
-        is_overdue = fee_ledger.fee_plan.due_date < timezone.now().date()
+    for ledger in fee_ledgers:
+        if ledger.remaining_balance > 0 and ledger.fee_plan.due_date:
+            if ledger.fee_plan.due_date < timezone.now().date():
+                is_overdue = True
+                break
 
-    if fee_ledger:
-        if fee_ledger.remaining_balance == 0:
-            payment_status_display = "Paid"
-        elif fee_ledger.amount_paid > 0:
-            payment_status_display = "Overdue" if is_overdue else "Partial"
-        else:
-            payment_status_display = "Overdue" if is_overdue else "Pending"
+    if cumulative_remaining_balance == 0:
+        payment_status_display = "Paid"
+    elif cumulative_amount_paid > 0:
+        payment_status_display = "Overdue" if is_overdue else "Partial"
     else:
-        payment_status_display = "Pending"
+        payment_status_display = "Overdue" if is_overdue else "Pending"
 
     return render(request, "admin/payment_history.html", {
         "student": student,
         "fee_ledger": fee_ledger,
+        "fee_ledgers": fee_ledgers,
+        "cumulative_total_fee": cumulative_total_fee,
+        "cumulative_amount_paid": cumulative_amount_paid,
+        "cumulative_remaining_balance": cumulative_remaining_balance,
+        "cumulative_gross_fee": cumulative_gross_fee,
+        "cumulative_discount": cumulative_discount,
+        "cumulative_scholarship": cumulative_scholarship,
         "payments": payments,
         "paid_installments": paid_installments,
         "last_payment_date": last_payment_date,
@@ -2536,7 +2648,12 @@ def admin_fee_plans(request):
         scholarship = request.POST.get("scholarship", 0.00)
         late_fee = request.POST.get("late_fee", 0.00)
         due_date = request.POST.get("due_date")
+        if not due_date:
+            due_date = None
         fee_type = request.POST.get("fee_type", "annual")
+        
+        # Payment Frequency Options
+        payment_freqs = request.POST.getlist("payment_frequency_options")
         
         classroom = get_object_or_404(ClassRoom, id=classroom_id)
         
@@ -2547,7 +2664,7 @@ def admin_fee_plans(request):
             except ValueError:
                 return 0.00
 
-        FeePlan.objects.create(
+        fp = FeePlan.objects.create(
             title=title,
             classroom=classroom,
             academic_year=academic_year,
@@ -2564,8 +2681,30 @@ def admin_fee_plans(request):
             late_fee=to_dec(late_fee),
             due_date=due_date,
             fee_type=fee_type,
+            payment_frequency_options=payment_freqs,
             is_active=True
         )
+        
+        # Additional Fee Items
+        item_names = request.POST.getlist("item_name")
+        item_amounts = request.POST.getlist("item_amount")
+        item_mandatories = request.POST.getlist("item_mandatory")
+        
+        for i in range(len(item_names)):
+            if i < len(item_names):
+                name = item_names[i]
+                if name:
+                    amt = to_dec(item_amounts[i])
+                    is_mand = False
+                    if i < len(item_mandatories):
+                        is_mand = item_mandatories[i] == 'true' or item_mandatories[i] == 'on' or item_mandatories[i] == '1'
+                    AdditionalFeeItem.objects.create(
+                        fee_plan=fp,
+                        item_name=name,
+                        amount=amt,
+                        is_mandatory_for_class=is_mand
+                    )
+                    
         messages.success(request, f"Fee plan '{title}' created successfully.")
         return redirect("admin_fee_plans")
         
@@ -2608,10 +2747,33 @@ def admin_fee_plans_edit(request, plan_id):
         plan.discount = to_dec(request.POST.get("discount", 0.00))
         plan.scholarship = to_dec(request.POST.get("scholarship", 0.00))
         plan.late_fee = to_dec(request.POST.get("late_fee", 0.00))
-        plan.due_date = request.POST.get("due_date")
+        due_date = request.POST.get("due_date")
+        plan.due_date = due_date if due_date else None
         plan.fee_type = request.POST.get("fee_type", "annual")
+        plan.payment_frequency_options = request.POST.getlist("payment_frequency_options")
         plan.is_active = request.POST.get("is_active") == "on"
         plan.save()
+        
+        # Additional Fee Items
+        plan.additional_items.all().delete()
+        item_names = request.POST.getlist("item_name")
+        item_amounts = request.POST.getlist("item_amount")
+        item_mandatories = request.POST.getlist("item_mandatory")
+        
+        for i in range(len(item_names)):
+            if i < len(item_names):
+                name = item_names[i]
+                if name:
+                    amt = to_dec(item_amounts[i])
+                    is_mand = False
+                    if i < len(item_mandatories):
+                        is_mand = item_mandatories[i] == 'true' or item_mandatories[i] == 'on' or item_mandatories[i] == '1'
+                    AdditionalFeeItem.objects.create(
+                        fee_plan=plan,
+                        item_name=name,
+                        amount=amt,
+                        is_mandatory_for_class=is_mand
+                    )
         
         # Also save updates in calculated amounts of student fees linked to this plan
         for student_fee in plan.student_fees.all():

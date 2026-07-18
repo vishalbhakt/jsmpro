@@ -1,7 +1,7 @@
 {% extends "dashboard_base.html" %}
 {% load static %}
 
-{% block title %}Fee Plans - JSM Shiksha Academy{% endblock %}
+{% block title %}Fee Structures - JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
 <!-- Page Header -->
@@ -22,7 +22,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                 </div>
-                <h1 class="display-6 fw-bold text-white mb-0" style="font-family:'Outfit',sans-serif; margin-bottom: 0 !important;">Tuition Fee Structures</h1>
+                <h1 class="display-6 fw-bold text-white mb-0" style="font-family:'Outfit',sans-serif; margin-bottom: 0 !important;">Fee Structures</h1>
             </div>
             <p class="text-white-50 mb-0">Configure master academic fee breakdowns, late rules, installments, waives, and bulk updates.</p>
         </div>
@@ -85,84 +85,73 @@
         </div>
     </div>
 
-    <!-- Plans Grid -->
-    <div class="row g-4">
-        {% for plan in plans %}
-        <div class="col-md-4">
-            <div class="premium-card p-4 bg-white border border-light h-100 d-flex flex-column justify-content-between shadow-sm">
-                <div>
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="checkbox" name="plan_ids" value="{{ plan.id }}" class="form-check-input">
-                            <h5 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">{{ plan.title }}</h5>
-                        </div>
-                        <a href="{% url 'admin_fee_plans_toggle_active' plan.id %}" class="badge {% if plan.is_active %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if plan.is_active %}text-success{% else %}text-secondary{% endif %} rounded-pill px-2.5 py-1 fw-bold text-decoration-none" style="font-size: 0.65rem;" title="Click to Toggle Status">
-                            {% if plan.is_active %}Active{% else %}Archived{% endif %}
-                        </a>
-                    </div>
-                    <div class="d-flex gap-2 mb-3">
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-bold px-2.5 py-1" style="font-size:0.7rem;"><i class="fa-solid fa-school me-1"></i>{{ plan.classroom.name }}</span>
-                        <span class="badge bg-secondary rounded-pill px-2.5 py-1 fw-bold" style="font-size:0.7rem;"><i class="fa-regular fa-calendar-days me-1"></i>{{ plan.academic_year }}</span>
-                    </div>
-                    
-                    <!-- Financial Breakdown -->
-                    <div class="p-3 bg-light rounded-3 mb-3" style="font-size: 0.8rem;">
-                        <div class="d-flex justify-content-between text-muted mb-1">
-                            <span>Admission Fee</span>
-                            <span class="fw-bold text-dark">₹{{ plan.admission_fee }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted mb-1">
-                            <span>Tuition Fee</span>
-                            <span class="fw-bold text-dark">₹{{ plan.tuition_fee }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted mb-1">
-                            <span>Exam Fee</span>
-                            <span class="fw-bold text-dark">₹{{ plan.exam_fee }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted mb-1">
-                            <span>Computer Fee</span>
-                            <span class="fw-bold text-dark">₹{{ plan.computer_fee }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted mb-1">
-                            <span>Library/Sports</span>
-                            <span class="fw-bold text-dark">₹{{ plan.library_fee }}/₹{{ plan.sports_fee }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted mb-1">
-                            <span>Discounts/Scholarship</span>
-                            <span class="fw-bold text-danger">-₹{{ plan.discount }}/-₹{{ plan.scholarship }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted pt-1 border-top fw-bold text-dark">
-                            <span>Annual Total</span>
-                            <span class="text-success">₹{{ plan.amount }}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Installments Info -->
-                    <div class="mb-3" style="font-size: 0.72rem;">
-                        <div class="text-muted mb-1"><i class="fa-solid fa-coins me-1"></i> Installments breakdown:</div>
-                        <div class="d-flex flex-wrap gap-2 text-dark font-medium">
-                            <span class="bg-light px-2 py-0.5 rounded">Monthly: <strong>₹{{ plan.monthly_fee }}</strong></span>
-                            <span class="bg-light px-2 py-0.5 rounded">Quarterly: <strong>₹{{ plan.quarterly_fee }}</strong></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                    <small class="text-danger fw-bold"><i class="fa-solid fa-clock me-1"></i>Due: {{ plan.due_date|date:"d M Y" }}</small>
-                    <div class="d-flex gap-1">
-                        <a href="{% url 'admin_fee_plans_edit' plan.id %}" class="btn btn-xs btn-outline-primary rounded-pill px-2.5" title="Edit"><i class="fa-solid fa-pencil"></i></a>
-                        <a href="{% url 'admin_fee_plans_duplicate' plan.id %}" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5" title="Duplicate"><i class="fa-solid fa-copy"></i></a>
-                        <a href="{% url 'admin_fee_plans_delete' plan.id %}" class="btn btn-xs btn-danger rounded-pill px-2.5" onclick="return confirm('Delete this plan structure?')" title="Delete"><i class="fa-solid fa-trash"></i></a>
-                    </div>
-                </div>
-            </div>
+    <!-- Plans Table -->
+    <div class="premium-card p-4 bg-white shadow-sm mb-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40px; padding: 1rem;"><input type="checkbox" id="selectAllCheckbox" class="form-check-input"></th>
+                        <th style="padding: 1rem;">Structure Title</th>
+                        <th style="padding: 1rem;">Classroom Grade</th>
+                        <th style="padding: 1rem;">Total Base Fee</th>
+                        <th style="padding: 1rem;">Payment Frequencies</th>
+                        <th style="padding: 1rem;">Add-on Courses</th>
+                        <th style="padding: 1rem;">Status</th>
+                        <th class="text-end" style="padding: 1rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td style="padding: 1rem;"><input type="checkbox" name="plan_ids" value="{{ plan.id }}" class="form-check-input plan-checkbox"></td>
+                        <td style="padding: 1rem;">
+                            <span class="d-block fw-bold text-primary" style="font-family: 'Outfit', sans-serif;">{{ plan.title }}</span>
+                            <small class="text-muted d-block text-xs">Session: {{ plan.academic_year }}</small>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-bold px-2.5 py-1" style="font-size: 0.72rem;">{{ plan.classroom.name }}</span>
+                        </td>
+                        <td class="fw-bold text-success" style="padding: 1rem;">
+                            ₹{{ plan.amount }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for option in plan.payment_frequency_options %}
+                                <span class="badge bg-light text-dark border text-capitalize" style="font-size: 0.65rem;">{{ option|title }}</span>
+                                {% empty %}
+                                <span class="text-muted text-xs">—</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <span class="badge bg-warning bg-opacity-15 text-warning rounded-pill fw-bold px-2.5 py-1" style="font-size: 0.72rem;"><i class="fa-solid fa-cubes me-1"></i>{{ plan.additional_items.count }} Add-on(s)</span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <a href="{% url 'admin_fee_plans_toggle_active' plan.id %}" class="badge {% if plan.is_active %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if plan.is_active %}text-success{% else %}text-secondary{% endif %} rounded-pill px-2.5 py-1 fw-bold text-decoration-none" style="font-size: 0.65rem;" title="Click to Toggle Status">
+                                {% if plan.is_active %}Active{% else %}Archived{% endif %}
+                            </a>
+                        </td>
+                        <td class="text-end" style="padding: 1rem;">
+                            <div class="d-flex justify-content-end gap-2 align-items-center">
+                                <a href="{% url 'admin_payments' %}?classroom={{ plan.classroom.id }}" class="btn btn-xs btn-outline-info rounded-pill px-3 py-1" style="font-size: 0.72rem;"><i class="fa-solid fa-user-group me-1"></i> 👥 Students</a>
+                                <a href="{% url 'admin_fee_plans_edit' plan.id %}" class="btn btn-xs btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.72rem;"><i class="fa-solid fa-pencil me-1"></i> Edit</a>
+                                <a href="{% url 'admin_fee_plans_duplicate' plan.id %}" class="btn btn-xs btn-outline-secondary rounded-pill px-2.5 py-1" title="Duplicate"><i class="fa-solid fa-copy"></i></a>
+                                <a href="{% url 'admin_fee_plans_delete' plan.id %}" class="btn btn-xs btn-danger rounded-pill px-2.5 py-1" onclick="return confirm('Delete this plan structure?')" title="Delete"><i class="fa-solid fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <img src="{% static 'images/logo.png' %}" class="mb-3 opacity-25" style="width: 80px; filter: grayscale(1);">
+                            <p class="mb-0">No fee structures configured yet. Create a structure for class enrollment fee rules.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5 premium-card p-5 bg-white">
-            <img src="{% static 'images/logo.png' %}" class="mb-3 opacity-25" style="width: 80px; filter: grayscale(1);">
-            <p class="text-muted mb-0">No fee plans configured yet. Create a structure for class enrollment fee rules.</p>
-        </div>
-        {% endfor %}
     </div>
 </form>
 
@@ -191,97 +180,102 @@
 
 <!-- Modal: Create Fee Plan -->
 <div class="modal fade" id="createFeePlanModal" tabindex="-1" aria-labelledby="createFeePlanModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 bg-light px-4 py-3">
-                <h5 class="modal-title fw-bold text-primary" id="createFeePlanModalLabel"><i class="fa-solid fa-money-check-dollar me-2 text-accent"></i> Create New Fee Plan Structure</h5>
+                <h5 class="modal-title fw-bold text-primary" id="createFeePlanModalLabel"><i class="fa-solid fa-money-check-dollar me-2 text-accent"></i> Configure New Structure</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="{% url 'admin_fee_plans' %}">
+            <form method="post" action="{% url 'admin_fee_plans' %}" id="feePlanForm">
                 {% csrf_token %}
                 <div class="modal-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-sm text-primary">Structure Title <span class="text-danger">*</span></label>
-                            <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Grade 5 Tuition Structure" required>
+                    <!-- SECTION 1: Basic Classification -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-accent mb-3 border-bottom pb-2" style="font-family: 'Outfit', sans-serif;"><i class="fa-solid fa-tags me-2"></i>Section 1: Basic Classification</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-sm text-primary">Structure Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control rounded-3" placeholder="e.g. Grade 8 Academic Plan 2026-27" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-sm text-primary">Classroom Grade <span class="text-danger">*</span></label>
+                                <select name="classroom" class="form-select rounded-3" required>
+                                    <option value="">-- Select Class (UKG to 10) --</option>
+                                    {% for cls in classrooms %}
+                                    <option value="{{ cls.id }}">{{ cls.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-sm text-primary">Academic Session <span class="text-danger">*</span></label>
+                                <input type="text" name="academic_year" class="form-control rounded-3" value="2026-27" required>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold text-sm text-primary">Classroom <span class="text-danger">*</span></label>
-                            <select name="classroom" class="form-select rounded-3" required>
-                                <option value="">-- Class --</option>
-                                {% for cls in classrooms %}
-                                <option value="{{ cls.id }}">{{ cls.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold text-sm text-primary">Academic Year <span class="text-danger">*</span></label>
-                            <input type="text" name="academic_year" class="form-control rounded-3" value="2026-27" required>
-                        </div>
-                        
-                        <hr class="my-2">
-                        <h6 class="fw-bold text-accent mb-0 mt-2"><i class="fa-solid fa-list-check me-2"></i>Fee Components (Annual Breakdown)</h6>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Admission Fee (INR)</label>
-                            <input type="number" step="0.01" name="admission_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Tuition Fee (INR)</label>
-                            <input type="number" step="0.01" name="tuition_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Examination Fee (INR)</label>
-                            <input type="number" step="0.01" name="exam_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Computer Lab Fee (INR)</label>
-                            <input type="number" step="0.01" name="computer_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Library Fee (INR)</label>
-                            <input type="number" step="0.01" name="library_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Sports Fee (INR)</label>
-                            <input type="number" step="0.01" name="sports_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Transport Fee (INR - Optional)</label>
-                            <input type="number" step="0.01" name="transport_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Misc./Extra Fee (INR)</label>
-                            <input type="number" step="0.01" name="misc_fee" class="form-control rounded-3" value="0.00">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Late Fee Rule Penalty (INR)</label>
-                            <input type="number" step="0.01" name="late_fee" class="form-control rounded-3" value="0.00">
-                        </div>
+                    </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Standard Discount (INR)</label>
-                            <input type="number" step="0.01" name="discount" class="form-control rounded-3" value="0.00">
+                    <!-- SECTION 2: Base Fees & Payment Modes -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-accent mb-3 border-bottom pb-2" style="font-family: 'Outfit', sans-serif;"><i class="fa-solid fa-circle-dollar-to-slot me-2"></i>Section 2: Base Fees & Payment Modes</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-sm text-primary">Tuition Fee (INR) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" name="tuition_fee" class="form-control rounded-3" value="0.00" min="0" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-sm text-primary">Admission Fee (INR)</label>
+                                <input type="number" step="0.01" name="admission_fee" class="form-control rounded-3" value="0.00" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-sm text-primary">Exam Fee (INR)</label>
+                                <input type="number" step="0.01" name="exam_fee" class="form-control rounded-3" value="0.00" min="0">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-sm text-primary">Computer Fee (INR)</label>
+                                <input type="number" step="0.01" name="computer_fee" class="form-control rounded-3" value="0.00" min="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-sm text-primary">Library Fee (INR)</label>
+                                <input type="number" step="0.01" name="library_fee" class="form-control rounded-3" value="0.00" min="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-sm text-primary">Sports Fee (INR)</label>
+                                <input type="number" step="0.01" name="sports_fee" class="form-control rounded-3" value="0.00" min="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-sm text-primary">Late Fee Penalty (INR)</label>
+                                <input type="number" step="0.01" name="late_fee" class="form-control rounded-3" value="0.00" min="0">
+                            </div>
+
+                            <div class="col-md-12 my-2">
+                                <label class="form-label fw-bold text-sm text-primary d-block">Allowed Payment Frequencies (Installments)</label>
+                                <div class="d-flex flex-wrap gap-4 mt-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="payment_frequency_options" value="monthly" id="freq_monthly" checked>
+                                        <label class="form-check-label fw-bold text-secondary text-sm" for="freq_monthly">📅 Monthly (12 Installments)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="payment_frequency_options" value="half_yearly" id="freq_half_yearly">
+                                        <label class="form-check-label fw-bold text-secondary text-sm" for="freq_half_yearly">📅 Half-Yearly (2 Installments)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="payment_frequency_options" value="yearly" id="freq_yearly" checked>
+                                        <label class="form-check-label fw-bold text-secondary text-sm" for="freq_yearly">📅 Yearly / Full Payment (1 upfront)</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Standard Scholarship (INR)</label>
-                            <input type="number" step="0.01" name="scholarship" class="form-control rounded-3" value="0.00">
+                    </div>
+
+                    <!-- SECTION 3: Dynamic Add-on Courses -->
+                    <div>
+                        <h6 class="fw-bold text-accent mb-3 border-bottom pb-2" style="font-family: 'Outfit', sans-serif;"><i class="fa-solid fa-cubes me-2"></i>Section 3: Additional Courses & Facilities</h6>
+                        <div id="additionalItemsContainer" class="mb-3">
+                            <!-- Repeater rows appended here -->
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Due Date <span class="text-danger">*</span></label>
-                            <input type="date" name="due_date" class="form-control rounded-3" required>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-sm text-primary">Plan Type Frequency</label>
-                            <select name="fee_type" class="form-select rounded-3">
-                                <option value="annual">Annual Plan</option>
-                                <option value="monthly">Monthly Plan</option>
-                                <option value="admission">Admission Only</option>
-                            </select>
-                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill fw-bold" onclick="addAdditionalItemRow()">
+                            <i class="fa-solid fa-plus me-1"></i> ➕ Add Another Item
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer border-0 px-4 pb-4">
@@ -292,4 +286,60 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+    let rowIndex = 0;
+    
+    function addAdditionalItemRow() {
+        const container = document.getElementById("additionalItemsContainer");
+        const row = document.createElement("div");
+        row.className = "row g-2 align-items-center mb-2 additional-item-row";
+        row.id = `item-row-${rowIndex}`;
+        row.innerHTML = `
+            <div class="col-md-5">
+                <input type="text" name="item_name" class="form-control form-control-sm rounded-3" placeholder="Item Name (e.g., Computer & AI Lab)" required style="height: 38px;">
+            </div>
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light">₹</span>
+                    <input type="number" step="0.01" name="item_amount" class="form-control rounded-end-3" placeholder="Amount" required style="height: 38px;" min="0">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex align-items-center gap-2 ps-3">
+                <input type="checkbox" id="check-mandatory-${rowIndex}" class="form-check-input" onchange="updateMandatoryHidden(${rowIndex})" checked>
+                <label class="form-check-label fw-bold text-secondary text-xs" for="check-mandatory-${rowIndex}">Mandatory for Grade</label>
+                <input type="hidden" name="item_mandatory" id="hidden-mandatory-${rowIndex}" value="true">
+            </div>
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="removeAdditionalItemRow(${rowIndex})" title="Remove" style="width: 32px; height: 32px; padding:0;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(row);
+        rowIndex++;
+    }
+    
+    function removeAdditionalItemRow(idx) {
+        const row = document.getElementById(`item-row-${idx}`);
+        if (row) {
+            row.remove();
+        }
+    }
+    
+    function updateMandatoryHidden(idx) {
+        const checkbox = document.getElementById(`check-mandatory-${idx}`);
+        const hiddenInput = document.getElementById(`hidden-mandatory-${idx}`);
+        if (checkbox && hiddenInput) {
+            hiddenInput.value = checkbox.checked ? "true" : "false";
+        }
+    }
+
+    // Initialize with 1 row automatically
+    document.addEventListener("DOMContentLoaded", function() {
+        addAdditionalItemRow();
+    });
+</script>
 {% endblock %}

@@ -32,8 +32,9 @@ class FeePlan(models.Model):
     late_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # Auto calculated sum
-    due_date = models.DateField()
+    due_date = models.DateField(blank=True, null=True)
     fee_type = models.CharField(max_length=30, choices=FeeType.choices, default=FeeType.ANNUAL)
+    payment_frequency_options = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -90,7 +91,14 @@ class StudentFee(models.Model):
         if not self.fee_plan:
             return Decimal("0.00")
         fp = self.fee_plan
-        return fp.admission_fee + fp.tuition_fee + fp.exam_fee + fp.computer_fee + fp.library_fee + fp.sports_fee + fp.transport_fee + fp.misc_fee
+        base = fp.admission_fee + fp.tuition_fee + fp.exam_fee + fp.computer_fee + fp.library_fee + fp.sports_fee + fp.transport_fee + fp.misc_fee
+        
+        # Add mandatory additional fee items
+        mandatory_sum = fp.additional_items.filter(is_mandatory_for_class=True).aggregate(
+            total=models.Sum("amount")
+        )["total"] or Decimal("0.00")
+        
+        return base + mandatory_sum
 
     @property
     def total_fee(self):
@@ -179,3 +187,13 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.amount} - {self.status}"
+
+
+class AdditionalFeeItem(models.Model):
+    fee_plan = models.ForeignKey(FeePlan, on_delete=models.CASCADE, related_name="additional_items")
+    item_name = models.CharField(max_length=150)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    is_mandatory_for_class = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.item_name} - ₹{self.amount} ({'Mandatory' if self.is_mandatory_for_class else 'Optional'})"

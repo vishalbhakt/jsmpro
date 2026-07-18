@@ -118,8 +118,8 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <small class="text-muted d-block text-xs uppercase fw-bold">Total Fee (Net)</small>
-                    <h3 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.total_fee }}</h3>
-                    <small class="text-muted text-xs">Gross: ₹{{ fee_ledger.gross_fee }}</small>
+                    <h3 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_total_fee }}</h3>
+                    <small class="text-muted text-xs">Gross: ₹{{ cumulative_gross_fee }}</small>
                 </div>
                 <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
@@ -133,7 +133,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <small class="text-muted d-block text-xs uppercase fw-bold">Total Paid</small>
-                    <h3 class="fw-bold mb-1 text-success" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.amount_paid }}</h3>
+                    <h3 class="fw-bold mb-1 text-success" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_amount_paid }}</h3>
                     <small class="text-muted text-xs">Last: {{ last_payment_date|date:"d M Y"|default:"None" }}</small>
                 </div>
                 <div class="bg-success bg-opacity-10 text-success rounded-3 p-2">
@@ -148,7 +148,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <small class="text-muted d-block text-xs uppercase fw-bold">Remaining Balance</small>
-                    <h3 class="fw-bold mb-1 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ fee_ledger.remaining_balance }}</h3>
+                    <h3 class="fw-bold mb-1 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_remaining_balance }}</h3>
                     <small class="text-muted text-xs">Adjustments applied</small>
                 </div>
                 <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-2">
@@ -175,7 +175,7 @@
                         {% endif %}
                     </div>
                     <div class="mt-2 text-[10px] text-muted" style="font-size:0.65rem;">
-                        Discount/Schol: ₹{{ fee_ledger.discount }}/₹{{ fee_ledger.scholarship }}
+                        Discount/Schol: ₹{{ cumulative_discount }}/₹{{ cumulative_scholarship }}
                     </div>
                 </div>
                 <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-2">
@@ -191,66 +191,52 @@
     <!-- Fee Breakdown -->
     <div class="col-md-4">
         <div class="premium-card p-6 bg-white shadow-sm h-100">
-            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Fee Breakdown & Ledger</h5>
-            <div class="p-3 bg-light rounded-3" style="font-size:0.85rem;">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Admission Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.admission_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Tuition Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.tuition_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Exam Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.exam_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Computer Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.computer_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Library Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.library_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Sports Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.sports_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Transport Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.transport_fee }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Misc Fee:</span>
-                    <strong class="text-dark">₹{{ fee_ledger.fee_plan.misc_fee }}</strong>
-                </div>
-                <hr class="my-2">
-                <div class="d-flex justify-content-between text-danger mb-2">
-                    <span>Discount:</span>
-                    <strong class="text-danger">-₹{{ fee_ledger.discount }}</strong>
-                </div>
-                <div class="d-flex justify-content-between text-danger mb-2">
-                    <span>Scholarship:</span>
-                    <strong class="text-danger">-₹{{ fee_ledger.scholarship }}</strong>
-                </div>
-                <div class="d-flex justify-content-between text-danger mb-2">
-                    <span>Admin Waiver:</span>
-                    <strong class="text-danger">-₹{{ fee_ledger.waived_amount }}</strong>
-                </div>
-                <hr class="my-2">
-                <div class="d-flex justify-content-between fw-bold text-dark pt-1">
-                    <span>Total Net Fee:</span>
-                    <span class="text-success">₹{{ fee_ledger.total_fee }}</span>
-                </div>
-                <div class="d-flex justify-content-between fw-bold text-dark pt-1">
-                    <span>Total Paid:</span>
-                    <span class="text-success">₹{{ fee_ledger.amount_paid }}</span>
-                </div>
-                <div class="d-flex justify-content-between fw-bold text-dark pt-1">
-                    <span>Remaining Due:</span>
-                    <span class="text-danger">₹{{ fee_ledger.remaining_balance }}</span>
-                </div>
+            <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Itemized Fee Breakdown</h5>
+            <div class="table-responsive rounded-3 overflow-hidden border border-gray-100" style="font-size:0.8rem;">
+                <table class="table table-sm table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="px-3 py-2 text-secondary font-bold uppercase" style="font-size:0.7rem;">Plan / Structure</th>
+                            <th class="px-3 py-2 text-secondary font-bold uppercase text-end" style="font-size:0.7rem;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ledger in fee_ledgers %}
+                        <tr>
+                            <td class="px-3 py-2.5">
+                                <span class="d-block fw-bold text-dark">{{ ledger.fee_plan.title }}</span>
+                                <small class="text-muted d-block text-xs">Added: {{ ledger.created_at|date:"d M Y" }}</small>
+                                {% if "Academic" not in ledger.fee_plan.title %}
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60 mt-1" style="font-size: 0.65rem !important;">
+                                        ⚽ Extra Structure
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60 mt-1" style="font-size: 0.65rem !important;">
+                                        ✨ Base Plan
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-2.5 text-end fw-bold text-dark">
+                                ₹{{ ledger.total_fee }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light border-top">
+                        <tr>
+                            <td class="px-3 py-2 fw-bold text-secondary">Subtotal Due:</td>
+                            <td class="px-3 py-2 text-end fw-bold text-dark">₹{{ cumulative_total_fee }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-3 py-2 fw-bold text-success">Total Paid:</td>
+                            <td class="px-3 py-2 text-end fw-bold text-success">₹{{ cumulative_amount_paid }}</td>
+                        </tr>
+                        <tr class="table-danger font-bold border-top-2">
+                            <td class="px-3 py-2.5 fw-bold text-danger" style="font-size:0.85rem;">Net Remaining Balance:</td>
+                            <td class="px-3 py-2.5 text-end fw-bold text-danger" style="font-size:0.85rem;">₹{{ cumulative_remaining_balance }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>
@@ -473,9 +459,21 @@
                 {% csrf_token %}
                 <div class="modal-body p-4">
                     <div class="mb-3">
+                        <label class="form-label fw-bold text-sm text-primary">Target Fee Structure <span class="text-danger">*</span></label>
+                        <select name="target_student_fee" id="target_student_fee" class="form-select rounded-3 shadow-sm" required onchange="updateMaxAmount()">
+                            {% for ledger in fee_ledgers %}
+                                {% if ledger.remaining_balance > 0 %}
+                                    <option value="{{ ledger.id }}" data-balance="{{ ledger.remaining_balance }}">
+                                        {{ ledger.fee_plan.title }} (Due: ₹{{ ledger.remaining_balance }})
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Amount Received (INR) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="amount" class="form-control rounded-3 shadow-sm" placeholder="e.g. 5000" max="{{ fee_ledger.remaining_balance }}" required>
-                        <small class="text-muted mt-1 d-block">Max remaining payable amount: <strong>₹{{ fee_ledger.remaining_balance }}</strong></small>
+                        <input type="number" step="0.01" name="amount" id="paymentAmountInput" class="form-control rounded-3 shadow-sm" placeholder="e.g. 5000" max="{{ fee_ledger.remaining_balance }}" value="{{ fee_ledger.remaining_balance }}" required>
+                        <small class="text-muted mt-1 d-block" id="maxHelperText">Max remaining payable amount: <strong>₹{{ fee_ledger.remaining_balance }}</strong></small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Payment Mode <span class="text-danger">*</span></label>
@@ -655,5 +653,18 @@
             });
         }
     });
+
+    function updateMaxAmount() {
+        const select = document.getElementById("target_student_fee");
+        const amountInput = document.getElementById("paymentAmountInput");
+        const maxHelper = document.getElementById("maxHelperText");
+        if (select && amountInput && maxHelper) {
+            const selectedOption = select.options[select.selectedIndex];
+            const balance = selectedOption.getAttribute("data-balance");
+            amountInput.max = balance;
+            amountInput.value = balance;
+            maxHelper.innerHTML = "Max remaining payable amount: <strong>₹" + balance + "</strong>";
+        }
+    }
 </script>
 {% endblock %}
