@@ -508,73 +508,7 @@ def student_results(request):
         "is_dashboard_view": True
     })
 
-@login_required
-def student_payments(request):
-    if request.user.role != "student":
-        return redirect("dashboard_redirect")
-        
-    sp = request.user.student_profile
-    
-    # Auto-link active classroom fee plans to student if ledger doesn't exist
-    student_fees = StudentFee.objects.filter(student=sp)
-    if not student_fees.exists() and sp.classroom:
-        plans = FeePlan.objects.filter(classroom=sp.classroom, is_active=True)
-        for plan in plans:
-            StudentFee.objects.get_or_create(student=sp, fee_plan=plan, academic_year=plan.academic_year)
-        student_fees = StudentFee.objects.filter(student=sp)
-        
-    payments = Payment.objects.filter(student=sp).order_by("-paid_at")
-    
-    # Compute totals based on student fees (which now includes base + mandatory items)
-    total_fee = sum(fee.total_fee for fee in student_fees)
-    paid_fee = sum(fee.amount_paid for fee in student_fees)
-    remaining_fee = sum(fee.remaining_balance for fee in student_fees)
-    
-    plans_with_status = []
-    for fee in student_fees:
-        plans_with_status.append({
-            "plan": fee.fee_plan,
-            "status": fee.payment_status.title(),
-            "ledger": fee
-        })
-
-    return render(request, "student/payments.html", {
-        "plans": plans_with_status,
-        "payments": payments,
-        "total_fee": total_fee,
-        "paid_fee": paid_fee,
-        "remaining_fee": remaining_fee,
-        "fee_ledger": student_fees.first() if student_fees.exists() else None,
-        "is_dashboard_view": True
-    })
-
-@login_required
-def student_pay_fee(request, plan_id):
-    if request.user.role != "student":
-        return redirect("dashboard_redirect")
-        
-    sp = request.user.student_profile
-    plan = get_object_or_404(FeePlan, id=plan_id, classroom=sp.classroom)
-    
-    # Create or update payment simulation as paid
-    payment, created = Payment.objects.get_or_create(
-        fee_plan=plan,
-        student=sp,
-        defaults={
-            "amount": plan.amount,
-            "status": "paid",
-            "payment_method": "net_banking",
-            "academic_session": "2026-27"
-        }
-    )
-    if not created and payment.status != "paid":
-        payment.status = "paid"
-        payment.paid_at = timezone.now()
-        payment.payment_method = "net_banking"
-        payment.save()
-        
-    messages.success(request, f"Payment of ₹{plan.amount} for {plan.name} completed successfully. Receipt Number: {payment.receipt_number}")
-    return redirect("student_payments")
+# NOTE: student_payments view is defined below near line 1729 (single canonical definition)
 
 # ----------------------------------------------------
 # TEACHER PORTAL VIEWS
@@ -1727,29 +1661,81 @@ def admin_finance_reports(request):
 
 @login_required
 def student_payments(request):
+    """Student fee dashboard — shows cumulative totals across ALL active fee plans
+    linked to the student's classroom. Students with no plan still see ₹0 / a
+    'No fee plan configured' message rather than a blank screen."""
     if request.user.role != "student":
         return redirect("dashboard_redirect")
-        
+
     student = request.user.student_profile
-    
-    # Auto get/create StudentFee
-    fee_ledgers = StudentFee.objects.filter(student=student)
-    if not fee_ledgers.exists() and student.classroom:
-        plans = FeePlan.objects.filter(classroom=student.classroom, is_active=True)
-        for plan in plans:
-            StudentFee.objects.get_or_create(student=student, fee_plan=plan, academic_year=plan.academic_year)
-        fee_ledgers = StudentFee.objects.filter(student=student)
-        
-    fee_ledger = fee_ledgers.first()
+
+    # ── Auto-link: create StudentFee records for every active plan in the classroom ──
+    # Runs on every visit (cheap via get_or_create) so new plans appear immediately.
+    if student.classroom:
+        active_plans_qs = FeePlan.objects.filter(classroom=student.classroom, is_active=True)
+        for plan in active_plans_qs:
+            StudentFee.objects.get_or_create(
+                student=student,
+                fee_plan=plan,
+                academic_year=plan.academic_year,
+            )
+
+    # ── Fetch all StudentFee ledger rows for this student ────────────────────
+    fee_ledgers = StudentFee.objects.filter(
+        student=student,
+        fee_plan__is_active=True,
+    ).select_related("fee_plan", "fee_plan__classroom").order_by("fee_plan__created_at")
+
+    # ── Aggregate cumulative totals across all plans ──────────────────────────
+    from decimal import Decimal
+    total_fee     = Decimal("0.00")
+    paid_fee      = Decimal("0.00")
+    remaining_fee = Decimal("0.00")
+
+    plans_with_status = []
+    for ledger in fee_ledgers:
+        total_fee     += ledger.total_fee
+        paid_fee      += ledger.amount_paid
+        remaining_fee += ledger.remaining_balance
+        plans_with_status.append({
+            "plan":   ledger.fee_plan,
+            "ledger": ledger,
+            "status": ledger.payment_status,
+        })
+
+    # ── DEBUG: verify data fetching in terminal ───────────────────────────────
+    plan_count = len(plans_with_status)
+    print(
+        f"DEBUG: Student {student.user.username} "
+        f"(Class: {student.classroom}) matched {plan_count} fee plans. "
+        f"Total: {total_fee}"
+    )
+
+    # ── Pick the first unpaid ledger for the 'Pay Now' modal target ──────────
+    fee_ledger = next(
+        (item["ledger"] for item in plans_with_status if item["ledger"].remaining_balance > 0),
+        fee_ledgers.first(),
+    )
+
+    # ── Payment history ───────────────────────────────────────────────────────
     payments = Payment.objects.filter(student=student).order_by("-created_at")
-    
-    paid_installments = list(payments.filter(status=Payment.Status.PAID).values_list("installment_period", flat=True))
-    
+    paid_installments = list(
+        payments.filter(status=Payment.Status.PAID).values_list("installment_period", flat=True)
+    )
+
     return render(request, "student/payments.html", {
-        "fee_ledger": fee_ledger,
-        "payments": payments,
+        # Summary cards
+        "total_fee":     total_fee,
+        "paid_fee":      paid_fee,
+        "remaining_fee": remaining_fee,
+        # Itemised breakdown table
+        "plans":         plans_with_status,
+        # Pay Now modal
+        "fee_ledger":    fee_ledger,
+        # Transaction history
+        "payments":      payments,
         "paid_installments": paid_installments,
-        "is_dashboard_view": True
+        "is_dashboard_view": True,
     })
 
 @login_required

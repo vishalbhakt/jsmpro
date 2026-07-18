@@ -27,7 +27,6 @@ urlpatterns = [
     path("dashboard/student/attendance/", views.student_attendance, name="student_attendance"),
     path("dashboard/student/results/", views.student_results, name="student_results"),
     path("dashboard/student/payments/", views.student_payments, name="student_payments"),
-    path("dashboard/student/pay-fee/<int:plan_id>/", views.student_pay_fee, name="student_pay_fee"),
     path("dashboard/student/learning/note/access/<int:note_id>/", views.student_note_access, name="student_note_access"),
     path("dashboard/student/learning/video/access/<int:video_id>/", views.student_video_access, name="student_video_access"),
 
@@ -113,7 +112,6 @@ urlpatterns = [
     path("dashboard/admin/payments/update-adjustments/<int:fee_id>/", views.admin_update_fee_adjustments, name="admin_update_fee_adjustments"),
     path("dashboard/admin/payments/reports/", views.admin_finance_reports, name="admin_finance_reports"),
     
-    path("dashboard/student/payments/", views.student_payments, name="student_payments"),
     path("dashboard/student/payments/pay/<int:fee_id>/", views.student_pay_now, name="student_pay_now"),
     
     path("dashboard/admin/announcements/", views.admin_announcements, name="admin_announcements"),

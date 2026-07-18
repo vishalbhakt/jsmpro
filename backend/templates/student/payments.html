@@ -19,7 +19,7 @@
             <p class="text-white-50 mb-0">Review details of your annual tuition plans, installment status, and payment history.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
-            {% if fee_ledger and fee_ledger.remaining_balance > 0 %}
+            {% if remaining_fee > 0 and fee_ledger %}
             <button class="btn btn-premium-accent rounded-pill px-4 py-3 fw-bold shadow animate-bounce" data-bs-toggle="modal" data-bs-target="#payNowModal">
                 <i class="fa-solid fa-credit-card me-2"></i> Pay Due Fees Online
             </button>
@@ -37,7 +37,7 @@
             </div>
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Total Annual Payable</small>
-                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ total_fee|default:"0" }}</h4>
+                <h4 class="fw-bold mb-0 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ total_fee|floatformat:2 }}</h4>
             </div>
         </div>
     </div>
@@ -48,7 +48,7 @@
             </div>
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Amount Paid</small>
-                <h4 class="fw-bold mb-0 text-success" style="font-family:'Outfit',sans-serif;">₹{{ paid_fee|default:"0" }}</h4>
+                <h4 class="fw-bold mb-0 text-success" style="font-family:'Outfit',sans-serif;">₹{{ paid_fee|floatformat:2 }}</h4>
             </div>
         </div>
     </div>
@@ -59,7 +59,7 @@
             </div>
             <div>
                 <small class="text-muted d-block text-xs uppercase fw-bold">Remaining Balance</small>
-                <h4 class="fw-bold mb-0 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ remaining_fee|default:"0" }}</h4>
+                <h4 class="fw-bold mb-0 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ remaining_fee|floatformat:2 }}</h4>
             </div>
         </div>
     </div>
@@ -76,7 +76,8 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="px-3 py-2 text-secondary font-bold uppercase" style="font-size:0.7rem;">Plan / Structure</th>
-                                <th class="px-3 py-2 text-secondary font-bold uppercase text-end" style="font-size:0.7rem;">Amount</th>
+                                <th class="px-3 py-2 text-secondary font-bold uppercase text-end" style="font-size:0.7rem;">Net Amount</th>
+                                <th class="px-3 py-2 text-secondary font-bold uppercase text-end" style="font-size:0.7rem;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,7 +85,7 @@
                             <tr>
                                 <td class="px-3 py-2.5">
                                     <span class="d-block fw-bold text-dark">{{ item.plan.title }}</span>
-                                    <small class="text-muted d-block text-xs">Added: {{ item.ledger.created_at|date:"d M Y" }}</small>
+                                    <small class="text-muted d-block text-xs">Session: {{ item.ledger.academic_year }} | Added: {{ item.ledger.created_at|date:"d M Y" }}</small>
                                     {% if "Academic" not in item.plan.title %}
                                         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/60 mt-1" style="font-size: 0.65rem !important;">
                                             ⚽ Extra Structure
@@ -96,7 +97,16 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-3 py-2.5 text-end fw-bold text-dark">
-                                    ₹{{ item.ledger.total_fee }}
+                                    ₹{{ item.ledger.total_fee|floatformat:2 }}
+                                </td>
+                                <td class="px-3 py-2.5 text-end">
+                                    {% if item.status == 'paid' %}
+                                        <span class="badge bg-success rounded-pill px-2 py-1" style="font-size:0.65rem;">✓ Paid</span>
+                                    {% elif item.status == 'partial' %}
+                                        <span class="badge bg-warning text-dark rounded-pill px-2 py-1" style="font-size:0.65rem;">Partial</span>
+                                    {% else %}
+                                        <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size:0.65rem;">Unpaid</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -104,21 +114,27 @@
                         <tfoot class="table-light border-top">
                             <tr>
                                 <td class="px-3 py-2 fw-bold text-secondary">Subtotal Due:</td>
-                                <td class="px-3 py-2 text-end fw-bold text-dark">₹{{ total_fee }}</td>
+                                <td class="px-3 py-2 text-end fw-bold text-dark" colspan="2">₹{{ total_fee|floatformat:2 }}</td>
                             </tr>
                             <tr>
                                 <td class="px-3 py-2 fw-bold text-success">Total Paid:</td>
-                                <td class="px-3 py-2 text-end fw-bold text-success">₹{{ paid_fee }}</td>
+                                <td class="px-3 py-2 text-end fw-bold text-success" colspan="2">₹{{ paid_fee|floatformat:2 }}</td>
                             </tr>
                             <tr class="table-danger font-bold border-top-2">
                                 <td class="px-3 py-2.5 fw-bold text-danger" style="font-size:0.85rem;">Net Remaining Balance:</td>
-                                <td class="px-3 py-2.5 text-end fw-bold text-danger" style="font-size:0.85rem;">₹{{ remaining_fee }}</td>
+                                <td class="px-3 py-2.5 text-end fw-bold text-danger" style="font-size:0.85rem;" colspan="2">₹{{ remaining_fee|floatformat:2 }}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             {% else %}
-                <p class="text-muted text-center py-4">No active fee plan structure exists.</p>
+                <div class="text-center py-5">
+                    <svg class="mx-auto mb-2" style="width:40px;height:40px;color:#d1d5db;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185z"></path>
+                    </svg>
+                    <p class="fw-semibold text-muted mb-1" style="font-size:0.9rem;">No fee plan configured yet</p>
+                    <small class="text-muted">Your class ({{ request.user.student_profile.classroom }}) has no active fee structures. Please contact your school administrator.</small>
+                </div>
             {% endif %}
         </div>
 
@@ -176,7 +192,7 @@
                             <div class="p-3 bg-light rounded-3 shadow-xs">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
-                                        <h6 class="fw-bold text-dark mb-0">₹{{ p.amount }} Paid</h6>
+                                        <h6 class="fw-bold text-dark mb-0">₹{{ p.amount|floatformat:2 }} Paid</h6>
                                         <small class="text-muted">Type: {{ p.get_payment_type_display }} | Period: {{ p.installment_period }}</small>
                                     </div>
                                     <span class="badge {% if p.status == 'paid' %}bg-success{% else %}bg-danger{% endif %} bg-opacity-10 {% if p.status == 'paid' %}text-success{% else %}text-danger{% endif %} rounded-pill px-2 py-0.5" style="font-size:0.65rem;">
