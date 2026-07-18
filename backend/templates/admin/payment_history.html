@@ -190,7 +190,7 @@
 <div class="row g-4 mb-4">
     <!-- Fee Breakdown -->
     <div class="col-md-4">
-        <div class="premium-card p-4 bg-white shadow-sm h-100">
+        <div class="premium-card p-6 bg-white shadow-sm h-100">
             <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-list-check me-2 text-accent"></i> Fee Breakdown & Ledger</h5>
             <div class="p-3 bg-light rounded-3" style="font-size:0.85rem;">
                 <div class="d-flex justify-content-between mb-2">
@@ -257,8 +257,9 @@
 
     <!-- Charts and Progress (Middle) -->
     <div class="col-md-5">
-        <div class="premium-card p-4 bg-white shadow-sm h-100">
+        <div class="premium-card p-6 bg-white shadow-sm h-100">
             <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-chart-pie me-2 text-accent"></i> Payment Progress & Allocation</h5>
+            {% if fee_ledger.total_fee and fee_ledger.total_fee > 0 %}
             <div class="d-flex align-items-center justify-content-around flex-wrap gap-3 mt-2">
                 <!-- Circular Progress -->
                 <div class="circular-progress">
@@ -274,12 +275,25 @@
                     <canvas id="feeChartCanvas"></canvas>
                 </div>
             </div>
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center text-center p-4 w-100 h-100">
+                <div class="circular-progress mb-3">
+                    <svg>
+                        <circle class="bg-circle" cx="70" cy="70" r="58" style="stroke: #e5e7eb;"></circle>
+                    </svg>
+                    <div class="circular-value" style="color: #9ca3af; font-family:'Outfit',sans-serif;">0%</div>
+                </div>
+                <p class="text-xs text-muted mb-0" style="font-weight: 500; font-family:'Outfit',sans-serif;">
+                    <i class="fa-solid fa-circle-info text-secondary me-1"></i> No fee data available to visualize
+                </p>
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- Payment Timeline Milestones -->
     <div class="col-md-3">
-        <div class="premium-card p-4 bg-white shadow-sm h-100">
+        <div class="premium-card p-6 bg-white shadow-sm h-100">
             <h5 class="fw-bold text-primary mb-3" style="font-family:'Outfit',sans-serif;"><i class="fa-solid fa-route me-2 text-accent"></i> Payment Timeline</h5>
             <div class="mt-2" style="font-size: 0.85rem;">
                 <div class="timeline-milestone {% if fee_ledger.amount_paid > 0 %}completed{% endif %}">
@@ -305,14 +319,14 @@
 
 <!-- Filters & Search -->
 <div class="premium-card p-4 bg-white mb-4 shadow-sm">
-    <form method="get" class="row g-2 align-items-end">
+    <form method="get" class="row g-3 align-items-end">
         <div class="col-md-3">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search Transaction</label>
-            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Receipt or Txn ID...">
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill px-3" placeholder="Receipt or Txn ID..." style="height: 44px; font-size: 0.82rem; border: 1px solid #cbd5e1;">
         </div>
         <div class="col-md-2">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="method">Method</label>
-            <select name="method" id="method" class="form-select rounded-pill">
+            <select name="method" id="method" class="form-select rounded-pill px-3" style="min-width: 160px; height: 44px; font-size: 0.82rem; border: 1px solid #cbd5e1;">
                 <option value="">-- Mode --</option>
                 <option value="cash" {% if method_filter == 'cash' %}selected{% endif %}>Cash</option>
                 <option value="upi" {% if method_filter == 'upi' %}selected{% endif %}>UPI</option>
@@ -322,7 +336,7 @@
         </div>
         <div class="col-md-2">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="installment">Installment</label>
-            <select name="installment" id="installment" class="form-select rounded-pill">
+            <select name="installment" id="installment" class="form-select rounded-pill px-3" style="min-width: 160px; height: 44px; font-size: 0.82rem; border: 1px solid #cbd5e1;">
                 <option value="">-- Period --</option>
                 <option value="Annual" {% if installment_filter == 'Annual' %}selected{% endif %}>Annual</option>
                 <option value="Q1" {% if installment_filter == 'Q1' %}selected{% endif %}>Q1</option>
@@ -333,14 +347,14 @@
         </div>
         <div class="col-md-2">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="start_date">Start</label>
-            <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}" class="form-control rounded-pill">
+            <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}" class="form-control rounded-pill px-3" style="height: 44px; font-size: 0.82rem; border: 1px solid #cbd5e1;">
         </div>
         <div class="col-md-2">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="end_date">End</label>
-            <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}" class="form-control rounded-pill">
+            <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}" class="form-control rounded-pill px-3" style="height: 44px; font-size: 0.82rem; border: 1px solid #cbd5e1;">
         </div>
         <div class="col-md-1">
-            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter"></i></button>
+            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 fw-bold d-flex align-items-center justify-content-center" style="height: 44px; font-size: 0.85rem;"><i class="fa-solid fa-filter"></i></button>
         </div>
     </form>
 </div>
