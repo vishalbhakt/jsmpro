@@ -118,8 +118,8 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <small class="text-muted d-block text-xs uppercase fw-bold">Total Fee (Net)</small>
-                    <h3 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_total_fee }}</h3>
-                    <small class="text-muted text-xs">Gross: ₹{{ cumulative_gross_fee }}</small>
+                    <h3 class="fw-bold mb-1 text-primary" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_total_fee|floatformat:2 }}</h3>
+                    <small class="text-muted text-xs">Gross: ₹{{ cumulative_gross_fee|floatformat:2 }}</small>
                 </div>
                 <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
@@ -133,7 +133,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <small class="text-muted d-block text-xs uppercase fw-bold">Total Paid</small>
-                    <h3 class="fw-bold mb-1 text-success" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_amount_paid }}</h3>
+                    <h3 class="fw-bold mb-1 text-success" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_amount_paid|floatformat:2 }}</h3>
                     <small class="text-muted text-xs">Last: {{ last_payment_date|date:"d M Y"|default:"None" }}</small>
                 </div>
                 <div class="bg-success bg-opacity-10 text-success rounded-3 p-2">
@@ -148,7 +148,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <small class="text-muted d-block text-xs uppercase fw-bold">Remaining Balance</small>
-                    <h3 class="fw-bold mb-1 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_remaining_balance }}</h3>
+                    <h3 class="fw-bold mb-1 text-danger" style="font-family:'Outfit',sans-serif;">₹{{ cumulative_remaining_balance|floatformat:2 }}</h3>
                     <small class="text-muted text-xs">Adjustments applied</small>
                 </div>
                 <div class="bg-danger bg-opacity-10 text-danger rounded-3 p-2">
@@ -175,7 +175,7 @@
                         {% endif %}
                     </div>
                     <div class="mt-2 text-[10px] text-muted" style="font-size:0.65rem;">
-                        Discount/Schol: ₹{{ cumulative_discount }}/₹{{ cumulative_scholarship }}
+                        Discount/Schol: ₹{{ cumulative_discount|floatformat:2 }}/₹{{ cumulative_scholarship|floatformat:2 }}
                     </div>
                 </div>
                 <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-2">
@@ -217,7 +217,7 @@
                                 {% endif %}
                             </td>
                             <td class="px-3 py-2.5 text-end fw-bold text-dark">
-                                ₹{{ ledger.total_fee }}
+                                ₹{{ ledger.total_fee|floatformat:2 }}
                             </td>
                         </tr>
                         {% endfor %}
@@ -225,15 +225,15 @@
                     <tfoot class="table-light border-top">
                         <tr>
                             <td class="px-3 py-2 fw-bold text-secondary">Subtotal Due:</td>
-                            <td class="px-3 py-2 text-end fw-bold text-dark">₹{{ cumulative_total_fee }}</td>
+                            <td class="px-3 py-2 text-end fw-bold text-dark">₹{{ cumulative_total_fee|floatformat:2 }}</td>
                         </tr>
                         <tr>
                             <td class="px-3 py-2 fw-bold text-success">Total Paid:</td>
-                            <td class="px-3 py-2 text-end fw-bold text-success">₹{{ cumulative_amount_paid }}</td>
+                            <td class="px-3 py-2 text-end fw-bold text-success">₹{{ cumulative_amount_paid|floatformat:2 }}</td>
                         </tr>
                         <tr class="table-danger font-bold border-top-2">
                             <td class="px-3 py-2.5 fw-bold text-danger" style="font-size:0.85rem;">Net Remaining Balance:</td>
-                            <td class="px-3 py-2.5 text-end fw-bold text-danger" style="font-size:0.85rem;">₹{{ cumulative_remaining_balance }}</td>
+                            <td class="px-3 py-2.5 text-end fw-bold text-danger" style="font-size:0.85rem;">₹{{ cumulative_remaining_balance|floatformat:2 }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -386,7 +386,7 @@
                     </td>
                     <td>{{ p.collected_by }}</td>
                     <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold">{{ p.installment_period }}</span></td>
-                    <td class="fw-bold text-success">₹{{ p.amount }}</td>
+                    <td class="fw-bold text-success">₹{{ p.amount|floatformat:2 }}</td>
                     <td>
                         {% if p.status == 'paid' %}
                             <span class="badge bg-success bg-opacity-15 text-success rounded-pill fw-bold">Paid</span>
@@ -463,8 +463,8 @@
                         <select name="target_student_fee" id="target_student_fee" class="form-select rounded-3 shadow-sm" required onchange="updateMaxAmount()">
                             {% for ledger in fee_ledgers %}
                                 {% if ledger.remaining_balance > 0 %}
-                                    <option value="{{ ledger.id }}" data-balance="{{ ledger.remaining_balance }}">
-                                        {{ ledger.fee_plan.title }} (Due: ₹{{ ledger.remaining_balance }})
+                                    <option value="{{ ledger.id }}" data-due="{{ ledger.remaining_balance|floatformat:2 }}">
+                                        {{ ledger.fee_plan.title }} (Due: ₹{{ ledger.remaining_balance|floatformat:2 }})
                                     </option>
                                 {% endif %}
                             {% endfor %}
@@ -472,8 +472,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Amount Received (INR) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="amount" id="paymentAmountInput" class="form-control rounded-3 shadow-sm" placeholder="e.g. 5000" max="{{ fee_ledger.remaining_balance }}" value="{{ fee_ledger.remaining_balance }}" required>
-                        <small class="text-muted mt-1 d-block" id="maxHelperText">Max remaining payable amount: <strong>₹{{ fee_ledger.remaining_balance }}</strong></small>
+                        <input type="number" step="0.01" name="amount" id="paymentAmountInput" class="form-control rounded-3 shadow-sm" placeholder="e.g. 5000" max="{{ fee_ledger.remaining_balance|floatformat:2 }}" value="{{ fee_ledger.remaining_balance|floatformat:2 }}" required>
+                        <small class="text-muted mt-1 d-block" id="maxHelperText">Max remaining payable amount: <strong>₹{{ fee_ledger.remaining_balance|floatformat:2 }}</strong></small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Payment Mode <span class="text-danger">*</span></label>
@@ -487,8 +487,9 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-sm text-primary">Payment Type <span class="text-danger">*</span></label>
-                        <select name="payment_type" class="form-select rounded-3 shadow-sm" required>
+                        <label class="form-label fw-bold text-sm text-primary">Payment Type <span class="text-muted text-xs">(Optional - Auto-detected)</span></label>
+                        <select name="payment_type" class="form-select rounded-3 shadow-sm">
+                            <option value="" selected>-- Auto Detect --</option>
                             <option value="monthly_installment">Monthly Installment</option>
                             <option value="quarterly">Quarterly Payment</option>
                             <option value="full_annual">Full Annual Payment</option>
@@ -544,15 +545,15 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Apply Discount (INR)</label>
-                        <input type="number" step="0.01" name="discount" class="form-control rounded-3" value="{{ fee_ledger.discount }}">
+                        <input type="number" step="0.01" name="discount" class="form-control rounded-3" value="{{ fee_ledger.discount|floatformat:2 }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Apply Scholarship (INR)</label>
-                        <input type="number" step="0.01" name="scholarship" class="form-control rounded-3" value="{{ fee_ledger.scholarship }}">
+                        <input type="number" step="0.01" name="scholarship" class="form-control rounded-3" value="{{ fee_ledger.scholarship|floatformat:2 }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-sm text-primary">Waive Amount (INR)</label>
-                        <input type="number" step="0.01" name="waived_amount" class="form-control rounded-3" value="{{ fee_ledger.waived_amount }}">
+                        <input type="number" step="0.01" name="waived_amount" class="form-control rounded-3" value="{{ fee_ledger.waived_amount|floatformat:2 }}">
                     </div>
                 </div>
                 <div class="modal-footer border-0 px-4 pb-4">
@@ -660,10 +661,10 @@
         const maxHelper = document.getElementById("maxHelperText");
         if (select && amountInput && maxHelper) {
             const selectedOption = select.options[select.selectedIndex];
-            const balance = selectedOption.getAttribute("data-balance");
+            const balance = selectedOption ? selectedOption.getAttribute("data-due") : "0.00";
             amountInput.max = balance;
             amountInput.value = balance;
-            maxHelper.innerHTML = "Max remaining payable amount: <strong>₹" + balance + "</strong>";
+            maxHelper.innerHTML = "Max remaining payable amount: <strong>₹" + parseFloat(balance).toFixed(2) + "</strong>";
         }
     }
 </script>

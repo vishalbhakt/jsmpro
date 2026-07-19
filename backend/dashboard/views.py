@@ -1606,6 +1606,18 @@ def admin_payment_history(request, student_id):
         else:
             target_fee = fee_ledger
             
+        # Auto-select payment_type if optional/blank based on amount vs balance
+        if not payment_type:
+            try:
+                amt_val = float(amount)
+                due_val = float(target_fee.remaining_balance) if target_fee else 0.0
+                if amt_val >= due_val:
+                    payment_type = "full_annual"
+                else:
+                    payment_type = "partial"
+            except Exception:
+                payment_type = "partial"
+                
         # Create immutable transaction
         Payment.objects.create(
             student=student,
