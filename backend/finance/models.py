@@ -103,7 +103,10 @@ class StudentFee(models.Model):
     @property
     def total_fee(self):
         from decimal import Decimal
-        base = self.gross_fee - self.discount - self.scholarship - self.waived_amount
+        discount_dec = Decimal(str(self.discount))
+        scholarship_dec = Decimal(str(self.scholarship))
+        waived_dec = Decimal(str(self.waived_amount))
+        base = self.gross_fee - discount_dec - scholarship_dec - waived_dec
         return max(base, Decimal("0.00"))
 
     @property
@@ -169,6 +172,7 @@ class Payment(models.Model):
     receipt_number = models.CharField(max_length=40, blank=True)
     transaction_id = models.CharField(max_length=100, blank=True)
     receipt = models.FileField(upload_to="receipts/", blank=True, null=True)
+    proof_attachment = models.FileField(upload_to="proofs/", blank=True, null=True)
     collected_by = models.CharField(max_length=120, default="System Admin")
     paid_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

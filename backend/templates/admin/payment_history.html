@@ -362,9 +362,9 @@
             </thead>
             <tbody>
                 {% for p in payments %}
-                <tr>
+                <tr {% if p.status == 'pending' %}class="table-warning" style="background-color: #fffbeb;"{% endif %}>
                     <td class="text-muted">{{ forloop.counter }}</td>
-                    <td class="fw-bold">{{ p.paid_at|date:"d M Y, h:i A" }}</td>
+                    <td class="fw-bold">{{ p.paid_at|date:"d M Y, h:i A"|default:"Not Yet" }}</td>
                     <td><span class="badge bg-light text-dark fw-bold">{{ p.receipt_number }}</span></td>
                     <td class="text-muted" style="font-size:0.75rem;">{{ p.transaction_id|default:"Offline Payment" }}</td>
                     <td class="text-capitalize">
@@ -393,8 +393,16 @@
                         {% endif %}
                     </td>
                     <td class="text-end">
-                        <div class="d-flex gap-1 justify-content-end">
-                            <a href="{% url 'admin_receipt_pdf' p.id %}" target="_blank" class="btn btn-xs btn-outline-primary" title="Print/View Receipt"><i class="fa-solid fa-print"></i></a>
+                        <div class="d-flex gap-1 justify-content-end align-items-center">
+                            {% if p.proof_attachment %}
+                                <a href="{{ p.proof_attachment.url }}" target="_blank" class="btn btn-xs btn-outline-info" title="View Proof Screenshot"><i class="fa-solid fa-image"></i></a>
+                            {% endif %}
+                            
+                            {% if p.status == 'pending' %}
+                                <a href="{% url 'admin_approve_payment' p.id %}" class="btn btn-xs btn-success fw-bold px-2 rounded-pill" onclick="return confirm('Verify and approve this manual payment collection?')" title="Verify & Approve"><i class="fa-solid fa-circle-check"></i> Approve</a>
+                            {% else %}
+                                <a href="{% url 'admin_receipt_pdf' p.id %}" target="_blank" class="btn btn-xs btn-outline-primary" title="Print/View Receipt"><i class="fa-solid fa-print"></i></a>
+                            {% endif %}
                             <a href="{% url 'admin_payment_edit' p.id %}" class="btn btn-xs btn-outline-secondary" title="Edit"><i class="fa-solid fa-pencil"></i></a>
                             <a href="{% url 'admin_payment_delete' p.id %}" class="btn btn-xs btn-danger" onclick="return confirm('Delete this transaction log?')" title="Delete"><i class="fa-solid fa-trash"></i></a>
                         </div>

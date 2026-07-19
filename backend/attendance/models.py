@@ -64,3 +64,40 @@ class AttendanceRecord(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.status}"
+
+
+class LeaveApplication(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending Approval"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    class LeaveType(models.TextChoices):
+        MEDICAL = "medical", "Medical Leave"
+        CASUAL = "casual", "Casual Leave"
+        EMERGENCY = "emergency", "Emergency Leave"
+
+    student = models.ForeignKey(
+        "users.StudentProfile",
+        on_delete=models.CASCADE,
+        related_name="leave_applications",
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    leave_type = models.CharField(
+        max_length=20,
+        choices=LeaveType.choices,
+        default=LeaveType.CASUAL,
+    )
+    reason = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    remarks = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.student.user.full_name} - {self.start_date} to {self.end_date} ({self.status})"

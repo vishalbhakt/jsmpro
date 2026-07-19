@@ -57,6 +57,45 @@
                     </button>
                 </div>
 
+<style>
+    .btn-check:checked + .status-btn-present {
+        background-color: #198754 !important;
+        color: #fff !important;
+        border-color: #198754 !important;
+    }
+    .btn-check:checked + .status-btn-absent {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        border-color: #dc3545 !important;
+    }
+    .btn-check:checked + .status-btn-late {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+        border-color: #ffc107 !important;
+    }
+    .status-btn-present, .status-btn-absent, .status-btn-late {
+        color: #495057;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        font-size: 0.72rem !important;
+        font-weight: 700;
+        padding: 0.35rem 0.75rem;
+        transition: all 0.15s ease-in-out;
+    }
+    .status-btn-present:hover {
+        background-color: rgba(25, 135, 84, 0.08);
+        color: #198754;
+    }
+    .status-btn-absent:hover {
+        background-color: rgba(220, 53, 69, 0.08);
+        color: #dc3545;
+    }
+    .status-btn-late:hover {
+        background-color: rgba(255, 193, 7, 0.08);
+        color: #ffc107;
+    }
+</style>
+
                 {% if students %}
                 <div class="table-responsive mb-4">
                     <table class="table table-hover align-middle">
@@ -65,6 +104,7 @@
                                 <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">#</th>
                                 <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Student Name</th>
                                 <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Roll No</th>
+                                <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Leave / Remarks</th>
                                 <th style="font-size:0.73rem; text-transform:uppercase; font-weight:800;">Status</th>
                             </tr>
                         </thead>
@@ -73,21 +113,32 @@
                             <tr>
                                 <td class="text-muted fw-bold" style="font-size:0.83rem;">{{ forloop.counter }}</td>
                                 <td class="fw-bold" style="font-size:0.83rem;">{{ student.user.full_name|title }}</td>
-                                <td><span class="badge-premium-blue" style="font-size:0.72rem;">{{ student.roll_number }}</span></td>
                                 <td>
-                                    <div class="d-flex gap-3 flex-wrap">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="status_{{ student.id }}" value="present" id="p{{ student.id }}" checked>
-                                            <label class="form-check-label text-success fw-bold" for="p{{ student.id }}" style="font-size:0.8rem;">✅ Present</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="status_{{ student.id }}" value="absent" id="a{{ student.id }}">
-                                            <label class="form-check-label text-danger fw-bold" for="a{{ student.id }}" style="font-size:0.8rem;">❌ Absent</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="status_{{ student.id }}" value="late" id="l{{ student.id }}">
-                                            <label class="form-check-label text-warning fw-bold" for="l{{ student.id }}" style="font-size:0.8rem;">🕐 Late</label>
-                                        </div>
+                                    {% if student.roll_number %}
+                                        <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold text-xs whitespace-nowrap d-inline-block text-center min-w-[100px]">{{ student.roll_number }}</span>
+                                    {% else %}
+                                        <span class="text-gray-400 text-xs italic">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student.active_leave %}
+                                        <button type="button" onclick='showLeaveModal("{{ student.user.full_name|title|escapejs }}", "{{ student.active_leave.reason|escapejs }}", "{{ student.active_leave.get_status_display|escapejs }}", "{{ student.active_leave.start_date|date:"d M, Y" }} to {{ student.active_leave.end_date|date:"d M, Y" }}", "{{ student.active_leave.get_leave_type_display|escapejs }}")' class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold hover:bg-amber-100 transition-colors">
+                                            📝 On Leave (View Note)
+                                        </button>
+                                    {% else %}
+                                        <span class="text-muted text-xs">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group border rounded-pill overflow-hidden p-0.5 bg-light" role="group" aria-label="Attendance Status Selection" style="display: inline-flex;">
+                                        <input type="radio" class="btn-check" name="status_{{ student.id }}" id="p{{ student.id }}" value="present" {% if not student.active_leave %}checked{% endif %}>
+                                        <label class="btn btn-xs rounded-pill px-3 py-1 fw-bold status-btn-present" for="p{{ student.id }}">Present</label>
+
+                                        <input type="radio" class="btn-check" name="status_{{ student.id }}" id="a{{ student.id }}" value="absent" {% if student.active_leave %}checked{% endif %}>
+                                        <label class="btn btn-xs rounded-pill px-3 py-1 fw-bold status-btn-absent" for="a{{ student.id }}">Absent</label>
+
+                                        <input type="radio" class="btn-check" name="status_{{ student.id }}" id="l{{ student.id }}" value="late">
+                                        <label class="btn btn-xs rounded-pill px-3 py-1 fw-bold status-btn-late" for="l{{ student.id }}">Late</label>
                                     </div>
                                 </td>
                             </tr>
@@ -137,6 +188,43 @@
             {% endfor %}
         </div>
     </div>
+<!-- Modal: View Leave Note -->
+<div class="modal fade" id="leaveDetailModal" tabindex="-1" aria-labelledby="leaveDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="leaveDetailModalLabel"><i class="fa-solid fa-file-invoice me-2 text-warning"></i> Leave Application Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <small class="text-muted d-block text-xs uppercase fw-bold mb-1">Student Name</small>
+                    <div class="fw-bold text-dark fs-6" id="leaveStudentName"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block text-xs uppercase fw-bold mb-1">Leave Type</small>
+                        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-2.5 py-1 rounded" id="leaveTypeName"></span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block text-xs uppercase fw-bold mb-1">Status</small>
+                        <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded" id="leaveStatusName"></span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block text-xs uppercase fw-bold mb-1">Overlap Dates</small>
+                    <div class="fw-semibold text-dark" id="leaveDurationDates"></div>
+                </div>
+                <div class="mb-0 bg-light p-3 rounded-3 border border-light">
+                    <small class="text-muted d-block text-xs uppercase fw-bold mb-1">Reason for Leave</small>
+                    <p class="mb-0 text-dark font-medium" id="leaveReasonDescription" style="font-size:0.85rem; line-height:1.4; white-space: pre-wrap;"></p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-premium-primary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -151,6 +239,17 @@
         } else {
             alert("Please select a classroom first.");
         }
+    }
+
+    function showLeaveModal(studentName, reason, status, duration, leaveType) {
+        document.getElementById('leaveStudentName').textContent = studentName;
+        document.getElementById('leaveReasonDescription').textContent = reason || 'No reason provided.';
+        document.getElementById('leaveStatusName').textContent = status;
+        document.getElementById('leaveDurationDates').textContent = duration;
+        document.getElementById('leaveTypeName').textContent = leaveType;
+        
+        const modal = new bootstrap.Modal(document.getElementById('leaveDetailModal'));
+        modal.show();
     }
 </script>
 {% endblock %}

@@ -461,7 +461,9 @@ def student_attendance(request):
         return redirect("dashboard_redirect")
         
     sp = request.user.student_profile
-    records = AttendanceRecord.objects.filter(student=sp).order_by("-session__date")
+    records = AttendanceRecord.objects.filter(student=sp).select_related(
+        "session", "session__classroom", "session__subject"
+    ).order_by("-session__date")
     
     # Calculate stats
     present_count = records.filter(status="present").count()
@@ -617,11 +619,28 @@ def teacher_attendance(request):
     subject_id = request.GET.get("subject")
     date_str = request.GET.get("date")
     
+    now_date = timezone.now().date().isoformat()
+    selected_date_str = date_str or now_date
+    try:
+        selected_date = datetime.datetime.strptime(selected_date_str, "%Y-%m-%d").date()
+    except Exception:
+        selected_date = timezone.now().date()
+        
     students = None
     if classroom_id:
-        students = StudentProfile.objects.filter(classroom_id=classroom_id).order_by("roll_number")
+        students = list(StudentProfile.objects.filter(classroom_id=classroom_id).select_related("user").order_by("roll_number"))
         
-    now_date = timezone.now().date().isoformat()
+        # Query approved leaves for selected_date
+        from attendance.models import LeaveApplication
+        active_leaves = LeaveApplication.objects.filter(
+            status=LeaveApplication.Status.APPROVED,
+            start_date__lte=selected_date,
+            end_date__gte=selected_date
+        )
+        leave_map = {leave.student_id: leave for leave in active_leaves}
+        
+        for student in students:
+            student.active_leave = leave_map.get(student.id)
     
     return render(request, "teacher/attendance.html", {
         "classrooms": classrooms,
@@ -1939,41 +1958,68 @@ def student_pay_now(request, fee_id):
     
     if request.method == "POST":
         amount = request.POST.get("amount")
-        method = request.POST.get("method")
+        method = request.POST.get("method", "upi")
         payment_type = request.POST.get("payment_type")
         installment = request.POST.get("installment_period", "Annual")
-        transaction_id = f"TXN-{random.randint(100000, 999999)}"
+        utr_number = request.POST.get("transaction_id", "").strip()
+        proof_attachment = request.FILES.get("proof_attachment")
         
-        # Create payment
-        Payment.objects.create(
+        # Basic validation for UTR number
+        if not utr_number or len(utr_number) < 6:
+            messages.error(request, "⚠️ Please enter a valid Transaction UTR / Reference Number!")
+            return redirect("student_payments")
+            
+        # Create payment with pending status
+        payment = Payment.objects.create(
             student=student,
             fee_plan=fee.fee_plan,
             student_fee=fee,
             amount=amount,
-            status=Payment.Status.PAID,
+            status=Payment.Status.PENDING,
             method=method,
             payment_type=payment_type,
             installment_period=installment,
-            transaction_id=transaction_id,
+            transaction_id=utr_number,
+            proof_attachment=proof_attachment,
             collected_by="Online Portal"
         )
         
         # Notifications
         Notification.objects.create(
             recipient=student.user,
-            title="Payment Successful",
-            message=f"Payment Successful. ₹{amount} received. Receipt generated successfully."
+            title="Payment Proof Submitted",
+            message=f"Your payment details of ₹{amount} (Ref: {utr_number}) have been submitted for verification."
         )
         admin_users = User.objects.filter(role="admin")
         for admin in admin_users:
             Notification.objects.create(
                 recipient=admin,
-                title="Fee Collection Recorded",
-                message=f"{student.user.full_name} paid ₹{amount} via {method}."
+                title="New Fee Verification Request",
+                message=f"{student.user.full_name} submitted a payment of ₹{amount} (Ref: {utr_number}) for approval."
             )
             
-        messages.success(request, f"Online payment simulation of ₹{amount} completed successfully!")
+        messages.success(request, "✅ Your payment details have been submitted! The receipt will be generated once the Admin verifies your UTR reference.")
     return redirect("student_payments")
+
+@login_required
+def admin_approve_payment(request, payment_id):
+    if request.user.role != "admin":
+        return redirect("dashboard_redirect")
+        
+    payment = get_object_or_404(Payment, id=payment_id)
+    payment.status = Payment.Status.PAID
+    payment.paid_at = timezone.now()
+    payment.save()
+    
+    # Send notification to student
+    Notification.objects.create(
+        recipient=payment.student.user,
+        title="Payment Approved & Verified",
+        message=f"Your payment of ₹{payment.amount} (Ref: {payment.transaction_id}) has been verified and approved by the administrator."
+    )
+    
+    messages.success(request, f"Payment of ₹{payment.amount} has been successfully verified and approved.")
+    return redirect("admin_payment_history", student_id=payment.student.id)
 
 @login_required
 def admin_courses(request):

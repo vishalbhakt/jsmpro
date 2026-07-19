@@ -4,7 +4,7 @@ from django.utils import timezone
 from users.models import User, StudentProfile, TeacherProfile
 from academics.models import ClassRoom, Subject
 from finance.models import FeePlan, Payment, StudentFee
-from attendance.models import AttendanceSession, AttendanceRecord
+from attendance.models import AttendanceSession, AttendanceRecord, LeaveApplication
 import datetime
 from decimal import Decimal
 
@@ -316,3 +316,104 @@ class AdminDashboardTests(TestCase):
         messages = list(response.context['messages'])
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "⚠️ Passwords do not match!")
+
+    def test_student_payments_view_read_only(self):
+        # Create student user
+        student_user = User.objects.create_user(
+            username="student_pay_test",
+            email="sp@test.com",
+            password="password123",
+            role="student"
+        )
+        s = student_user.student_profile
+        s.classroom = self.classroom
+        s.admission_number = "ADM_PAY_001"
+        s.save()
+        
+        # Bypass custom save() completion percentage check using update()
+        StudentProfile.objects.filter(id=s.id).update(is_profile_complete=True)
+        s.refresh_from_db()
+        
+        # Link to fee plans
+        sf = StudentFee.objects.create(student=s, fee_plan=self.fee_plan, academic_year="2026-27")
+        sf.refresh_from_db()
+        self.assertEqual(sf.remaining_balance, Decimal("50000.00"))
+        
+        # Log in as student
+        self.client.force_login(student_user)
+        
+        # Load the tuition fees page
+        response = self.client.get(reverse("student_payments"))
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify read-only data is rendered correctly
+        self.assertContains(response, "My Tuition Fees")
+        self.assertContains(response, "Academic Fee Plan")
+        self.assertContains(response, "₹50,000.00")
+        
+        # Verify that the Pay Due Fees button is completely absent
+        self.assertNotContains(response, "Pay Due Fees Online")
+        self.assertNotContains(response, "payNowModal")
+        self.assertNotContains(response, "payNowModalLabel")
+
+    def test_teacher_attendance_leave_application_preselection(self):
+        # Create teacher user
+        teacher_user = User.objects.create_user(
+            username="teacher_att_test",
+            email="ta@test.com",
+            password="password123",
+            role="teacher"
+        )
+        tp = teacher_user.teacher_profile
+        self.classroom.class_teacher = tp
+        self.classroom.save()
+        self.subject.teacher = tp
+        self.subject.save()
+        
+        # Bypass teacher completion guard middleware
+        TeacherProfile.objects.filter(id=tp.id).update(is_profile_complete=True)
+        tp.refresh_from_db()
+        
+        # Create student user
+        student_user = User.objects.create_user(
+            username="student_leave_test",
+            email="sl@test.com",
+            password="password123",
+            role="student"
+        )
+        s = student_user.student_profile
+        s.classroom = self.classroom
+        s.admission_number = "ADM_LEAVE_01"
+        s.save()
+        
+        # Create approved leave overlapping with today
+        today = timezone.now().date()
+        LeaveApplication.objects.create(
+            student=s,
+            start_date=today - datetime.timedelta(days=1),
+            end_date=today + datetime.timedelta(days=1),
+            leave_type="medical",
+            reason="Recovering from fever",
+            status="approved"
+        )
+        
+        # Log in as teacher
+        self.client.force_login(teacher_user)
+        
+        # Fetch roster page for today
+        url = reverse("teacher_attendance") + f"?classroom={self.classroom.id}&subject={self.subject.id}&date={today.isoformat()}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        
+        # Verify student.active_leave is populated
+        students_context = response.context["students"]
+        self.assertEqual(len(students_context), 1)
+        self.assertIsNotNone(students_context[0].active_leave)
+        self.assertEqual(students_context[0].active_leave.reason, "Recovering from fever")
+        
+        # Verify On Leave badge and radio button properties are rendered correctly in HTML
+        self.assertContains(response, "On Leave (View Note)")
+        self.assertContains(response, "Recovering from fever")
+        
+        # Verify absent radio button is checked
+        self.assertContains(response, 'value="absent" checked')
