@@ -1043,15 +1043,42 @@ def admin_user_create(request):
     
     if request.method == "POST":
         form = UserCRUDForm(request.POST)
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password1")
+        confirm_password = request.POST.get("password2")
+        
+        context = {
+            "form": form,
+            "classrooms": classrooms,
+            "is_dashboard_view": True
+        }
+        
+        if User.objects.filter(username__iexact=username).exists():
+            messages.error(request, "⚠️ This Username is already taken! Please choose another.")
+            return render(request, "admin/user_form.html", context)
+            
+        if User.objects.filter(email__iexact=email).exists():
+            messages.error(request, "⚠️ This Email Address is already registered!")
+            return render(request, "admin/user_form.html", context)
+            
+        if password != confirm_password:
+            messages.error(request, "⚠️ Passwords do not match!")
+            return render(request, "admin/user_form.html", context)
+            
         if form.is_valid():
             user = form.save(commit=False)
-            pw = request.POST.get("password1") or form.cleaned_data.get("password") or "Jsm@12345"
+            pw = password or "Jsm@12345"
             user.set_password(pw)
             user.is_active = "is_active" in request.POST
+            
+            role = user.role
+            if role == "admin":
+                user.is_staff = True
+                
             user.save()
             
             # Handle role-specific profiles and link classroom for students
-            role = user.role
             if role == "student":
                 classroom_id = request.POST.get("classroom")
                 profile, created = StudentProfile.objects.get_or_create(user=user)
@@ -1066,8 +1093,10 @@ def admin_user_create(request):
                     profile.employee_id = f"EMP{user.id:05d}"
                 profile.save()
                 
-            messages.success(request, f"User account '{user.username}' created successfully.")
+            messages.success(request, f"✅ Account for {username} ({role}) created successfully!")
             return redirect("admin_users")
+        else:
+            return render(request, "admin/user_form.html", context)
     else:
         form = UserCRUDForm()
     return render(request, "admin/user_form.html", {

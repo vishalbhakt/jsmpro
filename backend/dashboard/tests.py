@@ -251,3 +251,68 @@ class AdminDashboardTests(TestCase):
         user_auth_email = authenticate(username="JOHNDOE@JSM.COM", password="secretpassword")
         self.assertIsNotNone(user_auth_email)
         self.assertEqual(user_auth_email, user)
+
+    def test_admin_user_create_duplicate_username(self):
+        self.client.force_login(self.admin_user)
+        # Create an existing user
+        User.objects.create_user(username="existing_user", email="ex@test.com", password="pwd", role="student")
+        
+        post_data = {
+            "first_name": "Test",
+            "last_name": "User",
+            "username": "EXISTING_USER",  # Duplicate check is case-insensitive
+            "email": "new@test.com",
+            "role": "student",
+            "password1": "SecurePass123",
+            "password2": "SecurePass123"
+        }
+        
+        response = self.client.post(reverse("admin_user_create"), post_data)
+        self.assertEqual(response.status_code, 200)  # Re-renders page on validation failure
+        
+        # Verify the error message is present in the messages context
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "⚠️ This Username is already taken! Please choose another.")
+
+    def test_admin_user_create_duplicate_email(self):
+        self.client.force_login(self.admin_user)
+        # Create an existing user
+        User.objects.create_user(username="user1", email="registered@test.com", password="pwd", role="student")
+        
+        post_data = {
+            "first_name": "Test",
+            "last_name": "User",
+            "username": "new_user",
+            "email": "REGISTERED@TEST.COM",  # Duplicate check is case-insensitive
+            "role": "student",
+            "password1": "SecurePass123",
+            "password2": "SecurePass123"
+        }
+        
+        response = self.client.post(reverse("admin_user_create"), post_data)
+        self.assertEqual(response.status_code, 200)  # Re-renders page
+        
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "⚠️ This Email Address is already registered!")
+
+    def test_admin_user_create_password_mismatch(self):
+        self.client.force_login(self.admin_user)
+        
+        post_data = {
+            "first_name": "Test",
+            "last_name": "User",
+            "username": "new_user",
+            "email": "new@test.com",
+            "role": "student",
+            "password1": "SecurePass123",
+            "password2": "DifferentPass456"
+        }
+        
+        response = self.client.post(reverse("admin_user_create"), post_data)
+        self.assertEqual(response.status_code, 200)  # Re-renders page
+        
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "⚠️ Passwords do not match!")

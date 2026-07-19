@@ -19,6 +19,15 @@
             </h4>
             <form method="post">
                 {% csrf_token %}
+                {% if messages %}
+                  <div class="mb-6 space-y-2">
+                    {% for message in messages %}
+                      <div class="p-4 rounded-xl text-sm font-medium {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %} flex items-center justify-between">
+                        <span>{{ message }}</span>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">First Name <span class="text-danger">*</span></label>
@@ -57,11 +66,21 @@
                     {% if not edit_user %}
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password1" class="form-control" placeholder="Set password" required>
+                        <div class="relative w-full">
+                            <input type="password" name="password1" id="id_password" class="form-control" placeholder="Set password" required style="padding-right: 2.5rem;">
+                            <button type="button" onclick="togglePasswordVisibility('id_password', 'eye_password')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer focus:outline-none border-0 bg-transparent" style="top: 50%; transform: translateY(-50%); z-index: 10;">
+                                <i id="eye_password" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password" name="password2" class="form-control" placeholder="Confirm password" required>
+                        <div class="relative w-full">
+                            <input type="password" name="password2" id="id_confirm_password" class="form-control" placeholder="Confirm password" required style="padding-right: 2.5rem;">
+                            <button type="button" onclick="togglePasswordVisibility('id_confirm_password', 'eye_confirm_password')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer focus:outline-none border-0 bg-transparent" style="top: 50%; transform: translateY(-50%); z-index: 10;">
+                                <i id="eye_confirm_password" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     {% endif %}
                     <div class="col-12">
@@ -107,5 +126,19 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+function togglePasswordVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
 </script>
 {% endblock %}
