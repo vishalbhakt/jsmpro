@@ -38,11 +38,20 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Role <span class="text-danger">*</span></label>
-                        <select name="role" class="form-select" required>
+                        <select name="role" id="roleSelect" class="form-select" required>
                             <option value="">-- Select Role --</option>
                             <option value="student" {% if edit_user.role == 'student' %}selected{% endif %}>👨‍🎓 Student</option>
                             <option value="teacher" {% if edit_user.role == 'teacher' %}selected{% endif %}>👩‍🏫 Teacher</option>
                             <option value="admin" {% if edit_user.role == 'admin' %}selected{% endif %}>⚙️ Admin</option>
+                        </select>
+                    </div>
+                    <div class="col-12 {% if not edit_user or edit_user.role != 'student' %}d-none hidden{% endif %}" id="classroomContainer">
+                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Classroom Grade <span class="text-danger">*</span></label>
+                        <select name="classroom" id="classroomSelect" class="form-select" {% if edit_user.role == 'student' %}required{% endif %}>
+                            <option value="">-- Select Classroom --</option>
+                            {% for room in classrooms %}
+                            <option value="{{ room.id }}" {% if current_classroom_id == room.id or edit_user.student_profile.classroom.id == room.id %}selected{% endif %}>{{ room.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     {% if not edit_user %}
@@ -74,4 +83,29 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const roleSelect = document.getElementById("roleSelect");
+    const classroomSelect = document.getElementById("classroomSelect");
+    const classroomContainer = document.getElementById("classroomContainer");
+
+    if (roleSelect && classroomSelect && classroomContainer) {
+        roleSelect.addEventListener("change", function() {
+            if (this.value === "student") {
+                classroomContainer.classList.remove("d-none");
+                classroomContainer.classList.remove("hidden");
+                classroomSelect.setAttribute("required", "required");
+            } else {
+                classroomContainer.classList.add("d-none");
+                classroomContainer.classList.add("hidden");
+                classroomSelect.removeAttribute("required");
+                classroomSelect.value = "";
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

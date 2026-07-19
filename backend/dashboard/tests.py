@@ -201,3 +201,53 @@ class AdminDashboardTests(TestCase):
         with self.assertNumQueries(16):
             response = self.client.get(reverse('admin_overview'))
             self.assertEqual(response.status_code, 200)
+
+    def test_admin_user_create_student_with_classroom(self):
+        self.client.force_login(self.admin_user)
+        
+        # Action: Create student user using POST
+        post_data = {
+            "first_name": "Test",
+            "last_name": "Student",
+            "username": "test_student_user",
+            "email": "test_student@jsm.com",
+            "role": "student",
+            "password1": "SecurePass123",
+            "password2": "SecurePass123",
+            "classroom": self.classroom.id,
+            "is_active": "on"
+        }
+        
+        response = self.client.post(reverse("admin_user_create"), post_data)
+        self.assertEqual(response.status_code, 302)  # Redirects on success
+        
+        # Verify user was created with hashed password
+        user = User.objects.get(username="test_student_user")
+        self.assertTrue(user.check_password("SecurePass123"))
+        self.assertTrue(user.is_active)
+        self.assertEqual(user.role, "student")
+        
+        # Verify student profile was automatically created and linked to the classroom
+        self.assertTrue(hasattr(user, "student_profile"))
+        self.assertEqual(user.student_profile.classroom, self.classroom)
+        self.assertEqual(user.student_profile.admission_number, f"ADM{user.id:05d}")
+
+    def test_dual_authentication_backends(self):
+        # Create user
+        user = User.objects.create_user(
+            username="JohnDoe",
+            email="johndoe@jsm.com",
+            password="secretpassword",
+            role="student"
+        )
+        
+        # Test case-insensitive username login
+        from django.contrib.auth import authenticate
+        user_auth = authenticate(username="johndoe", password="secretpassword")
+        self.assertIsNotNone(user_auth)
+        self.assertEqual(user_auth, user)
+        
+        # Test case-insensitive email login
+        user_auth_email = authenticate(username="JOHNDOE@JSM.COM", password="secretpassword")
+        self.assertIsNotNone(user_auth_email)
+        self.assertEqual(user_auth_email, user)

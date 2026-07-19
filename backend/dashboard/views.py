@@ -1039,18 +1039,42 @@ def admin_user_create(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
         
+    classrooms = ClassRoom.objects.all().order_by("name")
+    
     if request.method == "POST":
         form = UserCRUDForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            pw = form.cleaned_data.get("password") or "Jsm@12345"
+            pw = request.POST.get("password1") or form.cleaned_data.get("password") or "Jsm@12345"
             user.set_password(pw)
+            user.is_active = "is_active" in request.POST
             user.save()
+            
+            # Handle role-specific profiles and link classroom for students
+            role = user.role
+            if role == "student":
+                classroom_id = request.POST.get("classroom")
+                profile, created = StudentProfile.objects.get_or_create(user=user)
+                if classroom_id:
+                    profile.classroom_id = classroom_id
+                if not profile.admission_number:
+                    profile.admission_number = f"ADM{user.id:05d}"
+                profile.save()
+            elif role == "teacher":
+                profile, created = TeacherProfile.objects.get_or_create(user=user)
+                if not profile.employee_id:
+                    profile.employee_id = f"EMP{user.id:05d}"
+                profile.save()
+                
             messages.success(request, f"User account '{user.username}' created successfully.")
             return redirect("admin_users")
     else:
         form = UserCRUDForm()
-    return render(request, "admin/user_form.html", {"form": form, "is_dashboard_view": True})
+    return render(request, "admin/user_form.html", {
+        "form": form,
+        "classrooms": classrooms,
+        "is_dashboard_view": True
+    })
 
 @login_required
 def admin_user_edit(request, user_id):
@@ -1058,19 +1082,52 @@ def admin_user_edit(request, user_id):
         return redirect("dashboard_redirect")
         
     edit_user = get_object_or_404(User, id=user_id)
+    classrooms = ClassRoom.objects.all().order_by("name")
+    
     if request.method == "POST":
         form = UserCRUDForm(request.POST, instance=edit_user)
         if form.is_valid():
             user = form.save(commit=False)
-            pw = form.cleaned_data.get("password")
+            pw = request.POST.get("password") or form.cleaned_data.get("password")
             if pw:
                 user.set_password(pw)
+            user.is_active = "is_active" in request.POST
             user.save()
+            
+            # Handle role-specific profile updates
+            role = user.role
+            if role == "student":
+                classroom_id = request.POST.get("classroom")
+                profile, created = StudentProfile.objects.get_or_create(user=user)
+                if classroom_id:
+                    profile.classroom_id = classroom_id
+                if not profile.admission_number:
+                    profile.admission_number = f"ADM{user.id:05d}"
+                profile.save()
+            elif role == "teacher":
+                profile, created = TeacherProfile.objects.get_or_create(user=user)
+                if not profile.employee_id:
+                    profile.employee_id = f"EMP{user.id:05d}"
+                profile.save()
+                
             messages.success(request, f"User account '{user.username}' updated successfully.")
             return redirect("admin_users")
     else:
         form = UserCRUDForm(instance=edit_user)
-    return render(request, "admin/user_form.html", {"form": form, "is_dashboard_view": True})
+        
+    # Get current classroom ID
+    current_classroom_id = None
+    if edit_user.role == "student" and hasattr(edit_user, "student_profile"):
+        if edit_user.student_profile.classroom:
+            current_classroom_id = edit_user.student_profile.classroom.id
+            
+    return render(request, "admin/user_form.html", {
+        "form": form,
+        "edit_user": edit_user,
+        "classrooms": classrooms,
+        "current_classroom_id": current_classroom_id,
+        "is_dashboard_view": True
+    })
 
 @login_required
 def admin_user_delete(request, user_id):
