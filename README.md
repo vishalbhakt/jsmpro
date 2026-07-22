@@ -166,14 +166,142 @@ Follow the CLI instructions to define username, email, and password.
 
 ## 📡 Production Deployment Guide
 
-### PythonAnywhere Deployment
-1. Clone the project onto PythonAnywhere.
-2. Set up a Virtual Environment and install packages:
+### 1. General Linux Deployment (Gunicorn, Systemd & Nginx)
+
+For standard production environments (e.g. AWS EC2, DigitalOcean Droplet, Linode running Ubuntu/Debian), follow this robust hosting recipe:
+
+#### Step A: System Packages Setup
+Install Nginx, supervisor, git, and required python dependencies:
+```bash
+sudo apt update
+sudo apt install -y python3-pip python3-venv nginx git curl
+```
+
+#### Step B: Project Installation & Virtualenv
+Clone the project to your chosen location (e.g. `/var/www/jsm_production`), set ownership, and initialize the virtual environment:
+```bash
+sudo mkdir -p /var/www
+sudo chown -R $USER:$USER /var/www
+cd /var/www
+git clone https://github.com/vishalbhakt/jsmpro.git jsm_production
+cd jsm_production/backend
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### Step C: Environment Configuration
+Create a `.env` file inside the `backend/` directory:
+```env
+DJANGO_DEBUG=False
+DJANGO_SECRET_KEY="replace-this-with-a-secure-random-64-character-string"
+ALLOWED_HOSTS="yourdomain.com,www.yourdomain.com,12.34.56.78"
+# For SQLite:
+DATABASE_URL="sqlite:///db.sqlite3"
+# For PostgreSQL:
+# DATABASE_URL="postgres://db_user:db_password@localhost:5432/db_name"
+```
+
+#### Step D: Static Assets & Database Migration
+Collect static files for WhiteNoise/Nginx and run database migrations:
+```bash
+python manage.py collectstatic --noinput
+python manage.py migrate
+```
+
+#### Step E: Configure Gunicorn with Systemd
+Create a Systemd service file to manage the Gunicorn background processes:
+```bash
+sudo nano /etc/systemd/system/gunicorn.service
+```
+Paste the following configurations:
+```ini
+[Unit]
+Description=Gunicorn daemon for JSM Shiksha Academy ERP
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/var/www/jsm_production/backend
+ExecStart=/var/www/jsm_production/backend/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+Enable and start the service:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable gunicorn
+sudo systemctl start gunicorn
+```
+
+#### Step F: Configure Nginx as Reverse Proxy
+Create a virtual host configuration:
+```bash
+sudo nano /etc/nginx/sites-available/jsm_production
+```
+Paste the server configuration:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    
+    # Static files served directly by Nginx
+    location /static/ {
+        alias /var/www/jsm_production/backend/staticfiles/;
+    }
+
+    # Media files (uploads) served directly by Nginx
+    location /media/ {
+        alias /var/www/jsm_production/backend/media/;
+    }
+
+    # Proxy all dynamic requests to Gunicorn
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
+```
+Link and activate the server block, then restart Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/jsm_production /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+#### Step G: SSL/HTTPS Installation
+Install Let's Encrypt Certbot and activate SSL redirection:
+```bash
+sudo apt install snapd
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+```
+
+---
+
+### 2. PythonAnywhere Deployment
+
+For hosting on PythonAnywhere shared server architecture:
+
+1. **Clone project**: In a Bash console, clone the project under `/home/yourusername/jsm_production`.
+2. **Virtualenv Setup**:
    ```bash
    mkvirtualenv --python=/usr/bin/python3.10 jsm-env
    pip install -r requirements.txt
    ```
-3. Configure WSGI configuration file in Web tab to load Django:
+3. **WSGI Setup**: In the Web tab, edit the python WSGI script file:
    ```python
    import os
    import sys
@@ -184,8 +312,10 @@ Follow the CLI instructions to define username, email, and password.
    from django.core.wsgi import get_wsgi_application
    application = get_wsgi_application()
    ```
-4. Set environmental variables via the PythonAnywhere console or WSGI settings file. Set `DJANGO_DEBUG=False`.
-5. Point static files pathway in Web tab to `/home/yourusername/jsm_production/backend/staticfiles/`.
+4. **Environment settings**: Set environment variables (`DJANGO_DEBUG=False`, etc.) directly inside the WSGI script file using Python's `os.environ` or load them from a `.env` file using `python-dotenv`.
+5. **Static files**: In the Web tab static files table, map the URL `/static/` to the directory `/home/yourusername/jsm_production/backend/staticfiles/`.
+6. **Collect Static & Migrate**: Run `python manage.py collectstatic` and `python manage.py migrate` in your console.
+7. **Reload Web App**: Hit the green reload button in the Web tab.
 
 ---
 
