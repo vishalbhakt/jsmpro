@@ -39,7 +39,10 @@ def env_bool(name, default=False):
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
-    raise ImproperlyConfigured("The DJANGO_SECRET_KEY environment variable is not set.")
+    if env_bool("DJANGO_DEBUG", True):
+        SECRET_KEY = "django-insecure-dev-fallback-key-jsm-shiksha-academy-erp"
+    else:
+        raise ImproperlyConfigured("The DJANGO_SECRET_KEY environment variable is not set.")
 
 DEBUG = env_bool("DJANGO_DEBUG", False)
 
@@ -166,6 +169,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

@@ -2599,9 +2599,26 @@ def admin_attendance_records(request):
         return redirect("dashboard_redirect")
         
     q = request.GET.get("q", "").strip()
-    records = AttendanceRecord.objects.all().select_related("student__user", "session").order_by("-session__date")
+    status_filter = request.GET.get("status", "").strip().lower()
+    
+    base_records = AttendanceRecord.objects.all().select_related("student__user", "session", "session__subject").order_by("-session__date")
     if q:
-        records = records.filter(Q(student__user__first_name__icontains=q) | Q(student__user__last_name__icontains=q))
+        base_records = base_records.filter(
+            Q(student__user__first_name__icontains=q) | 
+            Q(student__user__last_name__icontains=q) |
+            Q(session__subject__name__icontains=q)
+        )
+        
+    # Calculate counts based on current search query
+    present_count = base_records.filter(status="present").count()
+    late_count = base_records.filter(status="late").count()
+    absent_count = base_records.filter(status="absent").count()
+    total_count = base_records.count()
+
+    # Filter records by status if parameter is provided
+    records = base_records
+    if status_filter in ["present", "late", "absent"]:
+        records = records.filter(status=status_filter)
         
     from django.core.paginator import Paginator
     paginator = Paginator(records, 15)
@@ -2612,7 +2629,12 @@ def admin_attendance_records(request):
         "records": page_obj,
         "page_obj": page_obj,
         "is_dashboard_view": True,
-        "q": q
+        "q": q,
+        "status_filter": status_filter,
+        "present_count": present_count,
+        "late_count": late_count,
+        "absent_count": absent_count,
+        "total_count": total_count,
     })
 
 @login_required

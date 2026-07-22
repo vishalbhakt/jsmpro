@@ -22,12 +22,55 @@
     </div>
 </div>
 
+<!-- Summary Cards Filter -->
+<div class="row g-3 mb-4">
+    <!-- All Records -->
+    <div class="col-md-3 col-6">
+        <a href="?{% if q %}q={{ q }}{% endif %}" class="text-decoration-none">
+            <div class="premium-card p-3 text-center transition-all border-0 shadow-sm" style="border-radius: 14px; background: {% if not status_filter %}linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%){% else %}#ffffff{% endif %}; color: {% if not status_filter %}#ffffff{% else %}#1e293b{% endif %}; border: 1px solid {% if not status_filter %}transparent{% else %}rgba(0,0,0,0.08){% endif %} !important;">
+                <div class="text-xs fw-bold text-uppercase opacity-75 mb-1"><i class="fa-solid fa-list-check me-1"></i> All Records</div>
+                <div class="h3 fw-bold mb-0">{{ total_count }}</div>
+            </div>
+        </a>
+    </div>
+    <!-- Present Card -->
+    <div class="col-md-3 col-6">
+        <a href="?status=present{% if q %}&q={{ q }}{% endif %}" class="text-decoration-none">
+            <div class="premium-card p-3 text-center transition-all border-0 shadow-sm" style="border-radius: 14px; background: {% if status_filter == 'present' %}#16a34a{% else %}#ffffff{% endif %}; color: {% if status_filter == 'present' %}#ffffff{% else %}#15803d{% endif %}; border: 1px solid {% if status_filter == 'present' %}transparent{% else %}rgba(22, 163, 74, 0.25){% endif %} !important;">
+                <div class="text-xs fw-bold text-uppercase opacity-75 mb-1"><i class="fa-solid fa-circle-check me-1"></i> Present</div>
+                <div class="h3 fw-bold mb-0">{{ present_count }}</div>
+            </div>
+        </a>
+    </div>
+    <!-- Late Card -->
+    <div class="col-md-3 col-6">
+        <a href="?status=late{% if q %}&q={{ q }}{% endif %}" class="text-decoration-none">
+            <div class="premium-card p-3 text-center transition-all border-0 shadow-sm" style="border-radius: 14px; background: {% if status_filter == 'late' %}#d97706{% else %}#ffffff{% endif %}; color: {% if status_filter == 'late' %}#ffffff{% else %}#b45309{% endif %}; border: 1px solid {% if status_filter == 'late' %}transparent{% else %}rgba(217, 119, 6, 0.25){% endif %} !important;">
+                <div class="text-xs fw-bold text-uppercase opacity-75 mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i> Late</div>
+                <div class="h3 fw-bold mb-0">{{ late_count }}</div>
+            </div>
+        </a>
+    </div>
+    <!-- Absent Card -->
+    <div class="col-md-3 col-6">
+        <a href="?status=absent{% if q %}&q={{ q }}{% endif %}" class="text-decoration-none">
+            <div class="premium-card p-3 text-center transition-all border-0 shadow-sm" style="border-radius: 14px; background: {% if status_filter == 'absent' %}#dc2626{% else %}#ffffff{% endif %}; color: {% if status_filter == 'absent' %}#ffffff{% else %}#b91c1c{% endif %}; border: 1px solid {% if status_filter == 'absent' %}transparent{% else %}rgba(220, 38, 38, 0.25){% endif %} !important;">
+                <div class="text-xs fw-bold text-uppercase opacity-75 mb-1"><i class="fa-solid fa-circle-xmark me-1"></i> Absent</div>
+                <div class="h3 fw-bold mb-0">{{ absent_count }}</div>
+            </div>
+        </a>
+    </div>
+</div>
+
 <!-- Search & Filters -->
 <div class="premium-card p-4 bg-white mb-4" style="border: 1px solid rgba(0,0,0,0.06) !important; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02) !important;">
     <form method="get" class="row g-3 align-items-end">
+        {% if status_filter %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        {% endif %}
         <div class="col-md-10">
             <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
-            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by student name...">
+            <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by student name or subject...">
         </div>
         <div class="col-md-2">
             <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-filter me-2"></i>Filter</button>
@@ -97,7 +140,7 @@
         <ul class="pagination mb-0" style="gap: 4px;">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
                     <i class="fa-solid fa-chevron-left me-1"></i> Previous
                 </a>
             </li>
@@ -110,14 +153,14 @@
                 </li>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                 <li class="page-item">
-                    <a class="page-link rounded-pill border-0 px-3" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color);">{{ num }}</a>
+                    <a class="page-link rounded-pill border-0 px-3" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color);">{{ num }}</a>
                 </li>
                 {% endif %}
             {% endfor %}
             
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
+                <a class="page-link rounded-pill border-0 px-3" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" style="background-color: var(--light-bg); color: var(--primary-color); font-weight: 600;">
                     Next <i class="fa-solid fa-chevron-right ms-1"></i>
                 </a>
             </li>
