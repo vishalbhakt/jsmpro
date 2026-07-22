@@ -1,7 +1,36 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Apply for Admission - JSM Shiksha Academy{% endblock %}
+{% block title %}School Admissions 2026-27 | UKG to Grade 8 | JSM Shiksha Academy{% endblock %}
+{% block description %}Apply for UKG to Grade 8 school admissions for session 2026-27 at JSM Shiksha Academy. Transparent fee plans, smart classrooms, and digital student ERP.{% endblock %}
+{% block keywords %}School Admissions 2026-27, Admission UKG Grade 8, JSM Shiksha Academy Admission, New Delhi School Admission{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which grades are eligible for admission at JSM Shiksha Academy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "JSM Shiksha Academy offers admissions for scholars from Kindergarten (UKG) up to Grade 8."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What documents are required for admission registration?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Required documents include student's birth certificate, prior academic report cards, guardian ID proof, and passport-size photographs."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">

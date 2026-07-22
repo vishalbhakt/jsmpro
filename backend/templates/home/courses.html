@@ -1,7 +1,38 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Our Courses - JSM Shiksha Academy{% endblock %}
+{% block title %}Academic Courses & Programs | UKG to Grade 8 | JSM Shiksha Academy{% endblock %}
+{% block description %}Explore comprehensive academic courses for Kindergarten, Primary, and Middle School students at JSM Shiksha Academy in New Delhi.{% endblock %}
+{% block keywords %}Academic Courses, Primary School Subjects, Middle School Curriculum, UKG Courses, JSM Shiksha Academy Syllabus{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Academic Courses Catalog",
+  "url": "{{ request.build_absolute_uri }}",
+  "description": "Comprehensive list of academic programs offered from UKG to Grade 8 at JSM Shiksha Academy.",
+  "itemListElement": [
+    {% for course in courses %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "item": {
+        "@type": "Course",
+        "name": "{{ course.title|escapejs }}",
+        "description": "{{ course.description|default:'Academic curriculum module'|escapejs }}",
+        "provider": {
+          "@type": "School",
+          "name": "JSM Shiksha Academy"
+        }
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0d3b66 100%); border-bottom: 6px solid var(--accent-color);">

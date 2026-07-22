@@ -1,7 +1,35 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Contact Us - JSM Shiksha Academy{% endblock %}
+{% block title %}Contact Us | JSM Shiksha Academy New Delhi{% endblock %}
+{% block description %}Get in touch with JSM Shiksha Academy in New Delhi. Find our physical address, phone numbers, email address, and send admission inquiries.{% endblock %}
+{% block keywords %}Contact JSM Shiksha Academy, School Address New Delhi, School Phone Number, School Email, Vidya Vihar School{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact JSM Shiksha Academy",
+  "url": "{{ request.build_absolute_uri }}",
+  "description": "Official contact page for JSM Shiksha Academy admissions and inquiries in New Delhi.",
+  "mainEntity": {
+    "@type": "School",
+    "name": "JSM Shiksha Academy",
+    "telephone": "+91-11-2345-6789",
+    "email": "info@jsmshiksha.edu",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "123 Education Lane, Vidya Vihar",
+      "addressLocality": "New Delhi",
+      "addressRegion": "Delhi",
+      "postalCode": "110001",
+      "addressCountry": "IN"
+    }
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
     {% if messages %}

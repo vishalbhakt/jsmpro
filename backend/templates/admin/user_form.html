@@ -1,144 +1,342 @@
 {% extends "dashboard_base.html" %}
 {% load static %}
 
-{% block title %}{% if edit_user %}Edit User{% else %}Create User{% endif %} - JSM Shiksha Academy{% endblock %}
+{% block title %}{% if edit_user %}Edit User{% else %}Create User{% endif %} â JSM Shiksha Academy{% endblock %}
 
 {% block dashboard_content %}
-<div class="premium-card p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%);">
-    <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">
-        {% if edit_user %}✏️ Edit User{% else %}➕ Create New User{% endif %}
-    </h1>
-    <p class="text-white-50 mb-0">{% if edit_user %}Update account details for {{ edit_user.full_name }}{% else %}Add a new student, teacher, or admin account{% endif %}.</p>
-</div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="premium-card p-4 p-md-5 bg-white">
-            <h4 class="fw-bold mb-4" style="color:var(--primary-color); font-family:'Outfit',sans-serif;">
-                <i class="fa-solid fa-user-gear me-2" style="color:var(--accent-color);"></i> Account Details
-            </h4>
-            <form method="post">
-                {% csrf_token %}
-                {% if messages %}
-                  <div class="mb-6 space-y-2">
-                    {% for message in messages %}
-                      <div class="p-4 rounded-xl text-sm font-medium {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %} flex items-center justify-between">
-                        <span>{{ message }}</span>
-                      </div>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">First Name <span class="text-danger">*</span></label>
-                        <input type="text" name="first_name" value="{{ edit_user.first_name|default:'' }}" class="form-control" placeholder="First Name" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Last Name</label>
-                        <input type="text" name="last_name" value="{{ edit_user.last_name|default:'' }}" class="form-control" placeholder="Last Name">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Username <span class="text-danger">*</span></label>
-                        <input type="text" name="username" value="{{ edit_user.username|default:'' }}" class="form-control" placeholder="e.g. john_doe" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" name="email" value="{{ edit_user.email|default:'' }}" class="form-control" placeholder="email@example.com" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Role <span class="text-danger">*</span></label>
-                        <select name="role" id="roleSelect" class="form-select" required>
-                            <option value="">-- Select Role --</option>
-                            <option value="student" {% if edit_user.role == 'student' %}selected{% endif %}>👨‍🎓 Student</option>
-                            <option value="teacher" {% if edit_user.role == 'teacher' %}selected{% endif %}>👩‍🏫 Teacher</option>
-                            <option value="admin" {% if edit_user.role == 'admin' %}selected{% endif %}>⚙️ Admin</option>
-                        </select>
-                    </div>
-                    <div class="col-12 {% if not edit_user or edit_user.role != 'student' %}d-none hidden{% endif %}" id="classroomContainer">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Classroom Grade <span class="text-danger">*</span></label>
-                        <select name="classroom" id="classroomSelect" class="form-select" {% if edit_user.role == 'student' %}required{% endif %}>
-                            <option value="">-- Select Classroom --</option>
-                            {% for room in classrooms %}
-                            <option value="{{ room.id }}" {% if current_classroom_id == room.id or edit_user.student_profile.classroom.id == room.id %}selected{% endif %}>{{ room.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    {% if not edit_user %}
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Password <span class="text-danger">*</span></label>
-                        <div class="relative w-full">
-                            <input type="password" name="password1" id="id_password" class="form-control" placeholder="Set password" required style="padding-right: 2.5rem;">
-                            <button type="button" onclick="togglePasswordVisibility('id_password', 'eye_password')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer focus:outline-none border-0 bg-transparent" style="top: 50%; transform: translateY(-50%); z-index: 10;">
-                                <i id="eye_password" class="fa-solid fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-sm" style="color:var(--primary-color);">Confirm Password <span class="text-danger">*</span></label>
-                        <div class="relative w-full">
-                            <input type="password" name="password2" id="id_confirm_password" class="form-control" placeholder="Confirm password" required style="padding-right: 2.5rem;">
-                            <button type="button" onclick="togglePasswordVisibility('id_confirm_password', 'eye_confirm_password')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer focus:outline-none border-0 bg-transparent" style="top: 50%; transform: translateY(-50%); z-index: 10;">
-                                <i id="eye_confirm_password" class="fa-solid fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="col-12">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="is_active" id="isActive" {% if not edit_user or edit_user.is_active %}checked{% endif %}>
-                            <label class="form-check-label fw-bold" for="isActive" style="font-size:0.87rem; color:var(--primary-color);">Account Active</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex gap-3 mt-4">
-                    <button type="submit" class="btn btn-premium-primary rounded-pill px-5 py-3 fw-bold">
-                        <i class="fa-solid fa-save me-2"></i> {% if edit_user %}Update User{% else %}Create User{% endif %}
-                    </button>
-                    <a href="{% url 'admin_users' %}" class="btn btn-premium-outline rounded-pill px-5 py-3 fw-bold">
-                        <i class="fa-solid fa-xmark me-2"></i> Cancel
-                    </a>
-                </div>
-            </form>
-        </div>
+{# âââââââââ Page Hero Banner âââââââââ #}
+<div class="rounded-2xl mb-6 px-7 py-6 flex items-center justify-between"
+     style="background: linear-gradient(135deg, #0c2b4d 0%, #0f3d6e 100%);">
+    <div>
+        <h1 class="text-2xl font-bold text-white tracking-tight mb-1" style="font-family:'Outfit',sans-serif;">
+            {% if edit_user %}
+                <i class="fa-solid fa-user-pen mr-2 text-blue-300"></i>Edit User Account
+            {% else %}
+                <i class="fa-solid fa-user-plus mr-2 text-blue-300"></i>Create New User
+            {% endif %}
+        </h1>
+        <p class="text-blue-200 text-sm mb-0">
+            {% if edit_user %}
+                Updating account details for <span class="font-semibold text-white">{{ edit_user.full_name }}</span>
+            {% else %}
+                Add a new student, teacher, or admin account to the system.
+            {% endif %}
+        </p>
+    </div>
+    {# Breadcrumb pill #}
+    <div class="hidden md:flex items-center gap-1.5 text-xs text-blue-300 bg-white/10 rounded-full px-4 py-2 backdrop-blur-sm border border-white/10">
+        <i class="fa-solid fa-users text-blue-300"></i>
+        <a href="{% url 'admin_users' %}" class="text-blue-200 hover:text-white transition text-decoration-none">Users</a>
+        <span class="text-blue-400 mx-1">/</span>
+        <span class="text-white font-medium">{% if edit_user %}Edit{% else %}Create{% endif %}</span>
     </div>
 </div>
+
+{# âââââââââ Main Content Layout âââââââââ #}
+<div class="max-w-4xl mx-auto">
+
+    {# ââ Flash Messages ââ #}
+    {% if messages %}
+    <div class="mb-5 space-y-2">
+        {% for message in messages %}
+        <div class="flex items-start gap-3 p-4 rounded-xl text-sm font-medium border
+                    {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200
+                    {% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %}">
+            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-red-500{% else %}fa-circle-check text-emerald-500{% endif %} mt-0.5 shrink-0"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ââââââââââââââââââââââââââââââââââââââââââââââââââ #}
+    {#                   FORM CARD                       #}
+    {# ââââââââââââââââââââââââââââââââââââââââââââââââââ #}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <form method="post" id="userForm" novalidate>
+            {% csrf_token %}
+
+            <div class="p-6 sm:p-8">
+
+                {# âââââââââââââââââââââââââââââââââââââââ #}
+                {# SECTION 1 Â· Basic Information           #}
+                {# âââââââââââââââââââââââââââââââââââââââ #}
+                <div class="flex items-center gap-2.5 mb-5">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 text-white text-xs">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </span>
+                    <h2 class="text-base font-bold text-slate-800" style="font-family:'Outfit',sans-serif;">Basic Information</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-8">
+
+                    {# First Name #}
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            First Name <span class="text-red-500 ml-0.5">*</span>
+                        </label>
+                        <input type="text" name="first_name"
+                               value="{{ edit_user.first_name|default:'' }}"
+                               class="w-full bg-slate-50/60 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                                      focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                               placeholder="Enter first name" required>
+                    </div>
+
+                    {# Last Name #}
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Last Name
+                        </label>
+                        <input type="text" name="last_name"
+                               value="{{ edit_user.last_name|default:'' }}"
+                               class="w-full bg-slate-50/60 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                                      focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                               placeholder="Enter last name">
+                    </div>
+
+                    {# Username #}
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Username <span class="text-red-500 ml-0.5">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                <i class="fa-solid fa-at text-xs"></i>
+                            </span>
+                            <input type="text" name="username"
+                                   value="{{ edit_user.username|default:'' }}"
+                                   class="w-full bg-slate-50/60 border border-slate-300 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                                          focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                                   placeholder="e.g. john_doe" required>
+                        </div>
+                    </div>
+
+                    {# Email Address #}
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Email Address <span class="text-red-500 ml-0.5">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                <i class="fa-solid fa-envelope text-xs"></i>
+                            </span>
+                            <input type="email" name="email"
+                                   value="{{ edit_user.email|default:'' }}"
+                                   class="w-full bg-slate-50/60 border border-slate-300 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                                          focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                                   placeholder="name@school.edu" required>
+                        </div>
+                    </div>
+
+                    {# Role #}
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Role <span class="text-red-500 ml-0.5">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                <i class="fa-solid fa-shield-halved text-xs"></i>
+                            </span>
+                            <select name="role" id="roleSelect"
+                                    class="w-full bg-slate-50/60 border border-slate-300 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-slate-800
+                                           focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition appearance-none cursor-pointer"
+                                    required>
+                                <option value="">â Select Role â</option>
+                                <option value="student" {% if edit_user.role == 'student' %}selected{% endif %}>Student</option>
+                                <option value="teacher" {% if edit_user.role == 'teacher' %}selected{% endif %}>Teacher</option>
+                                <option value="admin"   {% if edit_user.role == 'admin'   %}selected{% endif %}>Admin</option>
+                            </select>
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    {# Classroom Grade â shown only when role = student #}
+                    <div id="classroomContainer"
+                         class="{% if not edit_user or edit_user.role != 'student' %}hidden{% endif %} transition-all duration-200">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Classroom Grade <span class="text-red-500 ml-0.5">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                <i class="fa-solid fa-school text-xs"></i>
+                            </span>
+                            <select name="classroom" id="classroomSelect"
+                                    class="w-full bg-slate-50/60 border border-slate-300 rounded-lg pl-9 pr-3.5 py-2.5 text-sm text-slate-800
+                                           focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition appearance-none cursor-pointer"
+                                    {% if edit_user.role == 'student' %}required{% endif %}>
+                                <option value="">â Select Classroom â</option>
+                                {% for room in classrooms %}
+                                <option value="{{ room.id }}"
+                                        {% if current_classroom_id == room.id or edit_user.student_profile.classroom.id == room.id %}selected{% endif %}>
+                                    {{ room.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>{# /grid section 1 #}
+
+                {# âââââââââââââââââââââââââââââââââââââââ #}
+                {# SECTION 2 Â· Security & Status           #}
+                {# âââââââââââââââââââââââââââââââââââââââ #}
+                <div class="border-t border-slate-100 pt-7 mb-6">
+                    <div class="flex items-center gap-2.5 mb-5">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 text-white text-xs">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <h2 class="text-base font-bold text-slate-800" style="font-family:'Outfit',sans-serif;">Security &amp; Status</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
+                        {% if not edit_user %}
+                        {# Password #}
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                                Password <span class="text-red-500 ml-0.5">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                    <i class="fa-solid fa-key text-xs"></i>
+                                </span>
+                                <input type="password" name="password1" id="id_password"
+                                       class="w-full bg-slate-50/60 border border-slate-300 rounded-lg pl-9 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                                              focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                                       placeholder="Set a strong password" required>
+                                <button type="button"
+                                        onclick="togglePasswordVisibility('id_password','eye_password')"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3.5 border-0 bg-transparent text-slate-400 hover:text-slate-600 focus:outline-none transition"
+                                        tabindex="-1">
+                                    <i id="eye_password" class="fa-solid fa-eye text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {# Confirm Password #}
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                                Confirm Password <span class="text-red-500 ml-0.5">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                    <i class="fa-solid fa-key text-xs"></i>
+                                </span>
+                                <input type="password" name="password2" id="id_confirm_password"
+                                       class="w-full bg-slate-50/60 border border-slate-300 rounded-lg pl-9 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                                              focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition"
+                                       placeholder="Re-enter password" required>
+                                <button type="button"
+                                        onclick="togglePasswordVisibility('id_confirm_password','eye_confirm_password')"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-3.5 border-0 bg-transparent text-slate-400 hover:text-slate-600 focus:outline-none transition"
+                                        tabindex="-1">
+                                    <i id="eye_confirm_password" class="fa-solid fa-eye text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {# Account Active Toggle â spans full width #}
+                        <label for="isActive"
+                               class="md:col-span-2 flex items-center justify-between gap-4 bg-slate-50 hover:bg-slate-100/80
+                                      border border-slate-200 hover:border-slate-300 rounded-xl p-4 cursor-pointer transition group">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-500 group-hover:border-slate-300 shrink-0 transition shadow-sm">
+                                    <i class="fa-solid fa-toggle-on text-base"></i>
+                                </span>
+                                <div class="min-w-0">
+                                    <span class="block text-sm font-semibold text-slate-800">Account Active</span>
+                                    <span class="block text-xs text-slate-500 mt-0.5 leading-relaxed">
+                                        User will be able to log in immediately after account creation.
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="shrink-0">
+                                <input class="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-slate-900"
+                                       type="checkbox" name="is_active" id="isActive"
+                                       {% if not edit_user or edit_user.is_active %}checked{% endif %}>
+                            </div>
+                        </label>
+
+                    </div>{# /grid section 2 #}
+                </div>{# /section 2 wrapper #}
+
+            </div>{# /p-6 sm:p-8 #}
+
+            {# ââââââââââââââââââââââââââââââââââââââââââ #}
+            {# ACTION FOOTER                              #}
+            {# ââââââââââââââââââââââââââââââââââââââââââ #}
+            <div class="bg-slate-50 border-t border-slate-200 px-6 sm:px-8 py-4 flex items-center justify-between gap-3">
+                {# Left hint #}
+                <p class="text-xs text-slate-400 hidden sm:block">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    Fields marked <span class="text-red-500 font-semibold">*</span> are required.
+                </p>
+                {# Buttons â right-aligned #}
+                <div class="flex items-center gap-3 ml-auto">
+                    <a href="{% url 'admin_users' %}"
+                       class="inline-flex items-center justify-center gap-2 px-5 py-2.5
+                              bg-white border border-slate-300 hover:bg-slate-100 hover:border-slate-400
+                              text-slate-700 font-medium text-sm rounded-lg
+                              transition-all duration-200 whitespace-nowrap text-decoration-none
+                              focus:outline-none focus:ring-2 focus:ring-slate-300">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                        <span>Cancel</span>
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-6 py-2.5
+                                   bg-slate-900 hover:bg-slate-800
+                                   text-white font-semibold text-sm rounded-lg shadow-sm
+                                   transition-all duration-200 whitespace-nowrap
+                                   focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2
+                                   border-0 cursor-pointer">
+                        <i class="fa-solid fa-user-plus text-xs"></i>
+                        <span>{% if edit_user %}Update User{% else %}Create User{% endif %}</span>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>{# /form card #}
+
+</div>{# /max-w-4xl #}
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const roleSelect = document.getElementById("roleSelect");
-    const classroomSelect = document.getElementById("classroomSelect");
+document.addEventListener("DOMContentLoaded", function () {
+    const roleSelect         = document.getElementById("roleSelect");
+    const classroomSelect    = document.getElementById("classroomSelect");
     const classroomContainer = document.getElementById("classroomContainer");
 
-    if (roleSelect && classroomSelect && classroomContainer) {
-        roleSelect.addEventListener("change", function() {
-            if (this.value === "student") {
-                classroomContainer.classList.remove("d-none");
-                classroomContainer.classList.remove("hidden");
-                classroomSelect.setAttribute("required", "required");
-            } else {
-                classroomContainer.classList.add("d-none");
-                classroomContainer.classList.add("hidden");
-                classroomSelect.removeAttribute("required");
-                classroomSelect.value = "";
+    if (roleSelect && classroomContainer) {
+        roleSelect.addEventListener("change", function () {
+            const isStudent = this.value === "student";
+            classroomContainer.classList.toggle("hidden", !isStudent);
+            if (classroomSelect) {
+                classroomSelect.required = isStudent;
+                if (!isStudent) classroomSelect.value = "";
             }
         });
     }
 });
 
 function togglePasswordVisibility(inputId, iconId) {
-  const input = document.getElementById(inputId);
-  const icon = document.getElementById(iconId);
-  if (input.type === 'password') {
-    input.type = 'text';
-    icon.classList.remove('fa-eye');
-    icon.classList.add('fa-eye-slash');
-  } else {
-    input.type = 'password';
-    icon.classList.remove('fa-eye-slash');
-    icon.classList.add('fa-eye');
-  }
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    if (!input || !icon) return;
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    icon.classList.toggle("fa-eye",       !isHidden);
+    icon.classList.toggle("fa-eye-slash",  isHidden);
 }
 </script>
 {% endblock %}

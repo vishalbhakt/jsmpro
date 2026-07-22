@@ -4,8 +4,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}JSM Shiksha Academy{% endblock %}</title>
-    <meta name="description" content="{% block description %}Welcome to JSM Shiksha Academy - A Modern, Child-Friendly ERP and Learning Platform.{% endblock %}">
+    
+    <!-- Primary SEO Metadata -->
+    <title>{% block title %}JSM Shiksha Academy | Premier UKG to Grade 8 School & ERP Platform{% endblock %}</title>
+    <meta name="description" content="{% block description %}JSM Shiksha Academy provides structured UKG to Grade 8 education, interactive digital learning, real-time academic portfolios, and transparent parent-teacher communications in New Delhi.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}JSM Shiksha Academy, School in New Delhi, UKG to Grade 8, Primary Education, Middle School, Digital ERP, School Admission 2026-27, Child Friendly Learning{% endblock %}">
+    <meta name="author" content="JSM Shiksha Academy">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    {% block canonical %}
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    {% endblock %}
+
+    <!-- Geographic & Regional Metadata (Geo-Targeting SEO) -->
+    <meta name="geo.region" content="IN-DL">
+    <meta name="geo.placename" content="New Delhi">
+    <meta name="geo.position" content="28.6139;77.2090">
+    <meta name="ICBM" content="28.6139, 77.2090">
+    <meta name="address" content="123 Education Lane, Vidya Vihar, New Delhi - 110001, India">
+
+    <!-- Open Graph / Facebook / WhatsApp (Social & Generative Search Sharing) -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="JSM Shiksha Academy">
+    <meta property="og:title" content="{% block og_title %}JSM Shiksha Academy | Premier UKG to Grade 8 School{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Discover holistic learning, digital academic tracking, and modern infrastructure for scholars from UKG to Grade 8 at JSM Shiksha Academy.{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}{% endblock %}">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}JSM Shiksha Academy | Modern Schooling & ERP{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Empowering UKG to Grade 8 students with interactive learning, smart classrooms, and live portal analytics.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}{% endblock %}">
+
+    <!-- Generative Engine Optimization (GEO) & Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "@id": "{{ request.scheme }}://{{ request.get_host }}/#organization",
+      "name": "JSM Shiksha Academy",
+      "alternateName": "JSM Academy",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/",
+      "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}",
+      "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}",
+      "description": "JSM Shiksha Academy is a leading child-friendly school and digital ERP learning platform serving students from UKG to Grade 8 in New Delhi, India.",
+      "telephone": "+91-11-2345-6789",
+      "email": "info@jsmshiksha.edu",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "123 Education Lane, Vidya Vihar",
+        "addressLocality": "New Delhi",
+        "addressRegion": "Delhi",
+        "postalCode": "110001",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 28.6139,
+        "longitude": 77.2090
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Academic Programs",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Kindergarten & Early Years Foundation",
+              "description": "Phonics, early literacy, spatial logic, and creative arts for UKG."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Primary Schooling (Grades 1-5)",
+              "description": "Core mathematics, general science, English grammar, and social studies."
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Course",
+              "name": "Middle School (Grades 6-8)",
+              "description": "Advanced mathematics, integrated physics & chemistry, computer applications, and literature analysis."
+            }
+          }
+        ]
+      },
+      "sameAs": [
+        "https://www.facebook.com/jsmshiksha",
+        "https://www.twitter.com/jsmshiksha",
+        "https://www.instagram.com/jsmshiksha"
+      ]
+    }
+    </script>
+    {% block json_ld %}{% endblock %}
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
