@@ -17,10 +17,10 @@
 
     <!-- Geographic & Regional Metadata (Geo-Targeting SEO) -->
     <meta name="geo.region" content="IN-DL">
-    <meta name="geo.placename" content="New Delhi">
-    <meta name="geo.position" content="28.6139;77.2090">
-    <meta name="ICBM" content="28.6139, 77.2090">
-    <meta name="address" content="123 Education Lane, Vidya Vihar, New Delhi - 110001, India">
+    <meta name="geo.placename" content="Delhi">
+    <meta name="geo.position" content="28.6599;77.0683">
+    <meta name="ICBM" content="28.6599, 77.0683">
+    <meta name="address" content="50 Feet Road, Opposite Khera Department Store, Nihal Vihar, Nangloi, Delhi – 110041, India">
 
     <!-- Open Graph / Facebook / WhatsApp (Social & Generative Search Sharing) -->
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
@@ -48,21 +48,20 @@
       "url": "{{ request.scheme }}://{{ request.get_host }}/",
       "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}",
       "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}",
-      "description": "JSM Shiksha Academy is a leading child-friendly school and digital ERP learning platform serving students from UKG to Grade 8 in New Delhi, India.",
-      "telephone": "+91-11-2345-6789",
-      "email": "info@jsmshiksha.edu",
+      "description": "JSM Shiksha Academy is a leading child-friendly school and digital ERP learning platform serving students from UKG to Grade 8 in Nangloi, Delhi, India.",
+      "telephone": "+91-8826820961",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "123 Education Lane, Vidya Vihar",
-        "addressLocality": "New Delhi",
+        "streetAddress": "50 Feet Road, Opposite Khera Department Store, Nihal Vihar, Nangloi",
+        "addressLocality": "Delhi",
         "addressRegion": "Delhi",
-        "postalCode": "110001",
+        "postalCode": "110041",
         "addressCountry": "IN"
       },
       "geo": {
         "@type": "GeoCoordinates",
-        "latitude": 28.6139,
-        "longitude": 77.2090
+        "latitude": 28.6599,
+        "longitude": 77.0683
       },
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
@@ -93,12 +92,7 @@
             }
           }
         ]
-      },
-      "sameAs": [
-        "https://www.facebook.com/jsmshiksha",
-        "https://www.twitter.com/jsmshiksha",
-        "https://www.instagram.com/jsmshiksha"
-      ]
+      }
     }
     </script>
     {% block json_ld %}{% endblock %}
@@ -571,11 +565,6 @@
                         </div>
                     </div>
                     <p class="text-white-50 mb-4 leading-relaxed">Nurturing creative minds and building scholarly success with real-time academic portfolios, interactive modules, and custom analytics.</p>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-white bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-brands fa-facebook-f"></i></a>
-                        <a href="#" class="text-white bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-brands fa-twitter"></i></a>
-                        <a href="#" class="text-white bg-white bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-brands fa-instagram"></i></a>
-                    </div>
                 </div>
                 <div class="col-6 col-lg-2">
                     <h5 class="text-gold mb-4" style="color: var(--accent-color);">Quick Links</h5>
@@ -597,13 +586,12 @@
                 </div>
                 <div class="col-lg-4">
                     <h5 class="text-gold mb-4" style="color: var(--accent-color);">Contact Details</h5>
-                    <p class="text-white-50"><i class="fa-solid fa-location-dot me-2 text-gold" style="color: var(--accent-color);"></i> 123 Education Lane, Vidya Vihar, New Delhi - 110001</p>
-                    <p class="text-white-50"><i class="fa-solid fa-phone me-2 text-gold" style="color: var(--accent-color);"></i> +91 11 2345 6789</p>
-                    <p class="text-white-50"><i class="fa-solid fa-envelope me-2 text-gold" style="color: var(--accent-color);"></i> info@jsmshiksha.edu</p>
+                    <p class="text-white-50"><i class="fa-solid fa-location-dot me-2 text-gold" style="color: var(--accent-color);"></i> 50 Feet Road, Opposite Khera Department Store, Nihal Vihar, Nangloi, Delhi – 110041</p>
+                    <p class="text-white-50"><i class="fa-solid fa-phone me-2 text-gold" style="color: var(--accent-color);"></i> +91 8826820961</p>
                 </div>
             </div>
             <div class="border-top border-white border-opacity-10 mt-5 pt-4 text-center">
-                <p class="text-white-50 mb-0" style="font-size: 0.8rem;">&copy; 2026 JSM Shiksha Academy. Designed with care for students UKG to Grade 8.</p>
+                <p class="text-white-50 mb-0" style="font-size: 0.8rem;">&copy; 2026 JSM Shiksha. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
