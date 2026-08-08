@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -116,9 +116,9 @@ if DATABASE_URL:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": parsed.path.lstrip("/"),
-            "USER": parsed.username,
-            "PASSWORD": parsed.password,
+            "NAME": unquote(parsed.path.lstrip("/")),
+            "USER": unquote(parsed.username or ""),
+            "PASSWORD": unquote(parsed.password or ""),
             "HOST": parsed.hostname,
             "PORT": parsed.port or 5432,
         }
@@ -183,14 +183,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in env(
-        "CORS_ALLOWED_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
-    ).split(",")
-    if origin.strip()
-]
+# CORS_ALLOWED_ORIGINS = [
+#     origin.strip()
+#     for origin in env(
+#         "CORS_ALLOWED_ORIGINS",
+#         "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
+#     ).split(",")
+#     if origin.strip()
+# ]
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
@@ -236,3 +236,49 @@ SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", False)
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", False)
 CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", False)
 X_FRAME_OPTIONS = "DENY"
+
+# Additional security settings for production
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+# HSTS settings (recommended for HTTPS in production)
+if env_bool("DJANGO_SECURE_HSTS", False):
+    SECURE_HSTS_SECONDS = int(env("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", True)
+    SECURE_HSTS_PRELOAD = env_bool("DJANGO_SECURE_HSTS_PRELOAD", True)
+
+# Standard logging configuration to output to console
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": env("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}

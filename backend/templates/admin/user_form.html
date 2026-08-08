@@ -101,7 +101,7 @@
                             Role <span class="text-danger">*</span>
                         </label>
 
-                        <select name="role" class="form-select" required>
+                        <select name="role" id="roleSelect" class="form-select" required>
                             <option value="">-- Select Role --</option>
 
                             <option value="student"
@@ -118,6 +118,23 @@
                                 {% if edit_user.role == 'admin' %}selected{% endif %}>
                                 ⚙️ Admin
                             </option>
+                        </select>
+                    </div>
+
+                    <!-- Class (Conditional for Student) -->
+                    <div class="col-12" id="classroomFieldContainer" style="display: none;">
+                        <label class="form-label fw-bold text-sm"
+                               style="color:var(--primary-color);">
+                            Class <span class="text-danger">*</span>
+                        </label>
+
+                        <select name="classroom" id="classroomSelect" class="form-select">
+                            <option value="">-- Select Class --</option>
+                            {% for cls in classrooms %}
+                                <option value="{{ cls.id }}" {% if current_classroom_id == cls.id %}selected{% endif %}>
+                                    {{ cls.name }}
+                                </option>
+                            {% endfor %}
                         </select>
                     </div>
 
@@ -231,7 +248,7 @@
     </div>
 </div>
 
-<!-- Password Show / Hide Script -->
+<!-- Password Show / Hide Script & Role-based Conditional Fields -->
 <script>
 function togglePassword(inputId, button) {
 
@@ -248,6 +265,29 @@ function togglePassword(inputId, button) {
         icon.classList.add("fa-eye");
     }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const roleSelect = document.getElementById("roleSelect");
+    const classroomFieldContainer = document.getElementById("classroomFieldContainer");
+    const classroomSelect = document.getElementById("classroomSelect");
+
+    function toggleClassroomField() {
+        if (roleSelect.value === "student") {
+            classroomFieldContainer.style.display = "block";
+            classroomSelect.setAttribute("required", "required");
+        } else {
+            classroomFieldContainer.style.display = "none";
+            classroomSelect.removeAttribute("required");
+            classroomSelect.value = ""; // Clear selection if role changed
+        }
+    }
+
+    // Run on initial load to handle edit view or form errors where role is pre-selected
+    toggleClassroomField();
+
+    // Attach event listener
+    roleSelect.addEventListener("change", toggleClassroomField);
+});
 </script>
 
 {% endblock %}
