@@ -1,0 +1,332 @@
+:root {
+    --primary-color: #0c2b4d;      /* Deep Navy Blue */
+    --accent-color: #ffc107;       /* Golden Yellow */
+    --sky-blue: #38bdf8;           /* Sky Blue Accent */
+    --pastel-green: #10b981;       /* Success Green */
+    --pastel-orange: #f97316;      /* Warning Orange */
+    --pastel-red: #ef4444;         /* Error Soft Red */
+    --light-bg: #f3f7fa;           /* Friendly Light Background */
+    --white-card: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--text-main);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-font {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+}
+
+/* Loading Screen Animation */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease;
+}
+
+.spinner-friendly {
+    width: 80px;
+    height: 80px;
+    border: 8px solid rgba(12, 43, 77, 0.05);
+    border-top: 8px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(80px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Playful Pill Cards */
+.premium-card {
+    background: var(--white-card);
+    border: 2px solid rgba(12, 43, 77, 0.04);
+    border-radius: 1.75rem;
+    box-shadow: 0 10px 25px rgba(12, 43, 77, 0.02);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    position: relative;
+}
+
+.premium-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(255, 193, 7, 0.3);
+    box-shadow: 0 20px 40px rgba(12, 43, 77, 0.06);
+}
+
+/* Rounded Friendly Buttons */
+.btn-premium-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border-radius: 50rem;
+    padding: 0.85rem 2rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 6px 15px rgba(12, 43, 77, 0.15);
+}
+
+.btn-premium-primary:hover {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(255, 193, 7, 0.3);
+}
+
+.btn-premium-accent {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border-radius: 50rem;
+    padding: 0.85rem 2rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 6px 15px rgba(255, 193, 7, 0.25);
+}
+
+.btn-premium-accent:hover {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(12, 43, 77, 0.25);
+}
+
+.btn-premium-outline {
+    border: 3px solid var(--primary-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    border-radius: 50rem;
+    padding: 0.75rem 2rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s;
+}
+
+.btn-premium-outline:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+}
+
+/* Navbar Layout */
+.public-navbar {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    border-bottom: 3px solid var(--accent-color);
+    padding: 1rem 0;
+    transition: all 0.3s;
+}
+
+.public-navbar .nav-link {
+    color: var(--primary-color);
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0.5rem;
+    transition: all 0.2s;
+}
+
+.public-navbar .nav-link:hover, .public-navbar .nav-link.active {
+    color: var(--sky-blue);
+}
+
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+    .public-navbar .nav-link {
+        margin: 0 0.25rem !important;
+        font-size: 0.8rem !important;
+    }
+}
+
+.badge-premium-gold {
+    background-color: rgba(255, 193, 7, 0.12);
+    color: #d97706;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.6rem 1.25rem;
+    border-radius: 50rem;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+}
+
+.badge-premium-blue {
+    background-color: rgba(56, 189, 248, 0.12);
+    color: #0284c7;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.6rem 1.25rem;
+    border-radius: 50rem;
+    border: 2px solid rgba(56, 189, 248, 0.2);
+}
+
+/* Large input controls */
+.form-control, .form-select {
+    font-size: 0.95rem;
+    padding: 0.9rem 1.5rem;
+    border-radius: 1.25rem !important;
+    border: 2px solid rgba(12, 43, 77, 0.08);
+    background-color: #fafbfc;
+    transition: all 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--sky-blue);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+/* Floating elements animations */
+.float-animation {
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid #f1f5f9;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Responsive utilities and fixes */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        margin-top: 1rem;
+    }
+    .navbar-collapse .d-flex {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    .navbar-collapse .btn {
+        width: 100% !important;
+        text-align: center;
+    }
+}
+@media (max-width: 767.98px) {
+    body {
+        font-size: 0.9rem;
+    }
+    .py-5 {
+        padding-top: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+    .my-5 {
+        margin-top: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+    .w-xs-100 {
+        width: 100% !important;
+    }
+    .hero-ctas {
+        flex-direction: column;
+        width: 100%;
+    }
+    .hero-ctas a {
+        width: 100% !important;
+        text-align: center;
+    }
+    .display-3 {
+        font-size: 2.2rem !important;
+    }
+    .display-4 {
+        font-size: 1.8rem !important;
+    }
+    .display-5 {
+        font-size: 1.6rem !important;
+    }
+    .fs-5 {
+        font-size: 1rem !important;
+    }
+    /* Stats column border overrides */
+    .border-start {
+        border-start: none !important;
+        border-left: none !important;
+    }
+}
+@media (max-width: 480px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Fix Modal, Premium Cards, and Transition Flickering / Hover Boundary Loops */
+.premium-card, .btn-premium-primary, .btn-premium-accent, .btn-premium-outline, .modal, .modal-dialog, .modal-content {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+.modal-backdrop {
+    pointer-events: none; /* Ignore pointer events on backdrop to prevent hover-out loops */
+}

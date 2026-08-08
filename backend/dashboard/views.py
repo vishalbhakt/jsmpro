@@ -2526,8 +2526,15 @@ def admin_assessments(request):
         subject = get_object_or_404(Subject, id=subject_id)
         classroom = get_object_or_404(ClassRoom, id=classroom_id)
         
+        scheduled_for = due_at.split('T')[0] if 'T' in due_at else due_at
+        
         Assessment.objects.create(
-            title=title, subject=subject, classroom=classroom, points=points, due_at=due_at
+            title=title,
+            subject=subject,
+            classroom=classroom,
+            max_marks=points,
+            scheduled_for=scheduled_for,
+            created_by=subject.teacher
         )
         messages.success(request, f"Assessment '{title}' created successfully.")
         return redirect("admin_assessments")
@@ -2547,6 +2554,133 @@ def admin_assessments(request):
         "subjects": subjects,
         "is_dashboard_view": True,
         "q": q
+    })
+
+@login_required
+def admin_assessment_detail(request, assessment_id):
+    if request.user.role not in ["admin", "teacher"]:
+        return redirect("dashboard_redirect")
+        
+    from academics.models import Assessment, Result, Subject
+    from users.models import StudentProfile, TeacherProfile
+    
+    assessment = get_object_or_404(Assessment, id=assessment_id)
+    classroom = assessment.classroom
+    students = StudentProfile.objects.filter(classroom=classroom).select_related("user").order_by("roll_number", "user__first_name")
+    
+    # Check if results are already entered
+    results = Result.objects.filter(assessment=assessment).select_related("student")
+    results_dict = {r.student_id: r for r in results}
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        
+        if action == "save_marks" or action == "publish_results":
+            # Save or Publish Marks
+            for student in students:
+                marks_key = f"marks_{student.id}"
+                remarks_key = f"remarks_{student.id}"
+                
+                marks_val = request.POST.get(marks_key)
+                remarks_val = request.POST.get(remarks_key, "").strip()
+                
+                if marks_val is not None and marks_val != "":
+                    try:
+                        marks_obtained = float(marks_val)
+                        if marks_obtained < 0 or marks_obtained > float(assessment.max_marks):
+                            messages.error(request, f"Marks for {student.user.full_name} must be between 0 and {assessment.max_marks}.")
+                            continue
+                            
+                        # Update or create Result
+                        result, created = Result.objects.get_or_create(
+                            assessment=assessment,
+                            student=student,
+                            defaults={"marks_obtained": marks_obtained, "remarks": remarks_val}
+                        )
+                        if not created:
+                            result.marks_obtained = marks_obtained
+                            result.remarks = remarks_val
+                            result.grade = ""  # Let save() recalculate the grade
+                            result.save()
+                    except ValueError:
+                        pass
+            
+            if action == "publish_results":
+                # Mark as published
+                from django.utils import timezone
+                results = Result.objects.filter(assessment=assessment)
+                for result in results:
+                    result.published_at = timezone.now()
+                    result.save()
+                    
+                    # Also create or update ExamResult for student
+                    teacher = assessment.subject.teacher
+                    if not teacher:
+                        teacher = TeacherProfile.objects.first()
+                        
+                    from academics.models import ExamResult
+                    ExamResult.objects.update_or_create(
+                        student=result.student,
+                        assessment_name=assessment.title,
+                        subject=assessment.subject,
+                        defaults={
+                            'teacher': teacher,
+                            'marks_obtained': result.marks_obtained,
+                            'total_marks': assessment.max_marks,
+                            'is_published': True
+                        }
+                    )
+                messages.success(request, f"Results for '{assessment.title}' published successfully to the Grade Book.")
+            else:
+                messages.success(request, "Student marks saved successfully.")
+                
+            return redirect("admin_assessment_detail", assessment_id=assessment.id)
+            
+        elif action == "update_details":
+            # Update Assessment Details
+            title = request.POST.get("title")
+            points = request.POST.get("points")
+            due_at = request.POST.get("due_at")
+            subject_id = request.POST.get("subject")
+            
+            if title and points and due_at:
+                assessment.title = title
+                assessment.max_marks = float(points)
+                assessment.scheduled_for = due_at.split('T')[0] if 'T' in due_at else due_at
+                if subject_id:
+                    assessment.subject_id = int(subject_id)
+                assessment.save()
+                messages.success(request, "Assessment details updated successfully.")
+            return redirect("admin_assessment_detail", assessment_id=assessment.id)
+            
+        elif action == "delete_assessment":
+            # Delete Assessment
+            title = assessment.title
+            assessment.delete()
+            messages.success(request, f"Assessment '{title}' deleted successfully.")
+            return redirect("admin_assessments")
+            
+    # Prepare students data with their current result info
+    students_data = []
+    for student in students:
+        res = results_dict.get(student.id)
+        students_data.append({
+            "student": student,
+            "result": res,
+            "marks": res.marks_obtained if res else "",
+            "remarks": res.remarks if res else "",
+            "grade": res.grade if res else ""
+        })
+        
+    is_published = any(r.published_at is not None for r in results) if results else False
+    subjects = Subject.objects.all()
+    
+    return render(request, "admin/assessment_detail.html", {
+        "assessment": assessment,
+        "students_data": students_data,
+        "is_published": is_published,
+        "subjects": subjects,
+        "is_dashboard_view": True
     })
 
 @login_required
@@ -2572,6 +2706,120 @@ def admin_results(request):
     })
 
 @login_required
+def admin_result_detail(request, result_id):
+    if request.user.role not in ["admin", "teacher"]:
+        return redirect("dashboard_redirect")
+        
+    from academics.models import Result, ExamResult
+    result = get_object_or_404(Result, id=result_id)
+    assessment = result.assessment
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "edit_grade":
+            marks_obtained = request.POST.get("marks_obtained")
+            remarks = request.POST.get("remarks", "").strip()
+            
+            if marks_obtained is not None and marks_obtained != "":
+                try:
+                    marks_val = float(marks_obtained)
+                    if marks_val < 0 or marks_val > float(assessment.max_marks):
+                        messages.error(request, f"Marks obtained must be between 0 and {assessment.max_marks}.")
+                        return redirect("admin_result_detail", result_id=result.id)
+                        
+                    result.marks_obtained = marks_val
+                    result.remarks = remarks
+                    result.grade = ""  # Force recalculate grade on model save
+                    result.save()
+                    
+                    # Update matching ExamResult if it exists
+                    ExamResult.objects.filter(
+                        student=result.student,
+                        assessment_name=assessment.title,
+                        subject=assessment.subject
+                    ).update(
+                        marks_obtained=marks_val,
+                        grade=result.grade
+                    )
+                    
+                    messages.success(request, "Result entry updated successfully.")
+                except ValueError:
+                    messages.error(request, "Invalid marks value entered.")
+            return redirect("admin_result_detail", result_id=result.id)
+            
+        elif action == "delete_result":
+            ExamResult.objects.filter(
+                student=result.student,
+                assessment_name=assessment.title,
+                subject=assessment.subject
+            ).delete()
+            
+            student_name = result.student.user.full_name
+            result.delete()
+            messages.success(request, f"Result for {student_name} deleted successfully.")
+            return redirect("admin_results")
+            
+    # Mock section-wise breakdown
+    max_marks = float(assessment.max_marks)
+    obtained = float(result.marks_obtained)
+    
+    theory_max = round(max_marks * 0.7, 2)
+    theory_obtained = round(obtained * 0.7, 2)
+    
+    practical_max = round(max_marks * 0.2, 2)
+    practical_obtained = round(obtained * 0.2, 2)
+    
+    assignment_max = round(max_marks * 0.1, 2)
+    assignment_obtained = round(obtained * 0.1, 2)
+    
+    score_breakdown = {
+        "theory": {"max": theory_max, "obtained": theory_obtained},
+        "practical": {"max": practical_max, "obtained": practical_obtained},
+        "assignment": {"max": assignment_max, "obtained": assignment_obtained},
+    }
+    
+    return render(request, "admin/result_detail.html", {
+        "result": result,
+        "score_breakdown": score_breakdown,
+        "is_dashboard_view": True
+    })
+
+@login_required
+def admin_result_print(request, result_id):
+    if request.user.role not in ["admin", "teacher"]:
+        return redirect("dashboard_redirect")
+        
+    from academics.models import Result
+    result = get_object_or_404(Result, id=result_id)
+    assessment = result.assessment
+    
+    # Mock section-wise breakdown for printable report slip
+    max_marks = float(assessment.max_marks)
+    obtained = float(result.marks_obtained)
+    
+    theory_max = round(max_marks * 0.7, 2)
+    theory_obtained = round(obtained * 0.7, 2)
+    
+    practical_max = round(max_marks * 0.2, 2)
+    practical_obtained = round(obtained * 0.2, 2)
+    
+    assignment_max = round(max_marks * 0.1, 2)
+    assignment_obtained = round(obtained * 0.1, 2)
+    
+    score_breakdown = {
+        "theory": {"max": theory_max, "obtained": theory_obtained},
+        "practical": {"max": practical_max, "obtained": practical_obtained},
+        "assignment": {"max": assignment_max, "obtained": assignment_obtained},
+    }
+    
+    from django.utils import timezone
+    return render(request, "admin/result_print.html", {
+        "result": result,
+        "score_breakdown": score_breakdown,
+        "print_date": timezone.now().date()
+    })
+
+@login_required
 def admin_attendance_sessions(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
@@ -2594,9 +2842,99 @@ def admin_attendance_sessions(request):
     })
 
 @login_required
+def admin_attendance_session_detail(request, session_id):
+    if request.user.role not in ["admin", "teacher"]:
+        return redirect("dashboard_redirect")
+        
+    from attendance.models import AttendanceSession, AttendanceRecord
+    from users.models import StudentProfile
+    
+    session = get_object_or_404(AttendanceSession, id=session_id)
+    classroom = session.classroom
+    students = StudentProfile.objects.filter(classroom=classroom).select_related("user").order_by("roll_number", "user__first_name")
+    
+    # Check existing attendance logs for this session
+    records = AttendanceRecord.objects.filter(session=session).select_related("student")
+    records_dict = {r.student_id: r for r in records}
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        
+        if action == "save_attendance":
+            for student in students:
+                status_key = f"status_{student.id}"
+                remarks_key = f"remarks_{student.id}"
+                
+                status_val = request.POST.get(status_key)
+                remarks_val = request.POST.get(remarks_key, "").strip()
+                
+                if status_val in ["present", "absent", "late", "excused"]:
+                    # Update or create record
+                    record, created = AttendanceRecord.objects.get_or_create(
+                        session=session,
+                        student=student,
+                        defaults={"status": status_val, "remarks": remarks_val}
+                    )
+                    if not created:
+                        record.status = status_val
+                        record.remarks = remarks_val
+                        record.save()
+            messages.success(request, "Attendance records updated successfully.")
+            return redirect("admin_attendance_session_detail", session_id=session.id)
+            
+        elif action == "update_notes":
+            notes = request.POST.get("notes", "").strip()
+            session.notes = notes
+            session.save()
+            messages.success(request, "Session notes updated successfully.")
+            return redirect("admin_attendance_session_detail", session_id=session.id)
+            
+        elif action == "delete_session":
+            # Delete session completely
+            classroom_name = classroom.name
+            session_date = session.date.strftime("%d %b %Y")
+            session.delete()
+            messages.success(request, f"Attendance session for {classroom_name} on {session_date} deleted successfully.")
+            return redirect("admin_attendance_sessions")
+            
+    # Map student data with status info for rendering
+    students_data = []
+    for student in students:
+        rec = records_dict.get(student.id)
+        students_data.append({
+            "student": student,
+            "record": rec,
+            "status": rec.status if rec else "present",
+            "remarks": rec.remarks if rec else ""
+        })
+        
+    return render(request, "admin/attendance_session_detail.html", {
+        "session": session,
+        "students_data": students_data,
+        "is_dashboard_view": True
+    })
+
+@login_required
 def admin_attendance_records(request):
     if request.user.role != "admin":
         return redirect("dashboard_redirect")
+        
+    from attendance.models import AttendanceRecord
+        
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "edit_record":
+            record_id = request.POST.get("record_id")
+            status = request.POST.get("status")
+            remarks = request.POST.get("remarks", "").strip()
+            
+            record = get_object_or_404(AttendanceRecord, id=record_id)
+            if status in ["present", "absent", "late", "excused"]:
+                record.status = status
+                record.remarks = remarks
+                record.save()
+                messages.success(request, f"Attendance record for {record.student.user.full_name} updated successfully.")
+            return redirect(request.get_full_path())
         
     q = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "").strip().lower()

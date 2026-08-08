@@ -16,14 +16,7 @@
                     <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Inquiries</li>
                 </ol>
             </nav>
-            <div class="d-flex align-items-center gap-3 mb-2">
-                <div class="p-2 rounded-lg d-flex align-items-center justify-content-center" style="background-color: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; border-radius: 0.5rem !important; padding: 0.5rem !important; border: 1px solid rgba(255, 255, 255, 0.2) !important;">
-                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                </div>
-                <h1 class="display-6 fw-bold text-white mb-0" style="font-family:'Outfit',sans-serif; margin-bottom: 0 !important;">Admission Inquiries</h1>
-            </div>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Admission Inquiries 📝</h1>
             <p class="text-white-50 mb-0">Track and respond to registration requests submitted by prospective parents.</p>
         </div>
         <div class="col-md-4 text-end mt-3 mt-md-0">
@@ -39,11 +32,11 @@
 <div class="premium-card p-4 bg-white mb-4">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="q" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-magnifying-glass me-1"></i> Search</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
             <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by student name, guardian name...">
         </div>
         <div class="col-md-4">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="status" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-circle-dot me-1"></i> Follow-up Status</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🏷️ Follow-up Status</label>
             <select name="status" id="status" class="form-select rounded-pill">
                 <option value="">-- All Statuses --</option>
                 {% for code, label in status_choices %}
@@ -77,51 +70,10 @@
                 <tr class="{% if inq.status == 'new' %}table-primary fw-bold{% endif %}">
                     <td class="text-muted" style="font-size:0.83rem;">{{ forloop.counter }}</td>
                     <td style="font-size:0.83rem;">{{ inq.student_name }}</td>
-                    <td style="font-size:0.83rem;">
-                        {{ inq.guardian_name }}
-                        {% if inq.user %}
-                            <span class="badge bg-info bg-opacity-10 text-info text-xs d-block mt-1" style="width: fit-content;">
-                                <i class="fa-solid fa-user me-1"></i> {{ inq.user.username }}
-                            </span>
-                        {% else %}
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary text-xs d-block mt-1" style="width: fit-content;">
-                                <i class="fa-solid fa-user-secret me-1"></i> Guest
-                            </span>
-                        {% endif %}
-                    </td>
+                    <td style="font-size:0.83rem;">{{ inq.guardian_name }}</td>
                     <td class="text-muted" style="font-size:0.8rem;">{{ inq.email }}</td>
                     <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill fw-bold px-3 py-1" style="font-size:0.72rem;">{{ inq.preferred_class }}</span></td>
-                    <td>
-                        {% if inq.status == 'new' %}
-                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #eff6ff !important; color: #1d4ed8 !important; border: 1px solid rgba(191, 219, 254, 0.6) !important; white-space: nowrap !important;">
-                                <svg style="width: 14px; height: 14px; color: #2563eb; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                                New
-                            </span>
-                        {% elif inq.status == 'contacted' %}
-                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;">
-                                <svg style="width: 14px; height: 14px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Contacted
-                            </span>
-                        {% elif inq.status == 'admitted' %}
-                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;">
-                                <svg style="width: 14px; height: 14px; color: #16a34a; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Admitted
-                            </span>
-                        {% else %}
-                            <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #f9fafb !important; color: #374151 !important; border: 1px solid rgba(229, 231, 235, 0.6) !important; white-space: nowrap !important;">
-                                <svg style="width: 14px; height: 14px; color: #4b5563; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Closed
-                            </span>
-                        {% endif %}
-                    </td>
+                    <td> {% if inq.status == 'new' %} <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #eff6ff !important; color: #1d4ed8 !important; border: 1px solid rgba(191, 219, 254, 0.6) !important; white-space: nowrap !important;"> <svg style="width: 14px; height: 14px; color: #2563eb; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path> </svg> New </span> {% elif inq.status == 'contacted' %} <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #fffbeb !important; color: #b45309 !important; border: 1px solid rgba(253, 230, 138, 0.6) !important; white-space: nowrap !important;"> <svg style="width: 14px; height: 14px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg> Contacted </span> {% elif inq.status == 'admitted' %} <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #f0fdf4 !important; color: #15803d !important; border: 1px solid rgba(187, 247, 208, 0.6) !important; white-space: nowrap !important;"> <svg style="width: 14px; height: 14px; color: #16a34a; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg> Admitted </span> {% else %} <span style="display: inline-flex !important; align-items: center !important; gap: 0.375rem !important; padding: 0.25rem 0.625rem !important; border-radius: 9999px !important; font-size: 0.72rem !important; font-weight: 600 !important; background-color: #f9fafb !important; color: #374151 !important; border: 1px solid rgba(229, 231, 235, 0.6) !important; white-space: nowrap !important;"> <svg style="width: 14px; height: 14px; color: #4b5563; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg> Closed </span> {% endif %} </td>
                     <td>
                         <div class="d-flex gap-2">
                             <!-- Details View Button -->
@@ -145,79 +97,60 @@
 
 <!-- Modal: View Inquiry Details -->
 <div class="modal fade" id="inquiryDetailsModal" tabindex="-1" aria-labelledby="inquiryDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered max-w-2xl w-full">
-        <div class="modal-content bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            
-            <!-- Modal Header -->
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <h5 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-0" id="inquiryDetailsModalLabel">
-                    <i class="fa-solid fa-file-signature text-blue-600"></i> Admission Inquiry Details
-                </h5>
-                <button type="button" class="btn-close text-slate-400 hover:text-slate-600 focus:outline-none" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="inquiryDetailsModalLabel"><i class="fa-solid fa-file-signature me-2 text-accent"></i> Admission Inquiry Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <!-- Modal Body -->
-            <div class="p-6">
-                <!-- 2-Column Responsive Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-5">
-                    <!-- Student Name -->
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Student Name</span>
-                        <p id="detStudName" class="text-sm font-semibold text-slate-800 mb-0 break-words"></p>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Student Name</span>
+                        <strong id="detStudName" class="text-primary fs-6"></strong>
                     </div>
-
-                    <!-- Guardian Name -->
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Guardian Name</span>
-                        <p id="detGuardName" class="text-sm font-semibold text-slate-800 mb-0 break-words"></p>
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Guardian Name</span>
+                        <strong id="detGuardName" class="text-primary fs-6"></strong>
                     </div>
-
-                    <!-- Email Address -->
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Email Address</span>
-                        <a id="detEmail" href="#" class="block break-all text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline"></a>
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Email Address</span>
+                        <strong id="detEmail" class="text-primary fs-6"></strong>
                     </div>
-
-                    <!-- Phone Number -->
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Phone Number</span>
-                        <a id="detPhoneLink" href="#" class="inline-block"><span id="detPhone" class="text-sm font-semibold text-blue-600 hover:underline"></span></a>
+                    <div class="col-md-6 col-lg-3">
+                        <span class="text-muted text-xs d-block">Phone Number</span>
+                        <strong id="detPhone" class="text-primary fs-6"></strong>
                     </div>
                 </div>
-
-                <!-- Preferred Class / Grade Stage Badge -->
-                <div class="mb-5 min-w-0">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Preferred Class / Grade Stage</span>
-                    <span id="detClass" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm"></span>
+                
+                <div class="mb-4">
+                    <span class="text-muted text-xs d-block">Preferred Class / Grade Stage</span>
+                    <strong id="detClass" class="text-primary fs-5 d-block"></strong>
                 </div>
-
-                <!-- Inquiry Message Box Card -->
-                <div class="min-w-0">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Inquiry Message / Background</span>
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700 leading-relaxed font-normal shadow-inner mt-1">
-                        <p id="detMessage" class="mb-0 whitespace-pre-wrap break-words"></p>
+                
+                <div class="p-4 bg-light rounded-4 border mb-4">
+                    <span class="text-muted text-xs d-block mb-2">Inquiry Message / Background</span>
+                    <p id="detMessage" class="mb-0 text-dark" style="white-space: pre-wrap; font-size:0.95rem; line-height:1.6;"></p>
+                </div>
+                
+                <!-- Status Edit Action Form -->
+                <form id="statusForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold text-sm text-primary">Update Inquiries Status</label>
+                            <select name="status" id="detStatusSelect" class="form-select rounded-pill">
+                                {% for code, label in status_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-save me-1"></i> Update Status</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
-
-            <!-- Footer Action Area (Brand Theme Sync) -->
-            <form id="statusForm" method="post" action="">
-                {% csrf_token %}
-                <div class="px-6 py-4 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3 w-full sm:w-auto">
-                        <label for="detStatusSelect" class="whitespace-nowrap text-xs font-bold uppercase tracking-wider text-slate-500 mb-0">Update Status:</label>
-                        <select name="status" id="detStatusSelect" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-sm w-full sm:w-auto">
-                            {% for code, label in status_choices %}
-                            <option value="{{ code }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm px-5 py-2.5 rounded-lg shadow-md transition transform active:scale-95 focus:ring-2 focus:ring-slate-700 focus:outline-none flex items-center gap-2 cursor-pointer border-0 w-full sm:w-auto justify-center">
-                        <i class="fa-solid fa-floppy-disk text-xs"></i> Update Status
-                    </button>
-                </div>
-            </form>
-
         </div>
     </div>
 </div>
@@ -226,24 +159,8 @@
 function viewInquiryDetails(stud_name, guard_name, email, phone, pref_class, message, id, status) {
     document.getElementById('detStudName').textContent = stud_name;
     document.getElementById('detGuardName').textContent = guard_name;
-    
-    const emailElem = document.getElementById('detEmail');
-    if (emailElem) {
-        emailElem.textContent = email;
-        if (emailElem.tagName === 'A') {
-            emailElem.href = email ? 'mailto:' + email : '#';
-        }
-    }
-    
-    const phoneElem = document.getElementById('detPhone');
-    if (phoneElem) {
-        phoneElem.textContent = phone;
-    }
-    const phoneLink = document.getElementById('detPhoneLink');
-    if (phoneLink) {
-        phoneLink.href = phone ? 'tel:' + phone : '#';
-    }
-    
+    document.getElementById('detEmail').textContent = email;
+    document.getElementById('detPhone').textContent = phone;
     document.getElementById('detClass').textContent = pref_class;
     document.getElementById('detMessage').textContent = message;
     

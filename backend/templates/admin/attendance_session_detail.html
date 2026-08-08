@@ -1,0 +1,181 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Attendance Session Detail - JSM Shiksha Academy{% endblock %}
+
+{% block dashboard_content %}
+<div class="container py-4">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" style="font-size: 0.85rem; gap: 4px; display: flex; align-items: center; list-style: none; padding: 0; margin: 0;">
+            <li class="breadcrumb-item"><a href="{% url 'admin_overview' %}" class="text-muted text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item text-muted"><span style="margin: 0 6px;">&gt;</span> <a href="{% url 'admin_attendance_sessions' %}" class="text-muted text-decoration-none">Attendance Sessions</a></li>
+            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page"><span style="margin: 0 6px;">&gt;</span> Session Details</li>
+        </ol>
+    </nav>
+
+    <!-- Header Card -->
+    <div class="premium-card p-4 p-md-5 mb-4 text-white shadow-lg" style="background: linear-gradient(135deg, #0c2b4d 0%, #0d3b66 100%); border-radius: 20px !important;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
+            <div>
+                <span class="badge rounded-pill fw-bold px-3 py-1.5 mb-3 d-inline-block text-uppercase tracking-wider" style="background: rgba(255,255,255,0.15); color: white; font-size: 0.72rem;">
+                    📅 Attendance Session Audit
+                </span>
+                <h1 class="display-6 fw-bold mb-2" style="font-family:'Outfit',sans-serif;">{{ session.classroom.name }}</h1>
+                <div class="d-flex flex-wrap gap-x-4 gap-y-2 mt-3" style="font-size: 0.95rem; color: rgba(255,255,255,0.85);">
+                    <div><i class="fa-solid fa-book text-warning me-1.5"></i><strong>Subject:</strong> {{ session.subject.name }}</div>
+                    <div><i class="fa-solid fa-calendar-day text-warning me-1.5"></i><strong>Session Date:</strong> {{ session.date|date:"d M Y" }}</div>
+                    <div><i class="fa-solid fa-user-tie text-warning me-1.5"></i><strong>Recorded By:</strong> {{ session.taken_by.user.full_name|default:"Administrator" }}</div>
+                </div>
+            </div>
+            
+            <div class="d-flex flex-wrap gap-2.5">
+                <button type="button" class="btn btn-premium-accent rounded-pill px-4 py-2.5 d-inline-flex align-items-center justify-content-center text-nowrap" data-bs-toggle="modal" data-bs-target="#editNotesModal">
+                    <i class="fa-solid fa-note-sticky me-1.5"></i> Session Notes
+                </button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 py-2.5 border-0 shadow-sm font-bold text-sm d-inline-flex align-items-center justify-content-center text-nowrap" data-bs-toggle="modal" data-bs-target="#deleteSessionModal">
+                    <i class="fa-solid fa-trash me-1.5"></i> Delete Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Attendance Roster Card -->
+    <div class="premium-card p-4 p-md-5 bg-white shadow-sm mb-4" style="border-radius: 20px !important; border: 1px solid rgba(0,0,0,0.06) !important;">
+        <div class="mb-5 border-bottom pb-3">
+            <h4 class="fw-bold mb-1" style="color: var(--primary-color); font-family: 'Outfit', sans-serif;">
+                <i class="fa-solid fa-clipboard-user me-2 text-primary"></i> Attendance Roster
+            </h4>
+            <p class="text-muted mb-0 text-sm">Verify student status markings and remarks for this class session.</p>
+        </div>
+
+        {% if session.notes %}
+        <div class="alert alert-info border-0 rounded-4 p-4 mb-4">
+            <h6 class="fw-bold mb-1"><i class="fa-solid fa-circle-info me-1.5"></i> Instructor's Session Notes:</h6>
+            <p class="mb-0 text-sm italic">{{ session.notes }}</p>
+        </div>
+        {% endif %}
+
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Roll #</th>
+                            <th>Student</th>
+                            <th class="text-center" style="width: 320px;">Status</th>
+                            <th>Remarks / Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s_data in students_data %}
+                        <tr>
+                            <td class="text-muted fw-bold">{{ s_data.student.roll_number|default:forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center justify-content-center text-white font-bold rounded-circle" style="width: 38px; height: 38px; background-color: var(--primary-color); font-size:0.85rem;">
+                                        {{ s_data.student.user.first_name|slice:":1" }}{{ s_data.student.user.last_name|slice:":1" }}
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-dark d-block" style="font-size:0.88rem;">{{ s_data.student.user.full_name|title }}</span>
+                                        <span class="text-muted d-block" style="font-size:0.75rem;">Admin ID: {{ s_data.student.admission_number }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <!-- Present -->
+                                    <input type="radio" class="btn-check" name="status_{{ s_data.student.id }}" id="present_{{ s_data.student.id }}" value="present" {% if s_data.status == 'present' %}checked{% endif %}>
+                                    <label class="btn btn-sm btn-outline-success px-3 py-1.5 rounded-pill text-xs fw-bold" for="present_{{ s_data.student.id }}">Present</label>
+
+                                    <!-- Late -->
+                                    <input type="radio" class="btn-check" name="status_{{ s_data.student.id }}" id="late_{{ s_data.student.id }}" value="late" {% if s_data.status == 'late' %}checked{% endif %}>
+                                    <label class="btn btn-sm btn-outline-warning px-3 py-1.5 rounded-pill text-xs fw-bold" for="late_{{ s_data.student.id }}">Late</label>
+
+                                    <!-- Absent -->
+                                    <input type="radio" class="btn-check" name="status_{{ s_data.student.id }}" id="absent_{{ s_data.student.id }}" value="absent" {% if s_data.status == 'absent' %}checked{% endif %}>
+                                    <label class="btn btn-sm btn-outline-danger px-3 py-1.5 rounded-pill text-xs fw-bold" for="absent_{{ s_data.student.id }}">Absent</label>
+
+                                    <!-- Excused -->
+                                    <input type="radio" class="btn-check" name="status_{{ s_data.student.id }}" id="excused_{{ s_data.student.id }}" value="excused" {% if s_data.status == 'excused' %}checked{% endif %}>
+                                    <label class="btn btn-sm btn-outline-info px-3 py-1.5 rounded-pill text-xs fw-bold" for="excused_{{ s_data.student.id }}">Excused</label>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" name="remarks_{{ s_data.student.id }}" class="form-control rounded-3 py-1.5 px-3" value="{{ s_data.remarks }}" placeholder="Note reason..." style="font-size: 0.85rem; height: 36px;">
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                No students registered in this class.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if students_data %}
+            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                <button type="submit" name="action" value="save_attendance" class="btn btn-premium-primary rounded-pill px-4">
+                    <i class="fa-solid fa-floppy-disk me-1.5"></i> Save Attendance Changes
+                </button>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Edit Notes -->
+<div class="modal fade" id="editNotesModal" tabindex="-1" aria-labelledby="editNotesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="editNotesModalLabel"><i class="fa-solid fa-note-sticky me-2 text-accent"></i> Update Session Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_notes">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-sm text-primary">Session Notes / Observations</label>
+                        <textarea name="notes" class="form-control rounded-3" rows="5" placeholder="Enter comments about student engagement, lesson objectives covered, or behavior notes...">{{ session.notes }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-premium-outline rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-4">Update Notes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirm Delete Session -->
+<div class="modal fade" id="deleteSessionModal" tabindex="-1" aria-labelledby="deleteSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-danger bg-opacity-10 px-4 py-3">
+                <h5 class="modal-title fw-bold text-danger" id="deleteSessionModalLabel"><i class="fa-solid fa-triangle-exclamation me-2"></i> Delete Attendance Session?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_session">
+                <div class="modal-body p-4 text-center">
+                    <div class="fs-1 text-danger mb-3">⚠️</div>
+                    <h5 class="fw-bold mb-2">Are you absolutely sure?</h5>
+                    <p class="text-muted mb-0">This will permanently delete the attendance session recorded for <strong>"{{ session.classroom.name }}"</strong> on <strong>"{{ session.date|date:'d M Y' }}"</strong>. All student attendance markings for this session will be permanently wiped out.</p>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4 justify-content-center gap-3">
+                    <button type="button" class="btn btn-premium-outline rounded-pill px-4" data-bs-dismiss="modal">No, Keep It</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 border-0 font-bold text-sm shadow-sm">Yes, Delete Permanently</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

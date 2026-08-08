@@ -83,9 +83,13 @@ urlpatterns = [
     path("dashboard/admin/subjects/edit/<int:subject_id>/", views.admin_subject_edit, name="admin_subject_edit"),
     path("dashboard/admin/subjects/delete/<int:subject_id>/", views.admin_subject_delete, name="admin_subject_delete"),
     path("dashboard/admin/assessments/", views.admin_assessments, name="admin_assessments"),
+    path("dashboard/admin/assessments/<int:assessment_id>/", views.admin_assessment_detail, name="admin_assessment_detail"),
     path("dashboard/admin/results/", views.admin_results, name="admin_results"),
+    path("dashboard/admin/results/<int:result_id>/", views.admin_result_detail, name="admin_result_detail"),
+    path("dashboard/admin/results/<int:result_id>/print/", views.admin_result_print, name="admin_result_print"),
     
     path("dashboard/admin/attendance-sessions/", views.admin_attendance_sessions, name="admin_attendance_sessions"),
+    path("dashboard/admin/attendance-sessions/<int:session_id>/", views.admin_attendance_session_detail, name="admin_attendance_session_detail"),
     path("dashboard/admin/attendance-records/", views.admin_attendance_records, name="admin_attendance_records"),
     
     path("dashboard/admin/assignments/", views.admin_assignments, name="admin_assignments"),

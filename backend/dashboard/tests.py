@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from users.models import User, StudentProfile, TeacherProfile
-from academics.models import ClassRoom, Subject
+from academics.models import ClassRoom, Subject, Assessment, Result, ExamResult
 from finance.models import FeePlan, Payment, StudentFee
 from attendance.models import AttendanceSession, AttendanceRecord, LeaveApplication
 import datetime
@@ -417,3 +417,281 @@ class AdminDashboardTests(TestCase):
         
         # Verify absent radio button is checked
         self.assertContains(response, 'value="absent" checked')
+
+
+class AssessmentManagerTests(TestCase):
+    def setUp(self):
+        # Create users
+        self.admin_user = User.objects.create_user(
+            username="admin_ass_test",
+            email="admin_ass@test.com",
+            password="password123",
+            role="admin"
+        )
+        self.teacher_user = User.objects.create_user(
+            username="teacher_ass_test",
+            email="teacher_ass@test.com",
+            password="password123",
+            role="teacher"
+        )
+        self.student_user = User.objects.create_user(
+            username="student_ass_test",
+            email="student_ass@test.com",
+            password="password123",
+            role="student"
+        )
+        
+        # Bypass teacher completion wizard
+        self.tp = self.teacher_user.teacher_profile
+        TeacherProfile.objects.filter(id=self.tp.id).update(is_profile_complete=True)
+        self.tp.refresh_from_db()
+        
+        # Classroom & Subject
+        self.classroom = ClassRoom.objects.create(name="Class 11")
+        self.subject = Subject.objects.create(name="Physics", classroom=self.classroom, teacher=self.tp)
+        
+        # Associate student to classroom
+        self.student = self.student_user.student_profile
+        self.student.classroom = self.classroom
+        self.student.roll_number = 42
+        self.student.admission_number = "ADM1101"
+        self.student.save()
+        
+        # Create Assessment
+        self.assessment = Assessment.objects.create(
+            title="Physics midterm",
+            classroom=self.classroom,
+            subject=self.subject,
+            max_marks=100,
+            scheduled_for=timezone.now().date(),
+            created_by=self.tp
+        )
+
+    def test_assessment_creation_and_list(self):
+        self.client.force_login(self.admin_user)
+        
+        # Test creation (POST) with correct fields max_marks and scheduled_for
+        post_data = {
+            "title": "Math exam",
+            "classroom": self.classroom.id,
+            "subject": self.subject.id,
+            "points": 50,
+            "due_at": "2026-08-10T10:00"
+        }
+        response = self.client.post(reverse("admin_assessments"), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify created
+        ass = Assessment.objects.get(title="Math exam")
+        self.assertEqual(ass.max_marks, 50)
+        self.assertEqual(str(ass.scheduled_for), "2026-08-10")
+        
+        # Check assessments list
+        response = self.client.get(reverse("admin_assessments"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Physics midterm")
+        self.assertContains(response, "Math exam")
+
+    def test_assessment_detail_marks_management(self):
+        self.client.force_login(self.admin_user)
+        
+        # GET request
+        response = self.client.get(reverse("admin_assessment_detail", args=[self.assessment.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Physics midterm")
+        self.assertContains(response, self.student.user.full_name.title())
+        
+        # POST: Save Draft Marks
+        post_data = {
+            "action": "save_marks",
+            f"marks_{self.student.id}": "85.5",
+            f"remarks_{self.student.id}": "Great progress!"
+        }
+        response = self.client.post(reverse("admin_assessment_detail", args=[self.assessment.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify Result saved
+        from academics.models import Result, ExamResult
+        res = Result.objects.get(assessment=self.assessment, student=self.student)
+        self.assertEqual(res.marks_obtained, Decimal("85.5"))
+        self.assertEqual(res.remarks, "Great progress!")
+        self.assertIsNone(res.published_at)
+        
+        # POST: Publish Results (Trigger Results)
+        post_data["action"] = "publish_results"
+        response = self.client.post(reverse("admin_assessment_detail", args=[self.assessment.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify Result published
+        res.refresh_from_db()
+        self.assertIsNotNone(res.published_at)
+        
+        # Verify corresponding ExamResult created
+        er = ExamResult.objects.get(student=self.student, assessment_name="Physics midterm")
+        self.assertEqual(er.marks_obtained, Decimal("85.5"))
+        self.assertEqual(er.total_marks, Decimal("100.00"))
+        self.assertTrue(er.is_published)
+
+    def test_assessment_detail_update_and_delete(self):
+        self.client.force_login(self.admin_user)
+        
+        # POST: Update assessment details
+        post_data = {
+            "action": "update_details",
+            "title": "Physics exam updated",
+            "points": "90",
+            "due_at": "2026-08-15"
+        }
+        response = self.client.post(reverse("admin_assessment_detail", args=[self.assessment.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.assessment.refresh_from_db()
+        self.assertEqual(self.assessment.title, "Physics exam updated")
+        self.assertEqual(self.assessment.max_marks, 90)
+        self.assertEqual(str(self.assessment.scheduled_for), "2026-08-15")
+        
+        # POST: Delete assessment
+        post_data = {
+            "action": "delete_assessment"
+        }
+        response = self.client.post(reverse("admin_assessment_detail", args=[self.assessment.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify deleted
+        self.assertFalse(Assessment.objects.filter(id=self.assessment.id).exists())
+
+    def test_result_detail_and_print(self):
+        self.client.force_login(self.admin_user)
+        
+        # Create a result
+        res = Result.objects.create(
+            assessment=self.assessment,
+            student=self.student,
+            marks_obtained=Decimal("95.00"),
+            remarks="Excellent work!"
+        )
+        
+        # 1. GET detailed score breakdown page
+        response = self.client.get(reverse("admin_result_detail", args=[res.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.student.user.full_name.title())
+        self.assertContains(response, "Excellent work!")
+        self.assertContains(response, "95.00")
+        
+        # 2. GET printable report slip
+        response = self.client.get(reverse("admin_result_print", args=[res.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "JSM SHIKSHA ACADEMY")
+        self.assertContains(response, "Statement of Marks / Report Slip")
+        
+        # 3. POST: Edit Grade and Remarks
+        post_data = {
+            "action": "edit_grade",
+            "marks_obtained": "80",
+            "remarks": "Needs some improvement"
+        }
+        response = self.client.post(reverse("admin_result_detail", args=[res.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        res.refresh_from_db()
+        self.assertEqual(res.marks_obtained, Decimal("80"))
+        self.assertEqual(res.remarks, "Needs some improvement")
+        self.assertEqual(res.grade, "A") # auto recalculated grade
+        
+        # 4. POST: Delete Result entry
+        post_data = {
+            "action": "delete_result"
+        }
+        response = self.client.post(reverse("admin_result_detail", args=[res.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.assertFalse(Result.objects.filter(id=res.id).exists())
+
+    def test_attendance_session_detail_and_management(self):
+        self.client.force_login(self.admin_user)
+        
+        # Create an attendance session
+        sess = AttendanceSession.objects.create(
+            classroom=self.classroom,
+            subject=self.subject,
+            date=timezone.now().date(),
+            taken_by=self.tp,
+            notes="Initial notes"
+        )
+        
+        # 1. GET detailed attendance log roster page
+        response = self.client.get(reverse("admin_attendance_session_detail", args=[sess.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.student.user.full_name.title())
+        self.assertContains(response, "Initial notes")
+        
+        # 2. POST: Save attendance markings (Status Present -> Late)
+        post_data = {
+            "action": "save_attendance",
+            f"status_{self.student.id}": "late",
+            f"remarks_{self.student.id}": "Late because of traffic"
+        }
+        response = self.client.post(reverse("admin_attendance_session_detail", args=[sess.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        # Verify AttendanceRecord saved
+        rec = AttendanceRecord.objects.get(session=sess, student=self.student)
+        self.assertEqual(rec.status, "late")
+        self.assertEqual(rec.remarks, "Late because of traffic")
+        
+        # 3. POST: Update session notes
+        post_data = {
+            "action": "update_notes",
+            "notes": "Updated session remarks"
+        }
+        response = self.client.post(reverse("admin_attendance_session_detail", args=[sess.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        sess.refresh_from_db()
+        self.assertEqual(sess.notes, "Updated session remarks")
+        
+        # 4. POST: Delete session completely
+        post_data = {
+            "action": "delete_session"
+        }
+        response = self.client.post(reverse("admin_attendance_session_detail", args=[sess.id]), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.assertFalse(AttendanceSession.objects.filter(id=sess.id).exists())
+
+    def test_attendance_record_lookup_and_edit(self):
+        self.client.force_login(self.admin_user)
+        
+        # Create a session and record
+        sess = AttendanceSession.objects.create(
+            classroom=self.classroom,
+            subject=self.subject,
+            date=timezone.now().date(),
+            taken_by=self.tp
+        )
+        rec = AttendanceRecord.objects.create(
+            session=sess,
+            student=self.student,
+            status="present",
+            remarks="On time"
+        )
+        
+        # 1. GET attendance records list page
+        response = self.client.get(reverse("admin_attendance_records"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.student.user.full_name.title())
+        self.assertContains(response, "Present")
+        
+        # 2. POST: Edit attendance record status
+        post_data = {
+            "action": "edit_record",
+            "record_id": rec.id,
+            "status": "absent",
+            "remarks": "Sick leave verified"
+        }
+        response = self.client.post(reverse("admin_attendance_records"), post_data)
+        self.assertEqual(response.status_code, 302)
+        
+        rec.refresh_from_db()
+        self.assertEqual(rec.status, "absent")
+        self.assertEqual(rec.remarks, "Sick leave verified")

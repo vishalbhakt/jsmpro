@@ -16,14 +16,7 @@
                     <li class="breadcrumb-item active text-white fw-bold" aria-current="page">Contact Messages</li>
                 </ol>
             </nav>
-            <div class="d-flex align-items-center gap-3 mb-2">
-                <div class="p-2 rounded-lg d-flex align-items-center justify-content-center" style="background-color: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; border-radius: 0.5rem !important; padding: 0.5rem !important; border: 1px solid rgba(255, 255, 255, 0.2) !important;">
-                    <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <h1 class="display-6 fw-bold text-white mb-0" style="font-family:'Outfit',sans-serif; margin-bottom: 0 !important;">Inbox: Contact Messages</h1>
-            </div>
+            <h1 class="display-6 fw-bold text-white mb-2" style="font-family:'Outfit',sans-serif;">Inbox: Contact Messages ✉️</h1>
             <p class="text-white-50 mb-0">View and respond to inquiries submitted through the website's Contact Us page.</p>
         </div>
     </div>
@@ -33,11 +26,11 @@
 <div class="premium-card p-4 bg-white mb-4">
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-6">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="q" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-magnifying-glass me-1"></i> Search</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="q">🔍 Search</label>
             <input type="text" name="q" id="q" value="{{ q|default:'' }}" class="form-control rounded-pill" placeholder="Search by name, subject, or message content...">
         </div>
         <div class="col-md-4">
-            <label class="form-label fw-bold text-xs uppercase text-muted" for="status" style="font-size: 0.72rem !important; font-weight: 600 !important; color: #4b5563 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;"><i class="fa-solid fa-circle-dot me-1"></i> Status Filter</label>
+            <label class="form-label fw-bold text-xs uppercase text-muted" for="status">🏷️ Status Filter</label>
             <select name="status" id="status" class="form-select rounded-pill">
                 <option value="">-- All Statuses --</option>
                 {% for code, label in status_choices %}
@@ -108,8 +101,15 @@
                     <td>
                         <div class="d-flex gap-2">
                             <!-- Details View Button -->
-                            <button class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;" 
-                                    onclick="viewMessageDetails('{{ msg.name }}', '{{ msg.email }}', '{{ msg.phone|default:'—' }}', '{{ msg.subject|escapejs }}', '{{ msg.message|escapejs }}', '{{ msg.id }}', '{{ msg.status }}')">
+                            <button class="btn btn-sm btn-premium-accent rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem;"
+                                    data-name="{{ msg.name }}"
+                                    data-email="{{ msg.email }}"
+                                    data-phone="{{ msg.phone|default:'—' }}"
+                                    data-subject="{{ msg.subject }}"
+                                    data-message="{{ msg.message }}"
+                                    data-id="{{ msg.id }}"
+                                    data-status="{{ msg.status }}"
+                                    onclick="viewMessageDetails(this)">
                                 <i class="fa-solid fa-eye"></i> View Details
                             </button>
                             <a href="{% url 'admin_contact_message_delete' msg.id %}" class="btn btn-sm btn-danger rounded-pill px-3 py-1" style="font-size:0.75rem;" onclick="return confirm('Are you sure you want to delete this message?')">
@@ -128,71 +128,54 @@
 
 <!-- Modal: View Message Details -->
 <div class="modal fade" id="messageDetailsModal" tabindex="-1" aria-labelledby="messageDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered max-w-2xl w-full">
-        <div class="modal-content bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            
-            <!-- Modal Header -->
-            <div class="px-6 py-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
-                <h5 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-0" id="messageDetailsModalLabel">
-                    <i class="fa-solid fa-envelope text-blue-600"></i> Message Details
-                </h5>
-                <button type="button" class="btn-close text-slate-400 hover:text-slate-600 focus:outline-none" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-light px-4 py-3">
+                <h5 class="modal-title fw-bold text-primary" id="messageDetailsModalLabel"><i class="fa-solid fa-envelope me-2 text-accent"></i> Message Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <!-- Modal Body -->
-            <div class="p-6">
-                <!-- 2-Column Responsive Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 mb-5">
-                    <!-- Row 1: Sender Name & Subject -->
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Sender Name</span>
-                        <p id="detName" class="text-sm font-semibold text-slate-800 mb-0 break-words"></p>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <span class="text-muted text-xs d-block">Sender Name</span>
+                        <strong id="detName" class="text-primary fs-6"></strong>
                     </div>
-
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Subject</span>
-                        <p id="detSubject" class="text-sm font-semibold text-slate-800 mb-0 break-words"></p>
+                    <div class="col-md-4">
+                        <span class="text-muted text-xs d-block">Email Address</span>
+                        <strong id="detEmail" class="text-primary fs-6"></strong>
                     </div>
-
-                    <!-- Row 2: Email Address & Phone Number -->
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Email Address</span>
-                        <a id="detEmail" href="#" class="block break-all text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline"></a>
-                    </div>
-
-                    <div class="min-w-0">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Phone Number</span>
-                        <a id="detPhoneLink" href="#" class="inline-block"><span id="detPhone" class="text-sm font-semibold text-blue-600 hover:underline block truncate"></span></a>
+                    <div class="col-md-4">
+                        <span class="text-muted text-xs d-block">Phone Number</span>
+                        <strong id="detPhone" class="text-primary fs-6"></strong>
                     </div>
                 </div>
-
-                <!-- Message Body Box Card -->
-                <div class="min-w-0 col-span-full">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Message Body</span>
-                    <div class="col-span-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-700 leading-relaxed shadow-inner mt-1">
-                        <p id="detMessage" class="mb-0 whitespace-pre-wrap break-words"></p>
-                    </div>
+                <div class="mb-4">
+                    <span class="text-muted text-xs d-block">Subject</span>
+                    <strong id="detSubject" class="text-primary fs-5 d-block"></strong>
                 </div>
+                <div class="p-4 bg-light rounded-4 border mb-4">
+                    <span class="text-muted text-xs d-block mb-2">Message Body</span>
+                    <p id="detMessage" class="mb-0 text-dark" style="white-space: pre-wrap; font-size:0.95rem; line-height:1.6;"></p>
+                </div>
+                
+                <!-- Status Edit Action Form -->
+                <form id="statusForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold text-sm text-primary">Update Action Status</label>
+                            <select name="status" id="detStatusSelect" class="form-select rounded-pill">
+                                {% for code, label in status_choices %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-premium-primary rounded-pill w-100 py-2"><i class="fa-solid fa-save me-1"></i> Update Status</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-
-            <!-- Footer Action Area (Brand Theme Sync) -->
-            <form id="statusForm" method="post" action="">
-                {% csrf_token %}
-                <div class="px-6 py-4 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3 w-full sm:w-auto">
-                        <label for="detStatusSelect" class="whitespace-nowrap text-xs font-bold uppercase tracking-wider text-slate-500 mb-0">Update Status:</label>
-                        <select name="status" id="detStatusSelect" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-sm w-full sm:w-auto">
-                            {% for code, label in status_choices %}
-                            <option value="{{ code }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm px-5 py-2.5 rounded-lg shadow-md transition focus:ring-2 focus:ring-slate-700 focus:outline-none flex items-center gap-2 cursor-pointer border-0 w-full sm:w-auto justify-center">
-                        <i class="fa-solid fa-floppy-disk text-xs"></i> Update Status
-                    </button>
-                </div>
-            </form>
-
         </div>
     </div>
 </div>
@@ -200,25 +183,9 @@
 <script>
 function viewMessageDetails(name, email, phone, subject, message, id, status) {
     document.getElementById('detName').textContent = name;
+    document.getElementById('detEmail').textContent = email;
+    document.getElementById('detPhone').textContent = phone;
     document.getElementById('detSubject').textContent = subject;
-    
-    const emailElem = document.getElementById('detEmail');
-    if (emailElem) {
-        emailElem.textContent = email;
-        if (emailElem.tagName === 'A') {
-            emailElem.href = email ? 'mailto:' + email : '#';
-        }
-    }
-    
-    const phoneElem = document.getElementById('detPhone');
-    if (phoneElem) {
-        phoneElem.textContent = phone;
-    }
-    const phoneLink = document.getElementById('detPhoneLink');
-    if (phoneLink) {
-        phoneLink.href = phone ? 'tel:' + phone : '#';
-    }
-    
     document.getElementById('detMessage').textContent = message;
     
     // Set form action path

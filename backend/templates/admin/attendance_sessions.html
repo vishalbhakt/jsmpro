@@ -58,9 +58,9 @@
                     <td class="fw-bold text-nowrap">{{ session.date|date:"d M Y" }}</td>
                     <td class="text-muted text-nowrap">{{ session.created_at|date:"Y" }}-{{ session.created_at|date:"y"|add:"1" }}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Details" onclick="alert('Audit Mode: Attendance log is read-only.')">
+                        <a href="{% url 'admin_attendance_session_detail' session.id %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Details">
                             <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
-                        </button>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}

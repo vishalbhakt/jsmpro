@@ -77,9 +77,9 @@
                     <td class="fw-bold text-success text-center">{{ ass.points|default:"100" }}</td>
                     <td class="text-muted text-nowrap" style="white-space: nowrap !important;">{{ ass.created_at|date:"d M Y" }}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Details" onclick="alert('Audit Mode: Assessment setup is read-only.')">
+                        <a href="{% url 'admin_assessment_detail' ass.id %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0" style="width: 32px; height: 32px; border-radius: 8px; transition: background-color 0.2s, color 0.2s;" title="View Details">
                             <i class="fa-solid fa-eye" style="font-size: 0.85rem;"></i>
-                        </button>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
